@@ -6,6 +6,7 @@
 
 import { Button } from "@components/Button";
 import { getZone, timeIn } from "@plugins/friendTimes";
+import { lastSeenText } from "@plugins/lastSeen";
 import { classNameFactory } from "@utils/css";
 import { openPrivateChannel, openUserProfile } from "@utils/discord";
 import { User } from "@vencord/discord-types";
@@ -142,6 +143,7 @@ function FriendRow({ userId, groupId }: { userId: string; groupId: string | null
     const status = statusOf(userId);
     const activity = activityText(userId);
     const zone = getZone(userId);
+    const seen = isOnline(status) ? null : lastSeenText(userId);
 
     return (
         <div
@@ -161,7 +163,7 @@ function FriendRow({ userId, groupId }: { userId: string; groupId: string | null
                     {user && <span className={cl("row-username")}>{user.username}</span>}
                 </div>
                 <div className={cl("row-activity")}>
-                    {activity ?? (isOnline(status) ? status === "dnd" ? "Do Not Disturb" : status === "idle" ? "Idle" : "Online" : "Offline")}
+                    {activity ?? (isOnline(status) ? status === "dnd" ? "Do Not Disturb" : status === "idle" ? "Idle" : "Online" : seen ? `Last seen ${seen}` : "Offline")}
                     {zone && ` · 🕐 ${timeIn(zone)}`}
                 </div>
             </div>

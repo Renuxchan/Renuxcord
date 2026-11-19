@@ -1,6 +1,6 @@
 # Renuxcord
 
-**190+ plugins, AI built in, always up to date.** Renuxcord is a Discord client mod with an AI bridge that lets Claude build your Discord servers, Claude inside Discord, friend folders, a command palette, a theme engine, your own custom plugins and a stack of Renuxcord Exclusive plugins. It updates itself, and Discord-update fixes arrive automatically.
+**210+ plugins, AI built in, always up to date.** Renuxcord is a Discord client mod with an AI bridge that lets Claude build your Discord servers, Claude inside Discord, friend folders, a command palette, a theme engine, your own custom plugins and a stack of Renuxcord Exclusive plugins. It updates itself, and Discord-update fixes arrive automatically.
 
 **Website & download: https://renuxchan.github.io/Renuxcord/**
 
@@ -17,7 +17,7 @@ Uninstall the same way. Your Renuxcord settings stay in `%APPDATA%\Renuxcord`.
 | Plugin | What it does |
 | --- | --- |
 | **RenuxBridge** | AI bridge for Claude Code (MCP). Say "make me a gaming server with roles and private staff channels" and it happens in Discord |
-| **RenuxAI** | Claude inside Discord: `/ai ask`, `/ai catchup` (unread messages), `/ai summarize`, `/ai rewrite`, `/ai translate`, and right-click any message to explain it or get a reply suggestion |
+| **RenuxAI** | Claude inside Discord: `/ai ask`, `/ai catchup` (unread messages), `/ai summarize`, `/ai rewrite`, `/ai translate`, right-click any message to explain it or get a reply suggestion, and describe or read the text in images. **No API key needed**: it uses your Claude Code login (or an Anthropic API key if you prefer) |
 | **FriendGroups** | A Groups tab on the Friends page: friend folders with emoji icons and colours, minimize them, drag friends between them, see who's online and what they're playing |
 | **CustomPlugins** | Loads your own `.js` plugins from `%APPDATA%\Renuxcord\plugins` (see below) |
 | **CommandPalette** | `Ctrl+Shift+K`: toggle any plugin, switch profiles, run toolbox actions, open settings, jump to servers, channels and DMs |
@@ -38,8 +38,28 @@ Uninstall the same way. Your Renuxcord settings stay in `%APPDATA%\Renuxcord`.
 | **SessionStats** | Your own stats: messages, pings, time online and in voice (`/stats`) |
 | **PluginProfiles** | Save sets of enabled plugins (Gaming, Minimal, Streaming) and switch in one click, plus safe mode |
 | **RenuxBadges** | Renuxcord profile badges for the owner, devs and friends of the project |
+| **QuickTools** | `/calc`, `/roll 2d20+5`, `/flip`, `/choose`, `/random`, `/8ball`, `/timestamp` (Discord time tags), `/encode` (base64, hex, binary, morse…), `/hash` and `/password` |
+| **TextFX** | `/fx` fancy text: 𝗯𝗼𝗹𝗱, 𝓼𝓬𝓻𝓲𝓹𝓽, 𝖌𝖔𝖙𝖍𝖎𝖈, ｖａｐｏｒｗａｖｅ, ᴛɪɴʏ ᴄᴀᴘs, uʍop ǝpısdn, z̷a̷l̷g̷o̷, mOcKiNg, 👏 clap 👏, owo and more |
+| **QuickReplies** | A ⚡ button in the message box with your saved replies and a kaomoji library |
+| **TypingSounds** | Keyboard sounds while you type: thocky mechanical, clicky, typewriter with the ding, bubble pops, retro 8-bit |
+| **Notepad** | Notes inside Discord: `Ctrl+Alt+N`, `/notes`, `/note`, and right-click → Save to Notepad |
+| **FocusMode** | `Ctrl+Alt+F`: Do Not Disturb, hides the server and member lists, Pomodoro timer, automatic quiet hours |
+| **SecretGuard** | Asks before you send a Discord token, Roblox cookie, API key, private key, password or card number |
+| **Snipe** | `/snipe` the last deleted messages in a channel and `/editsnipe` what an edited message said before |
+| **LastSeen** | See when friends were last online: right-click, Friend Groups, `/whois` and `/lastseen` |
+| **WhoIs** | `/whois @someone`: account age, join date, roles, games, mutual servers and friends, local time, last seen, birthday |
+| **ChannelWatch** | Right-click a channel → Watch to get a notification for every message, even in muted servers |
+| **SpoilerShield** | Blurs messages that mention words you pick until you hover them |
+| **Lookup** | `/weather`, `/define`, `/urban` and `/wiki` without leaving Discord |
+| **MediaDownloader** | Save every image, video and file from a message or a whole channel into Downloads › Renuxcord |
+| **PlaytimeTracker** | How long you play each game today, this week, this month and all time (`/playtime`), with break reminders |
+| **BirthdayReminders** | Save friends' birthdays and get a notification on the day (and the day before), `/birthdays` |
+| **StatusRotator** | Cycles your custom status through a list with live tokens like `{time}`, `{game}` and `{online}` |
+| **FakeDeafen** | Look deafened to everyone in the call while you can still hear (`Ctrl+Alt+D`) |
+| **Confetti** | 🎉 Confetti cannons when someone says congrats or happy birthday, or with `/confetti` |
+| **CSSSnippets** | One-click tweaks: hide Nitro and Shop upsells, gift, sticker and app buttons, Active Now, decorations, nameplates, server tags, call buttons |
 
-Every one of them carries the **✦ RENUXCORD EXCLUSIVE** badge in Settings > Renuxcord > Plugins, sorted to the top, with a "Show Renuxcord Exclusive" filter. The 170+ classic plugins are all there too.
+Every one of them carries the **✦ RENUXCORD EXCLUSIVE** badge in Settings > Renuxcord > Plugins, sorted to the top, with a "Show Renuxcord Exclusive" filter. The 170+ classic plugins are all there too, and anyone updating gets a one-time list of the newest exclusives to switch on.
 
 ## Let AI build your servers (RenuxBridge + MCP)
 

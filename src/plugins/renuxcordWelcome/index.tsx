@@ -20,14 +20,23 @@ import gitRemote from "~git-remote";
 
 const SEEN_KEY = "Renuxcord_welcomeSeen";
 
-export const RENUXCORD_PLUGINS = [
+// Exclusives from the first releases, for people who saw the welcome screen before it remembered plugin names
+const FIRST_RELEASE = [
     "RenuxBridge", "RenuxAI", "FriendGroups", "CommandPalette", "RenuxTheme", "ServerBlueprints", "LinkSafety",
     "MessageReminders", "ChatExporter", "FriendTimes", "PanicBlur", "GhostPingAlert", "KeywordAlerts", "MentionSound",
     "MessageScheduler", "Bookmarks", "FriendWatch", "VoiceLog", "SessionStats", "PluginProfiles", "RenuxBadges"
 ];
 
-function openWelcome() {
+export const RENUXCORD_PLUGINS = [
+    ...FIRST_RELEASE,
+    "QuickTools", "TextFX", "QuickReplies", "TypingSounds", "Notepad", "FocusMode", "SecretGuard", "Snipe", "LastSeen",
+    "WhoIs", "ChannelWatch", "SpoilerShield", "Lookup", "MediaDownloader", "PlaytimeTracker", "BirthdayReminders",
+    "StatusRotator", "FakeDeafen", "Confetti", "CSSSnippets"
+];
+
+function openWelcome(onlyNew?: string[]) {
     let restartNeeded = false;
+    const shown = onlyNew ?? RENUXCORD_PLUGINS;
 
     openModal(props => {
         function Welcome() {
@@ -36,8 +45,10 @@ function openWelcome() {
                 <Modal
                     {...props}
                     size="lg"
-                    title="Welcome to Renuxcord ✨"
-                    subtitle="All 170+ classic plugins are in here too. These are the Renuxcord exclusives, switch on whatever you like:"
+                    title={onlyNew ? "✨ New in Renuxcord" : "Welcome to Renuxcord ✨"}
+                    subtitle={onlyNew
+                        ? `${onlyNew.length} new Renuxcord exclusive${onlyNew.length === 1 ? "" : "s"} just landed. Switch on whatever you like:`
+                        : "All 170+ classic plugins are in here too. These are the Renuxcord exclusives, switch on whatever you like:"}
                     actions={[
                         {
                             text: "All Renuxcord settings",
@@ -50,7 +61,7 @@ function openWelcome() {
                         { text: "Let's go", variant: "primary", onClick: props.onClose }
                     ]}
                 >
-                    {RENUXCORD_PLUGINS.filter(n => plugins[n]).map(name => (
+                    {shown.filter(n => plugins[n]).map(name => (
                         <FormSwitch
                             key={name}
                             title={name}
@@ -72,7 +83,7 @@ function openWelcome() {
         return <Welcome />;
     }, {
         onCloseCallback: () => {
-            void DataStore.set(SEEN_KEY, true);
+            void DataStore.set(SEEN_KEY, RENUXCORD_PLUGINS);
             if (restartNeeded) promptToRestart("reload", { subtitle: "Some of the plugins you switched on need a reload" });
         }
     });
@@ -86,7 +97,7 @@ export default definePlugin({
     required: true,
 
     toolboxActions: {
-        "Renuxcord welcome screen": openWelcome
+        "Renuxcord welcome screen": () => openWelcome()
     },
 
     commands: [{
@@ -108,7 +119,11 @@ export default definePlugin({
     }],
 
     async start() {
-        if (await DataStore.get(SEEN_KEY)) return;
-        setTimeout(openWelcome, 4000);
+        const seen = await DataStore.get<boolean | string[]>(SEEN_KEY);
+        if (!seen) return void setTimeout(() => openWelcome(), 4000);
+
+        const known = new Set(Array.isArray(seen) ? seen : FIRST_RELEASE);
+        const fresh = RENUXCORD_PLUGINS.filter(n => !known.has(n) && plugins[n]);
+        if (fresh.length) setTimeout(() => openWelcome(fresh), 4000);
     }
 });

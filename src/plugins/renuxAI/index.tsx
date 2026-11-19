@@ -7,13 +7,14 @@
 import { ApplicationCommandInputType, ApplicationCommandOptionType, findOption, sendBotMessage } from "@api/Commands";
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
+import { Button } from "@components/Button";
 import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { insertTextIntoChatInputBox, sendMessage } from "@utils/discord";
 import { RenuxDevs } from "@utils/renuxcord";
 import definePlugin, { OptionType, PluginNative, PluginSettingComponentProps } from "@utils/types";
 import { Message } from "@vencord/discord-types";
-import { ChannelStore, Menu, MessageStore, ReadStateStore, showToast, TextInput, useState } from "@webpack/common";
+import { ChannelStore, Menu, MessageStore, ReadStateStore, showToast, TextInput, useEffect, useState } from "@webpack/common";
 
 import type { AskOptions } from "./native";
 
@@ -25,14 +26,16 @@ const DEFAULT_PERSONA = [
     "Never pretend to be the user or claim to be a real person."
 ].join(" ");
 
+type Provider = "api" | "claude-code";
+
 function ApiKeySetting({ setValue }: PluginSettingComponentProps) {
     const [value, setLocal] = useState<string>(settings.store.apiKey ?? "");
     return (
         <section>
-            <Heading tag="h5">Anthropic API key</Heading>
+            <Heading tag="h5">Anthropic API key (optional)</Heading>
             <Paragraph style={{ color: "var(--text-muted)", marginBottom: 8 }}>
-                From console.anthropic.com. Stored only in your local Renuxcord settings. Leave empty to use ANTHROPIC_API_KEY or an `ant auth login` profile.
-                Every request is billed to that key.
+                Only needed for the API provider. Without a key RenuxAI uses Claude Code and your own Claude login, so nothing is billed to a key.
+                Stored only in your local Renuxcord settings.
             </Paragraph>
             <TextInput
                 type="password"
@@ -47,7 +50,52 @@ function ApiKeySetting({ setValue }: PluginSettingComponentProps) {
     );
 }
 
+function ProviderStatus() {
+    const [status, setStatus] = useState<{ installed: boolean; path: string | null; } | null>(null);
+    const [testing, setTesting] = useState(false);
+    useEffect(() => { Native.claudeCodeStatus().then(setStatus).catch(() => setStatus({ installed: false, path: null })); }, []);
+
+    const test = async () => {
+        setTesting(true);
+        try {
+            const reply = await askClaude("Reply with exactly this and nothing else: RenuxAI is working ✓", { effort: "low" }, true);
+            showToast({ text: reply.slice(0, 120), variant: "success" });
+        } catch (err) {
+            showToast({ text: err instanceof Error ? err.message : String(err), variant: "critical" });
+        } finally {
+            setTesting(false);
+        }
+    };
+
+    return (
+        <section>
+            <Heading tag="h5">Claude Code</Heading>
+            <Paragraph style={{ color: "var(--text-muted)", marginBottom: 8 }}>
+                {status == null
+                    ? "Looking for Claude Code…"
+                    : status.installed
+                        ? `Found at ${status.path}. If answers say it isn't signed in, run \`claude\` in a terminal and type /login once.`
+                        : "Not found. Install it from claude.com/claude-code and sign in once to use RenuxAI without an API key."}
+            </Paragraph>
+            <Button size="small" disabled={testing} onClick={test}>{testing ? "Testing…" : "Test RenuxAI"}</Button>
+        </section>
+    );
+}
+
 const settings = definePluginSettings({
+    provider: {
+        type: OptionType.SELECT,
+        description: "Where RenuxAI gets Claude from",
+        options: [
+            { label: "Auto: your API key if you added one, otherwise Claude Code", value: "auto", default: true },
+            { label: "Claude Code (your Claude login, no API key needed)", value: "claude-code" },
+            { label: "Anthropic API key", value: "api" }
+        ]
+    },
+    status: {
+        type: OptionType.COMPONENT,
+        component: () => <ProviderStatus />
+    },
     apiKey: {
         type: OptionType.COMPONENT,
         default: "",
@@ -58,9 +106,9 @@ const settings = definePluginSettings({
         description: "Claude model",
         options: [
             { label: "Claude Opus 5.5 (smartest, default)", value: "claude-opus-5-5", default: true },
-            { label: "Claude Sonnet 5.5 (fast and cheaper)", value: "claude-sonnet-5-5" },
-            { label: "Claude Haiku 5.5 (fastest, cheapest)", value: "claude-haiku-5-5" },
-            { label: "Claude Fable 5.2 (most capable, priciest)", value: "claude-fable-5-2" }
+            { label: "Claude Sonnet 5.5 (fast)", value: "claude-sonnet-5-5" },
+            { label: "Claude Haiku 5.5 (fastest)", value: "claude-haiku-5-5" },
+            { label: "Claude Fable 5.2 (most capable)", value: "claude-fable-5-2" }
         ]
     },
     effort: {
@@ -87,16 +135,27 @@ function botReply(channelId: string, text: string) {
     for (const chunk of chunks) sendBotMessage(channelId, { content: chunk, author: AUTHOR as any });
 }
 
-async function askClaude(prompt: string, extra: Partial<AskOptions> = {}) {
-    showToast({ text: "✨ Asking Claude…" });
-    const res = await Native.ask({
+async function pickProvider(): Promise<Provider> {
+    const choice = settings.store.provider;
+    if (choice === "api" || choice === "claude-code") return choice;
+    if (settings.store.apiKey?.trim()) return "api";
+    const status = await Native.claudeCodeStatus().catch(() => null);
+    return status?.installed ? "claude-code" : "api";
+}
+
+async function askClaude(prompt: string, extra: Partial<AskOptions> = {}, quiet = false) {
+    const provider = await pickProvider();
+    if (!quiet) showToast({ text: provider === "api" ? "✨ Asking Claude…" : "✨ Asking Claude (through Claude Code)…" });
+
+    const opts: AskOptions = {
         apiKey: settings.store.apiKey,
         model: settings.store.model,
         effort: settings.store.effort as AskOptions["effort"],
         system: settings.store.persona || DEFAULT_PERSONA,
-        messages: [{ role: "user", content: prompt }],
+        prompt,
         ...extra
-    });
+    };
+    const res = provider === "api" ? await Native.ask(opts) : await Native.askClaudeCode(opts);
     if (!res.ok) throw new Error(res.error);
     return res.text;
 }
@@ -112,6 +171,18 @@ function transcript(channelId: string, opts: { last?: number; fromId?: string; }
     if (opts.fromId) messages = messages.slice(Math.max(messages.findIndex(m => m.id === opts.fromId), 0));
     if (opts.last) messages = messages.slice(-opts.last);
     return messages.filter(m => m.content || m.attachments?.length).map(messageText).join("\n");
+}
+
+const IMAGE_FILE = /\.(png|jpe?g|gif|webp)(\?|$)/i;
+
+function imageOf(message: Message) {
+    const attachment = message.attachments?.find(a => a.content_type?.startsWith("image/") || IMAGE_FILE.test(a.filename ?? a.url));
+    if (attachment) return attachment.url;
+    for (const embed of message.embeds ?? []) {
+        const media = embed.image ?? embed.thumbnail;
+        if (media?.url) return media.proxyURL || media.url;
+    }
+    return null;
 }
 
 const where = (channelId: string) => {
@@ -133,6 +204,7 @@ const summarizePrompt = (chat: string, channelId: string) =>
 const messageContext: NavContextMenuPatchCallback = (children, { message }: { message?: Message; }) => {
     if (!message) return;
     const channelId = message.channel_id;
+    const image = imageOf(message);
 
     children.push(
         <Menu.MenuItem id="rx-ai" label="RenuxAI">
@@ -155,13 +227,22 @@ const messageContext: NavContextMenuPatchCallback = (children, { message }: { me
             <Menu.MenuItem id="rx-ai-translate" label="Translate to English" action={() => run(channelId, async () => {
                 botReply(channelId, await askClaude(`Translate this message to English. Reply with only the translation.\n\n<message>\n${message.content}\n</message>`));
             })} />
+            {image && <Menu.MenuSeparator />}
+            {image && <Menu.MenuItem id="rx-ai-describe" label="Describe image" action={() => run(channelId, async () => {
+                botReply(channelId, await askClaude("Describe this image: what's in it, any text, and anything funny or notable. Keep it short.", { imageUrl: image }));
+            })} />}
+            {image && <Menu.MenuItem id="rx-ai-ocr" label="Copy text from image" action={() => run(channelId, async () => {
+                const text = await askClaude("Transcribe all the text in this image exactly as written, keeping line breaks. Reply with only the text. If there is no text, reply with: (no text)", { imageUrl: image });
+                insertTextIntoChatInputBox(text);
+                showToast({ text: "Text from the image is in your message box", variant: "success" });
+            })} />}
         </Menu.MenuItem>
     );
 };
 
 export default definePlugin({
     name: "RenuxAI",
-    description: "Claude inside Discord: /ai ask, /ai catchup on unread messages, summarize, rewrite or translate, and right-click any message to explain it or get a reply suggestion. Needs an Anthropic API key",
+    description: "Claude inside Discord: /ai ask, /ai catchup on unread messages, summarize, rewrite, translate, describe images, and right-click any message to explain it or get a reply suggestion. Works with your Claude Code login (no API key) or an Anthropic API key",
     tags: ["Renuxcord", "Chat", "Commands", "Utility"],
     authors: [RenuxDevs.Larpbase],
     settings,

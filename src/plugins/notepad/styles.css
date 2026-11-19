@@ -1,0 +1,111 @@
+.rx-np {
+    display: flex;
+    gap: 12px;
+    height: min(62vh, 520px);
+}
+
+.rx-np-side {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 200px;
+    flex-shrink: 0;
+}
+
+.rx-np-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow-y: auto;
+}
+
+.rx-np-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 8px 26px 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-default, var(--text-normal));
+}
+
+.rx-np-item:hover {
+    background: var(--background-mod-subtle, rgb(255 255 255 / 6%));
+}
+
+.rx-np-item.rx-np-on {
+    background: var(--background-mod-strong, rgb(255 255 255 / 12%));
+}
+
+.rx-np-item b {
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rx-np-item small {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.rx-np-del {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: none;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.rx-np-item:hover .rx-np-del {
+    display: block;
+}
+
+.rx-np-del:hover {
+    color: var(--status-danger, #f23f43);
+}
+
+.rx-np-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.rx-np-text {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border-subtle, rgb(255 255 255 / 8%));
+    border-radius: 8px;
+    background: var(--background-secondary-alt, var(--background-tertiary));
+    color: var(--text-default, var(--text-normal));
+    font-family: var(--font-primary);
+    font-size: 15px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+}
+
+.rx-np-text:focus {
+    border-color: var(--brand-500, #5865f2);
+}
+
+.rx-np-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.rx-np-actions small {
+    margin-right: auto;
+    color: var(--text-muted);
+}
+
+.rx-np-empty {
+    margin: auto;
+    color: var(--text-muted);
+}
