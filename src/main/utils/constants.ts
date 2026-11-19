@@ -19,11 +19,14 @@
 import { app } from "electron";
 import { join } from "path";
 
-export const DATA_DIR = process.env.VENCORD_USER_DATA_DIR ?? (
+import { migrateVencordData } from "./migrateVencordData";
+
+export const DATA_DIR = process.env.RENUXCORD_USER_DATA_DIR ?? process.env.VENCORD_USER_DATA_DIR ?? (
     process.env.DISCORD_USER_DATA_DIR
-        ? join(process.env.DISCORD_USER_DATA_DIR, "..", "VencordData")
-        : join(app.getPath("userData"), "..", "Vencord")
+        ? join(process.env.DISCORD_USER_DATA_DIR, "..", "RenuxcordData")
+        : join(app.getPath("userData"), "..", "Renuxcord")
 );
+migrateVencordData(DATA_DIR);
 export const SETTINGS_DIR = join(DATA_DIR, "settings");
 export const THEMES_DIR = join(DATA_DIR, "themes");
 export const QUICK_CSS_PATH = join(SETTINGS_DIR, "quickCss.css");

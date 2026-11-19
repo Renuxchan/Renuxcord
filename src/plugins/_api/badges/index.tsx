@@ -37,8 +37,8 @@ import { ContextMenuApi, Menu, Modal, openModal, showToast, UserStore } from "@w
 
 const ContributorBadge: ProfileBadge = {
     id: "vencord_contributor_badge",
-    description: "Vencord Contributor",
-    infoLabel: "Vencord",
+    description: "Plugin Contributor",
+    infoLabel: "Renuxcord",
     rarity: BadgeRarity.MYTHIC,
     iconSrc: "https://cdn.discordapp.com/emojis/1562267648857997356.webp?size=128",
     largeIconSrc: "https://cdn.discordapp.com/emojis/1562267648857997356.webp?size=512",
@@ -62,8 +62,8 @@ async function loadBadges(noCache = false) {
     if (noCache)
         init.cache = "no-cache";
 
-    DonorBadges = await fetch("https://badges.vencord.dev/badges.json", init)
-        .then(r => r.json());
+    // Renuxcord: Vencord's donor badges aren't shown
+    DonorBadges = {};
 }
 
 let intervalId: any;
@@ -75,7 +75,7 @@ function toDirectoryBadge(b: ProfileBadge, userId: string): DirectoryBadge {
         badge_id: id,
         name: b.name ?? b.description ?? "",
         description: b.detail ?? b.description ?? b.name ?? "",
-        info_label: b.infoLabel ?? "Vencord",
+        info_label: b.infoLabel ?? "Renuxcord",
         rarity: b.rarity ?? BadgeRarity.COMMON,
         simple_icon_url: b.iconSrc!,
         complex_icon_static_url: b.largeIconSrc ?? b.iconSrc!,

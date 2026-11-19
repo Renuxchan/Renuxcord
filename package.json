@@ -36,6 +36,7 @@
         "bump": "./scripts/bump.sh"
     },
     "dependencies": {
+        "@anthropic-ai/sdk": "^1.10.0",
         "@intrnl/xxhash64": "catalog:",
         "@vap/core": "catalog:",
         "@vap/shiki": "catalog:",

@@ -21,6 +21,8 @@ export const VENCORD_FILES = [
     IS_DISCORD_DESKTOP ? "preload.js" : "vencordDesktopPreload.js",
     IS_DISCORD_DESKTOP ? "renderer.js" : "vencordDesktopRenderer.js",
     IS_DISCORD_DESKTOP ? "renderer.css" : "vencordDesktopRenderer.css",
+    // Renuxcord: the MCP server for the RenuxBridge plugin updates alongside the client
+    "renuxcord-mcp.mjs",
 ];
 
 export function serializeErrors(func: (...args: any[]) => any) {

@@ -21,9 +21,9 @@ import electron, { app, BrowserWindowConstructorOptions, Menu } from "electron";
 import { dirname, join } from "path";
 
 import { RendererSettings } from "./settings";
-import { IS_VANILLA } from "./utils/constants";
+import { DATA_DIR, IS_VANILLA } from "./utils/constants";
 
-console.log("[Vencord] Starting up...");
+console.log("[Renuxcord] Starting up...");
 
 // Our injector file at app/index.js
 const injectorPath = require.main!.filename;
@@ -131,10 +131,10 @@ if (!IS_VANILLA) {
         s.set("DANGEROUS_ENABLE_DEVTOOLS_ONLY_ENABLE_IF_YOU_KNOW_WHAT_YOURE_DOING", true);
     });
 
-    process.env.DATA_DIR = join(app.getPath("userData"), "..", "Vencord");
+    process.env.DATA_DIR = DATA_DIR;
 } else {
-    console.log("[Vencord] Running in vanilla mode. Not loading Vencord");
+    console.log("[Renuxcord] Running in vanilla mode. Not loading Renuxcord");
 }
 
-console.log("[Vencord] Loading original Discord app.asar");
+console.log("[Renuxcord] Loading original Discord app.asar");
 require(require.main!.filename);

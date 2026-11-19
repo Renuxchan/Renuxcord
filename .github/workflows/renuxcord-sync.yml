@@ -1,0 +1,103 @@
+# Merges the latest Vencord into Renuxcord every 6 hours, so Discord-update fixes from upstream arrive by themselves.
+# Pushing changes to .github/workflows needs a token with the "workflow" scope: add one as the SYNC_TOKEN secret.
+name: Sync Vencord upstream
+on:
+    schedule:
+        - cron: "17 */6 * * *"
+    workflow_dispatch:
+
+concurrency:
+    group: renuxcord-sync
+
+permissions:
+    contents: write
+    actions: write
+    issues: write
+
+jobs:
+    sync:
+        if: github.repository != 'Vendicated/Vencord'
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.SYNC_TOKEN || secrets.GITHUB_TOKEN }}
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+            - name: Use Node.js
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              with:
+                  node-version: 24
+
+            - name: Merge upstream
+              id: merge
+              run: |
+                  git config user.name "renuxcord-bot"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git remote add upstream https://github.com/Vendicated/Vencord.git
+                  git fetch upstream main
+
+                  if git merge-base --is-ancestor upstream/main HEAD; then
+                      echo "Already up to date with Vencord"
+                      echo "result=none" >> "$GITHUB_OUTPUT"
+                      exit 0
+                  fi
+
+                  if ! git merge --no-edit -m "Sync upstream Vencord" upstream/main; then
+                      conflicts=$(git diff --name-only --diff-filter=U)
+                      if [ "$conflicts" = "pnpm-lock.yaml" ]; then
+                          # Lockfile-only conflict: take Vencord's and let pnpm re-add Renuxcord's dependencies
+                          git checkout --theirs pnpm-lock.yaml
+                          pnpm install --lockfile-only
+                          git add pnpm-lock.yaml
+                          git commit --no-edit
+                      else
+                          git merge --abort
+                          {
+                              echo "files<<EOF"
+                              echo "$conflicts"
+                              echo "EOF"
+                          } >> "$GITHUB_OUTPUT"
+                          echo "result=conflict" >> "$GITHUB_OUTPUT"
+                          exit 0
+                      fi
+                  fi
+                  echo "result=merged" >> "$GITHUB_OUTPUT"
+
+            - name: Make sure it still builds
+              if: steps.merge.outputs.result == 'merged'
+              run: |
+                  pnpm install --frozen-lockfile
+                  pnpm test:ts
+                  pnpm build --standalone
+
+            - name: Push
+              if: steps.merge.outputs.result == 'merged'
+              run: git push origin HEAD:main
+
+            - name: Release the new build
+              if: steps.merge.outputs.result == 'merged'
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: gh workflow run renuxcord-release.yml --ref main
+
+            - name: Report the conflict
+              if: steps.merge.outputs.result == 'conflict'
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  FILES: ${{ steps.merge.outputs.files }}
+              run: |
+                  title="Upstream Vencord sync needs a manual merge"
+                  existing=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number')
+                  body=$(printf 'The automatic sync with Vendicated/Vencord hit merge conflicts in:\n\n```\n%s\n```\n\nMerge locally:\n\n```sh\ngit fetch upstream\ngit merge upstream/main\n# fix the files above, then\npnpm test\ngit push\n```' "$FILES")
+                  if [ -n "$existing" ]; then
+                      gh issue comment "$existing" --body "$body"
+                  else
+                      gh issue create --title "$title" --body "$body"
+                  fi
+                  exit 1

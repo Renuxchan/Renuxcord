@@ -9,6 +9,7 @@ import { hasAnyVisibleSettings, isPluginEnabled, pluginRequiresRestart, startDep
 import { Settings } from "@api/Settings";
 import { CogWheel, InfoIcon } from "@components/Icons";
 import { AddonCard } from "@components/settings/AddonCard";
+import { isRenuxcordExclusive } from "@components/settings/RenuxcordBadge";
 import { Plugin } from "@utils/types";
 import { React, showToast } from "@webpack/common";
 
@@ -86,6 +87,7 @@ export function PluginCard({ plugin, disabled, onRestartNeeded, onMouseEnter, on
             name={plugin.name}
             description={plugin.description}
             isNew={isNew}
+            exclusive={isRenuxcordExclusive(plugin)}
             enabled={isEnabled()}
             setEnabled={toggleEnabled}
             disabled={disabled}

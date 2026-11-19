@@ -1,0 +1,3 @@
+Renuxcord, a Vencord-based Discord client mod
+Copyright (c) {year} {author}
+SPDX-License-Identifier: GPL-3.0-or-later

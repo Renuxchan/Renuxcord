@@ -1,0 +1,23 @@
+.rx-linksafety {
+    margin-top: 6px;
+    padding: 8px 12px;
+    max-width: 640px;
+    border-radius: 8px;
+    border-left: 4px solid var(--status-danger, #f23f43);
+    background: color-mix(in srgb, var(--status-danger, #f23f43) 12%, transparent);
+    color: var(--text-default, var(--text-normal));
+    font-size: 14px;
+}
+
+.rx-linksafety-title {
+    font-weight: 600;
+    color: var(--text-danger, var(--status-danger, #f23f43));
+}
+
+.rx-linksafety-reasons {
+    margin: 4px 0 0;
+    padding-left: 18px;
+    list-style: disc;
+    color: var(--text-muted);
+    font-size: 13px;
+}

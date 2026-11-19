@@ -1,0 +1,126 @@
+# Builds Renuxcord on every push to main and publishes it as the rolling "devbuild" release.
+# Installed Renuxcord clients check that release to update themselves.
+name: Renuxcord Release
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - .github/workflows/renuxcord-release.yml
+            - src/**
+            - browser/**
+            - mcp/**
+            - installer/**
+            - scripts/**
+            - package.json
+            - pnpm-lock.yaml
+    workflow_dispatch:
+
+concurrency:
+    group: renuxcord-release
+    cancel-in-progress: true
+
+permissions:
+    contents: write
+
+jobs:
+    build:
+        if: github.repository != 'Vendicated/Vencord'
+        runs-on: ubuntu-latest
+        outputs:
+            hash: ${{ steps.hash.outputs.hash }}
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  fetch-depth: 0
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+            - name: Use Node.js
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              with:
+                  node-version: 24
+                  cache: "pnpm"
+
+            - name: Install dependencies
+              run: |
+                  pnpm install --frozen-lockfile
+                  pnpm install --dir mcp --ignore-workspace --frozen-lockfile
+
+            - name: Commit hash
+              id: hash
+              run: echo "hash=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+            - name: Typecheck
+              run: pnpm test:ts
+
+            - name: Test the AI bridge and MCP server
+              run: node mcp/test/smoke.mjs
+
+            - name: Build
+              run: pnpm build --standalone
+              env:
+                  VENCORD_HASH: ${{ steps.hash.outputs.hash }}
+
+            - name: Build the MCP server
+              run: node scripts/renuxcord/buildMcp.mjs
+
+            - name: Clean up
+              run: rm -rf dist/*-unpacked dist/vendor dist/vencordDesktop* dist/Installer
+
+            - name: Upload build
+              uses: actions/upload-artifact@v4
+              with:
+                  name: dist
+                  path: dist/
+
+    installer:
+        if: github.repository != 'Vendicated/Vencord'
+        runs-on: windows-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Build the installer
+              shell: pwsh
+              run: powershell -NoProfile -ExecutionPolicy Bypass -File installer/build.ps1 -Repo "${{ github.repository }}" -Out dist/RenuxcordInstaller.exe
+
+            - name: Upload installer
+              uses: actions/upload-artifact@v4
+              with:
+                  name: installer
+                  path: dist/RenuxcordInstaller.exe
+
+    release:
+        needs: [build, installer]
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Download build
+              uses: actions/download-artifact@v4
+              with:
+                  name: dist
+                  path: dist
+
+            - name: Download installer
+              uses: actions/download-artifact@v4
+              with:
+                  name: installer
+                  path: dist
+
+            - name: Publish DevBuild
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+                  HASH: ${{ needs.build.outputs.hash }}
+              run: |
+                  if ! gh release view devbuild > /dev/null 2>&1; then
+                      gh release create devbuild --target "$GITHUB_SHA" --title "DevBuild $HASH" --latest \
+                          --notes "Rolling Renuxcord build. New users: download **RenuxcordInstaller.exe** below and run it. Installed clients update from here automatically."
+                  fi
+                  gh release upload devbuild --clobber dist/*
+                  gh release edit devbuild --title "DevBuild $HASH" --latest

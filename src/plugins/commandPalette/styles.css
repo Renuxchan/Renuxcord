@@ -1,0 +1,71 @@
+.rx-palette-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    font-size: 16px;
+    color: var(--text-default, var(--text-normal));
+    background: var(--input-background, var(--background-base-lowest, var(--background-tertiary)));
+    border: 1px solid var(--border-subtle, transparent);
+    border-radius: 10px;
+    outline: none;
+    margin-bottom: 10px;
+}
+
+.rx-palette-input:focus {
+    border-color: var(--text-brand, var(--brand-500, #a78bfa));
+}
+
+.rx-palette-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 52vh;
+    overflow-y: auto;
+}
+
+.rx-palette-item {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-default, var(--text-normal));
+    min-width: 0;
+}
+
+.rx-palette-selected {
+    background: var(
+        --background-mod-normal,
+        var(--background-modifier-selected, rgb(255 255 255 / 8%))
+    );
+}
+
+.rx-palette-section {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    min-width: 90px;
+}
+
+.rx-palette-label {
+    flex-shrink: 0;
+    font-weight: 500;
+}
+
+.rx-palette-hint {
+    color: var(--text-muted);
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rx-palette-empty {
+    padding: 16px;
+    color: var(--text-muted);
+    text-align: center;
+}

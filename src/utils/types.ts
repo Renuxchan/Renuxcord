@@ -58,6 +58,7 @@ export const PluginTags = [
     "Organisation",
     "Privacy",
     "Reactions",
+    "Renuxcord",
     "Roles",
     "Servers",
     "Shortcuts",

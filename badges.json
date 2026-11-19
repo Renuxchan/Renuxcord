@@ -1,0 +1,11 @@
+{
+    "badges": {
+        "owner": { "tooltip": "Renuxcord Owner", "icon": "crown" },
+        "dev": { "tooltip": "Renuxcord Developer", "icon": "dev" },
+        "friend": { "tooltip": "Friend of Renuxcord", "icon": "heart" },
+        "early": { "tooltip": "Early Renuxcord User", "icon": "star" }
+    },
+    "users": {
+        "1470103395158196337": ["owner", "dev"]
+    }
+}
