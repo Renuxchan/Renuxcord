@@ -21,7 +21,7 @@ const settings = definePluginSettings({
             "omw | on my way 🏃",
             "gn | goodnight everyone 🌙",
             "ty | thank you so much 🙏",
-            "gg | gg wp 🫡",
+            "gg | gg wp 🤝",
             "1v1 | 1v1 me rn"
         ].join("\n")
     },

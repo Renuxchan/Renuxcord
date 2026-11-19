@@ -25,7 +25,8 @@ const SNIPPETS: Record<string, Snippet> = {
     hideGiftButton: {
         description: "Hide the gift button in the message box",
         default: true,
-        css: hide('[class*="buttons_"] [aria-label="Send a gift"]', '[class*="buttons_"] > [class*="giftButton_"]')
+        // Servers say "Send a gift", DMs say "Give a Gift"
+        css: hide('[class*="buttons_"] [aria-label="Send a gift"]', '[class*="buttons_"] [aria-label="Give a Gift"]', '[class*="buttons_"] > [class*="giftButton_"]')
     },
     hideStickerButton: {
         description: "Hide the sticker button in the message box",
