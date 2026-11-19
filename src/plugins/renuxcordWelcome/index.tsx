@@ -21,9 +21,9 @@ import gitRemote from "~git-remote";
 const SEEN_KEY = "Renuxcord_welcomeSeen";
 
 export const RENUXCORD_PLUGINS = [
-    "RenuxBridge", "RenuxAI", "CommandPalette", "RenuxTheme", "ServerBlueprints", "LinkSafety", "GhostPingAlert",
-    "KeywordAlerts", "MentionSound", "MessageScheduler", "Bookmarks", "FriendWatch", "VoiceLog", "SessionStats",
-    "PluginProfiles", "RenuxBadges"
+    "RenuxBridge", "RenuxAI", "FriendGroups", "CommandPalette", "RenuxTheme", "ServerBlueprints", "LinkSafety",
+    "MessageReminders", "ChatExporter", "FriendTimes", "PanicBlur", "GhostPingAlert", "KeywordAlerts", "MentionSound",
+    "MessageScheduler", "Bookmarks", "FriendWatch", "VoiceLog", "SessionStats", "PluginProfiles", "RenuxBadges"
 ];
 
 function openWelcome() {

@@ -21,7 +21,7 @@ import { useSettings } from "@api/Settings";
 import { Divider } from "@components/Divider";
 import { FormSwitch } from "@components/FormSwitch";
 import { Heading } from "@components/Heading";
-import { FolderIcon, GithubIcon, LogIcon, PaintbrushIcon, RestartIcon } from "@components/Icons";
+import { FolderIcon, GithubIcon, LogIcon, PaintbrushIcon, PluginsIcon, RestartIcon } from "@components/Icons";
 import { Paragraph } from "@components/Paragraph";
 import { QuickAction, QuickActionCard } from "@components/settings/QuickAction";
 import { SpecialCard } from "@components/settings/SpecialCard";
@@ -29,6 +29,7 @@ import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
 import { openPluginModal } from "@components/settings/tabs/plugins/PluginModal";
 import NoTrack from "@plugins/_core/noTrack";
 import SettingsPlugin from "@plugins/_core/settings";
+import { openCustomPluginsManager } from "@plugins/customPlugins";
 import { gitRemote } from "@shared/vencordUserAgent";
 import { IS_WINDOWS } from "@utils/constants";
 import { Margins } from "@utils/margins";
@@ -160,6 +161,11 @@ function VencordSettings() {
                     />
                     {!IS_WEB && (
                         <>
+                            <QuickAction
+                                Icon={PluginsIcon}
+                                text="Custom Plugins"
+                                action={openCustomPluginsManager}
+                            />
                             <QuickAction
                                 Icon={RestartIcon}
                                 text="Relaunch Discord"

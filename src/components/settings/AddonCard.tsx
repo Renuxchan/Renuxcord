@@ -20,7 +20,7 @@ import "./AddonCard.css";
 
 import { Paragraph } from "@components/Paragraph";
 import { AddonBadge } from "@components/settings/PluginBadge";
-import { RenuxcordExclusiveBadge } from "@components/settings/RenuxcordBadge";
+import { CustomPluginBadge, RenuxcordExclusiveBadge } from "@components/settings/RenuxcordBadge";
 import { Switch } from "@components/Switch";
 import { Text } from "@components/Text";
 import { classNameFactory } from "@utils/css";
@@ -38,6 +38,8 @@ interface Props {
     isNew?: boolean;
     /** Renuxcord: shows the RENUXCORD EXCLUSIVE badge */
     exclusive?: boolean;
+    /** Renuxcord: loaded from the custom plugins folder */
+    custom?: boolean;
     onMouseEnter?: MouseEventHandler<HTMLDivElement>;
     onMouseLeave?: MouseEventHandler<HTMLDivElement>;
 
@@ -46,7 +48,7 @@ interface Props {
     author?: ReactNode;
 }
 
-export function AddonCard({ disabled, isNew, exclusive, name, infoButton, footer, author, enabled, setEnabled, description, onMouseEnter, onMouseLeave }: Props) {
+export function AddonCard({ disabled, isNew, exclusive, custom, name, infoButton, footer, author, enabled, setEnabled, description, onMouseEnter, onMouseLeave }: Props) {
     const titleRef = useRef<HTMLDivElement>(null);
     const titleContainerRef = useRef<HTMLDivElement>(null);
 
@@ -78,6 +80,7 @@ export function AddonCard({ disabled, isNew, exclusive, name, infoButton, footer
                     </Text>
 
                     {exclusive && <RenuxcordExclusiveBadge />}
+                    {custom && <CustomPluginBadge />}
 
                     {!!author && (
                         <Paragraph size="md" className={cl("author")}>

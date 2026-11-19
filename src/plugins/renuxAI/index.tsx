@@ -13,7 +13,7 @@ import { insertTextIntoChatInputBox, sendMessage } from "@utils/discord";
 import { RenuxDevs } from "@utils/renuxcord";
 import definePlugin, { OptionType, PluginNative, PluginSettingComponentProps } from "@utils/types";
 import { Message } from "@vencord/discord-types";
-import { ChannelStore, Menu, MessageStore, showToast, TextInput, useState } from "@webpack/common";
+import { ChannelStore, Menu, MessageStore, ReadStateStore, showToast, TextInput, useState } from "@webpack/common";
 
 import type { AskOptions } from "./native";
 
@@ -161,7 +161,7 @@ const messageContext: NavContextMenuPatchCallback = (children, { message }: { me
 
 export default definePlugin({
     name: "RenuxAI",
-    description: "Claude inside Discord: /ai ask, summarize a chat, rewrite or translate text, and right-click any message to explain it or get a reply suggestion. Needs an Anthropic API key",
+    description: "Claude inside Discord: /ai ask, /ai catchup on unread messages, summarize, rewrite or translate, and right-click any message to explain it or get a reply suggestion. Needs an Anthropic API key",
     tags: ["Renuxcord", "Chat", "Commands", "Utility"],
     authors: [RenuxDevs.Larpbase],
     settings,
@@ -189,6 +189,12 @@ export default definePlugin({
                 description: "Summarize the recent conversation in this channel",
                 type: ApplicationCommandOptionType.SUB_COMMAND,
                 options: [{ name: "messages", description: "How many recent messages (default 50, max 200)", type: ApplicationCommandOptionType.INTEGER, required: false }]
+            },
+            {
+                name: "catchup",
+                description: "Summarize everything you haven't read in this channel",
+                type: ApplicationCommandOptionType.SUB_COMMAND,
+                options: []
             },
             {
                 name: "rewrite",
@@ -227,6 +233,14 @@ export default definePlugin({
                         const chat = transcript(channelId, { last: count });
                         if (!chat) throw new Error("No messages loaded in this channel yet. Scroll up a bit and try again.");
                         botReply(channelId, await askClaude(summarizePrompt(chat, channelId)));
+                    });
+                case "catchup":
+                    return void run(channelId, async () => {
+                        const oldestUnread = ReadStateStore.getOldestUnreadMessageId(channelId);
+                        const chat = oldestUnread ? transcript(channelId, { fromId: oldestUnread }) : transcript(channelId, { last: 40 });
+                        if (!chat) throw new Error("No messages loaded in this channel yet. Scroll up a bit and try again.");
+                        const note = oldestUnread ? "" : "You're all caught up, so here's a recap of the last 40 messages instead.\n\n";
+                        botReply(channelId, note + await askClaude(summarizePrompt(chat, channelId)));
                     });
                 case "rewrite":
                     return void run(channelId, async () => {

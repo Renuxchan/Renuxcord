@@ -16,3 +16,8 @@
     text-transform: uppercase;
     white-space: nowrap;
 }
+
+.rx-custom-badge {
+    background: linear-gradient(135deg, #2dd4bf 0%, #38bdf8 100%);
+    box-shadow: 0 0 10px rgb(45 212 191 / 35%);
+}

@@ -4,8 +4,12 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+import { isPluginEnabled, plugins } from "@api/PluginManager";
 import { Channel, Role } from "@vencord/discord-types";
 import { GuildMemberCountStore, GuildMemberStore, GuildStore, NavigationRouter, PermissionsBits, PermissionStore, UserStore } from "@webpack/common";
+import { patches } from "@webpack/patcher";
+
+import gitHash from "~git-hash";
 
 import {
     CHANNEL_TYPES, channelType, channelTypeName, describeOverwriteTarget, forgetChannel, fromBits, guildChannels, guildRoles,
@@ -591,6 +595,19 @@ export const actions: Record<string, Action> = {
 
     listPermissions() {
         return permissionNames();
+    },
+
+    diagnostics() {
+        const all = Object.values(plugins);
+        const enabled = all.filter(p => isPluginEnabled(p.name));
+        return {
+            build: gitHash,
+            plugins: { total: all.length, enabled: enabled.length },
+            renuxcord: all.filter(p => p.tags?.includes("Renuxcord")).map(p => ({ name: p.name, enabled: isPluginEnabled(p.name), running: !!p.started })),
+            customPlugins: (window as any).RenuxcordCustomPlugins?.list?.() ?? [],
+            enabledButNotRunning: enabled.filter(p => !p.started).map(p => p.name),
+            pluginsWithUnappliedPatches: [...new Set(patches.filter(p => !p.all && p.predicate?.() !== false).map(p => p.plugin))]
+        };
     },
 
     open(p) {

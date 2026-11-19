@@ -160,6 +160,12 @@ bridgeTool("read_messages", {
     annotations: { readOnlyHint: true }
 }, "readMessages");
 
+bridgeTool("diagnostics", {
+    title: "Renuxcord health check",
+    description: "Which Renuxcord plugins are running, enabled plugins that failed to start, plugins whose patches didn't apply, and custom plugin load errors",
+    annotations: { readOnlyHint: true }
+}, "diagnostics");
+
 bridgeTool("list_permissions", {
     title: "List permission names",
     description: "Every permission name the Discord client knows, for roles and channel overwrites",

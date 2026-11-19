@@ -20,6 +20,7 @@ import { debounce } from "@shared/debounce";
 import { IpcEvents } from "@shared/IpcEvents";
 import { contextBridge, webFrame } from "electron/renderer";
 
+import { loadCustomPlugins } from "./renuxcordPreload";
 import VencordNative, { invoke, sendSync } from "./VencordNative";
 
 
@@ -36,6 +37,8 @@ else {
 
     if (IS_DISCORD_DESKTOP) {
         webFrame.executeJavaScript(sendSync<string>(IpcEvents.PRELOAD_GET_RENDERER_JS));
+        // Renuxcord: user plugins from %APPDATA%\Renuxcord\plugins
+        loadCustomPlugins();
         // Not supported in sandboxed preload scripts but Discord doesn't support it either so who cares
         require(process.env.DISCORD_PRELOAD!);
     }

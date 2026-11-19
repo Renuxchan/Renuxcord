@@ -14,8 +14,9 @@ import { classNameFactory } from "@utils/css";
 import { relaunch } from "@utils/native";
 import { promptToRestart } from "@utils/promptToRestart";
 import { RenuxDevs } from "@utils/renuxcord";
+import { matchesHotkey } from "@utils/renuxcordHotkeys";
 import definePlugin, { OptionType } from "@utils/types";
-import { closeModal, GuildStore, Modal, NavigationRouter, openModal, SettingsRouter, showToast, useEffect, useMemo, useRef, useState } from "@webpack/common";
+import { ChannelStore, closeModal, GuildStore, Modal, NavigationRouter, openModal, SelectedGuildStore, SettingsRouter, showToast, useEffect, useMemo, useRef, UserStore,useState } from "@webpack/common";
 
 const cl = classNameFactory("rx-palette-");
 
@@ -35,6 +36,11 @@ const settings = definePluginSettings({
     includeServers: {
         type: OptionType.BOOLEAN,
         description: "List your servers so you can jump to them",
+        default: true
+    },
+    includeChannels: {
+        type: OptionType.BOOLEAN,
+        description: "List your recent DMs and the current server's channels",
         default: true
     }
 });
@@ -87,6 +93,21 @@ function gatherCommands(): PaletteCommand[] {
         });
     }
 
+    if (settings.store.includeChannels) {
+        const guildId = SelectedGuildStore.getGuildId();
+        if (guildId) {
+            const guild = GuildStore.getGuild(guildId);
+            for (const c of Object.values(ChannelStore.getMutableGuildChannelsForGuild(guildId) ?? {}))
+                if (TEXT_LIKE.has(c.type))
+                    commands.push({ section: guild?.name ?? "This server", label: `Go to #${c.name}`, run: () => NavigationRouter.transitionTo(`/channels/${guildId}/${c.id}`) });
+        }
+
+        for (const c of ChannelStore.getSortedPrivateChannels().slice(0, 50)) {
+            const name = c.name || c.recipients.map(id => { const u = UserStore.getUser(id); return u?.globalName || u?.username || "someone"; }).join(", ");
+            commands.push({ section: "DMs", label: `Message ${name}`, run: () => NavigationRouter.transitionTo(`/channels/@me/${c.id}`) });
+        }
+    }
+
     if (settings.store.includeServers) {
         for (const g of GuildStore.getGuildsArray())
             commands.push({ section: "Servers", label: `Go to ${g.name}`, run: () => NavigationRouter.transitionToGuild(g.id) });
@@ -94,6 +115,9 @@ function gatherCommands(): PaletteCommand[] {
 
     return commands;
 }
+
+// Text, announcement, forum and media channels
+const TEXT_LIKE = new Set([0, 5, 15, 16]);
 
 function score(query: string, text: string) {
     if (!query) return 1;
@@ -204,23 +228,8 @@ export function openPalette() {
     openKey = openModal(props => <Palette modalProps={props} />, { onCloseCallback: () => { openKey = null; } });
 }
 
-function matchesHotkey(e: KeyboardEvent) {
-    const parts = settings.store.hotkey.toLowerCase().split("+").map(s => s.trim()).filter(Boolean);
-    const key = parts.pop();
-    if (!key) return false;
-
-    const wants = (m: string) => parts.includes(m);
-    const pressed = e.key.toLowerCase() === key || e.code.toLowerCase() === `key${key}` || (key === "space" && e.code === "Space");
-
-    return pressed
-        && e.ctrlKey === (wants("ctrl") || wants("control"))
-        && e.shiftKey === wants("shift")
-        && e.altKey === (wants("alt") || wants("option"))
-        && e.metaKey === (wants("meta") || wants("cmd") || wants("win"));
-}
-
 function onKeyDown(e: KeyboardEvent) {
-    if (!matchesHotkey(e)) return;
+    if (!matchesHotkey(settings.store.hotkey, e)) return;
     e.preventDefault();
     e.stopPropagation();
     openPalette();

@@ -1,0 +1,414 @@
+.rx-fg-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    color: var(--text-default, var(--text-normal));
+}
+
+.rx-fg-page-modal {
+    height: 70vh;
+}
+
+.rx-fg-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border-subtle, rgb(255 255 255 / 6%));
+}
+
+.rx-fg-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--header-primary, var(--text-strong, var(--text-default)));
+}
+
+.rx-fg-subtitle {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.rx-fg-spacer {
+    flex: 1;
+}
+
+.rx-fg-search {
+    width: 200px;
+    padding: 7px 10px;
+    font-size: 14px;
+    color: var(--text-default, var(--text-normal));
+    background: var(--input-background, var(--background-base-lowest, var(--background-tertiary)));
+    border: 1px solid var(--border-subtle, transparent);
+    border-radius: 8px;
+    outline: none;
+}
+
+.rx-fg-search:focus {
+    border-color: var(--text-brand, #a78bfa);
+}
+
+.rx-fg-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 12px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rx-fg-group {
+    --rx-fg-color: var(--text-muted);
+
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--rx-fg-color) 7%, transparent);
+    border: 1px solid color-mix(in srgb, var(--rx-fg-color) 22%, transparent);
+    border-left: 4px solid var(--rx-fg-color);
+    transition:
+        box-shadow 0.15s,
+        background 0.15s;
+}
+
+.rx-fg-ungrouped {
+    --rx-fg-color: #80848e;
+}
+
+.rx-fg-drop-target {
+    background: color-mix(in srgb, var(--rx-fg-color) 18%, transparent);
+    box-shadow: 0 0 0 2px var(--rx-fg-color);
+}
+
+.rx-fg-group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.rx-fg-chevron {
+    color: var(--text-muted);
+    transition: transform 0.15s;
+    flex-shrink: 0;
+}
+
+.rx-fg-chevron-open {
+    transform: rotate(90deg);
+}
+
+.rx-fg-group-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.rx-fg-group-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--rx-fg-color);
+}
+
+.rx-fg-ungrouped .rx-fg-group-name {
+    color: var(--header-primary, var(--text-default));
+}
+
+.rx-fg-group-count {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.rx-fg-group-more {
+    margin-left: auto;
+}
+
+.rx-fg-stack {
+    display: flex;
+    margin-left: 6px;
+}
+
+.rx-fg-stack-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--background-base-low, var(--background-primary));
+    margin-left: -6px;
+}
+
+.rx-fg-stack-avatar:first-child {
+    margin-left: 0;
+}
+
+.rx-fg-stack-more {
+    margin-left: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+    align-self: center;
+}
+
+.rx-fg-members {
+    display: flex;
+    flex-direction: column;
+    padding: 0 6px 8px;
+}
+
+.rx-fg-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.rx-fg-row:hover {
+    background: var(
+        --background-mod-normal,
+        var(--background-modifier-hover, rgb(255 255 255 / 5%))
+    );
+}
+
+.rx-fg-row:active {
+    cursor: grabbing;
+}
+
+.rx-fg-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.rx-fg-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--background-mod-strong, rgb(255 255 255 / 10%));
+}
+
+.rx-fg-status {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 3px solid var(--background-base-low, var(--background-primary));
+    background: #80848e;
+}
+
+.rx-fg-status-online {
+    background: #23a55a;
+}
+
+.rx-fg-status-idle {
+    background: #f0b232;
+}
+
+.rx-fg-status-dnd {
+    background: #f23f43;
+}
+
+.rx-fg-status-streaming {
+    background: #593695;
+}
+
+.rx-fg-row-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.rx-fg-row-name {
+    font-weight: 600;
+    color: var(--header-primary, var(--text-strong, var(--text-default)));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rx-fg-row-username {
+    margin-left: 6px;
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.rx-fg-row-activity {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rx-fg-row-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.1s;
+}
+
+.rx-fg-row:hover .rx-fg-row-actions {
+    opacity: 1;
+}
+
+.rx-fg-icon-btn {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    background: var(--background-base-lower, var(--background-secondary));
+    color: var(--text-default, var(--text-normal));
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.rx-fg-icon-btn:hover {
+    background: var(--background-mod-strong, rgb(255 255 255 / 12%));
+}
+
+.rx-fg-hint {
+    padding: 8px 12px 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.rx-fg-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    padding: 32px 16px 24px;
+}
+
+.rx-fg-empty-art {
+    font-size: 48px;
+}
+
+.rx-fg-empty-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--header-primary, var(--text-default));
+}
+
+.rx-fg-empty-text {
+    max-width: 420px;
+    color: var(--text-muted);
+}
+
+.rx-fg-starters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.rx-fg-starter {
+    --rx-fg-color: #80848e;
+
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--rx-fg-color) 50%, transparent);
+    background: color-mix(in srgb, var(--rx-fg-color) 14%, transparent);
+    color: var(--header-primary, var(--text-default));
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.rx-fg-starter:hover {
+    background: color-mix(in srgb, var(--rx-fg-color) 26%, transparent);
+}
+
+/* Editor */
+.rx-fg-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.rx-fg-editor h5 {
+    margin-bottom: 6px;
+}
+
+.rx-fg-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border-left: 4px solid var(--rx-fg-color);
+    background: color-mix(in srgb, var(--rx-fg-color) 12%, transparent);
+}
+
+.rx-fg-preview-icon {
+    font-size: 22px;
+}
+
+.rx-fg-preview-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--rx-fg-color);
+}
+
+.rx-fg-icon-grid,
+.rx-fg-color-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.rx-fg-icon-option {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background: var(--background-base-lower, var(--background-secondary));
+    cursor: pointer;
+}
+
+.rx-fg-icon-option.rx-fg-selected,
+.rx-fg-icon-option:hover {
+    border-color: var(--text-brand, #a78bfa);
+}
+
+.rx-fg-color-option {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 25%);
+}
+
+.rx-fg-color-option.rx-fg-selected {
+    border-color: var(--header-primary, #fff);
+}
+
+.rx-fg-icon-custom,
+.rx-fg-color-custom {
+    width: 96px;
+    height: 32px;
+    padding: 0 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle, transparent);
+    background: var(--input-background, var(--background-base-lowest, var(--background-tertiary)));
+    color: var(--text-default, var(--text-normal));
+    outline: none;
+}
+
+.rx-fg-color-custom.rx-fg-selected {
+    border-color: var(--text-brand, #a78bfa);
+}
+
+/* Group icon next to names in chat */
+.rx-fg-chat-icon {
+    margin-left: 4px;
+    font-size: 0.9em;
+    vertical-align: baseline;
+    cursor: default;
+}

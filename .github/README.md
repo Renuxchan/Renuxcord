@@ -1,6 +1,8 @@
 # Renuxcord
 
-**190 plugins, AI built in, always up to date.** Renuxcord is a Discord client mod with an AI bridge that lets Claude build your Discord servers, Claude inside Discord, a command palette, a theme engine and a stack of Renuxcord Exclusive plugins. It updates itself, and Discord-update fixes arrive automatically.
+**190+ plugins, AI built in, always up to date.** Renuxcord is a Discord client mod with an AI bridge that lets Claude build your Discord servers, Claude inside Discord, friend folders, a command palette, a theme engine, your own custom plugins and a stack of Renuxcord Exclusive plugins. It updates itself, and Discord-update fixes arrive automatically.
+
+**Website & download: https://renuxchan.github.io/Renuxcord/**
 
 ## Install
 
@@ -15,8 +17,14 @@ Uninstall the same way. Your Renuxcord settings stay in `%APPDATA%\Renuxcord`.
 | Plugin | What it does |
 | --- | --- |
 | **RenuxBridge** | AI bridge for Claude Code (MCP). Say "make me a gaming server with roles and private staff channels" and it happens in Discord |
-| **RenuxAI** | Claude inside Discord: `/ai ask`, `/ai summarize`, `/ai rewrite`, `/ai translate`, and right-click any message to explain it or get a reply suggestion |
-| **CommandPalette** | `Ctrl+Shift+K`: toggle any plugin, switch profiles, run toolbox actions, open settings, jump to servers |
+| **RenuxAI** | Claude inside Discord: `/ai ask`, `/ai catchup` (unread messages), `/ai summarize`, `/ai rewrite`, `/ai translate`, and right-click any message to explain it or get a reply suggestion |
+| **FriendGroups** | A Groups tab on the Friends page: friend folders with emoji icons and colours, minimize them, drag friends between them, see who's online and what they're playing |
+| **CustomPlugins** | Loads your own `.js` plugins from `%APPDATA%\Renuxcord\plugins` (see below) |
+| **CommandPalette** | `Ctrl+Shift+K`: toggle any plugin, switch profiles, run toolbox actions, open settings, jump to servers, channels and DMs |
+| **MessageReminders** | Right-click a message → Remind me in 15m / 1h / tomorrow / any time, with a notification that jumps back to it |
+| **ChatExporter** | Save a chat as a styled HTML page, text or JSON (`/export` or right-click a channel) |
+| **FriendTimes** | Set friends' time zones once and see their local time in chat, in Friend Groups and with `/time` |
+| **PanicBlur** | `Ctrl+Alt+B` blurs all of Discord instantly, optionally whenever it loses focus |
 | **RenuxTheme** | Theme engine: colour presets, custom accent, background image with blur/dim/glass, rounder corners, any Google Font. Live preview |
 | **ServerBlueprints** | Copy a server's roles, channels and permissions as JSON, paste blueprints into your servers, or clone a server's layout in one click |
 | **LinkSafety** | Warns under messages with scam links: fake Discord/Steam/Roblox domains, look-alike characters, raw IPs, masked link tricks, free-nitro bait |
@@ -49,6 +57,28 @@ Every one of them carries the **✦ RENUXCORD EXCLUSIVE** badge in Settings > Re
    - `/mcp__renuxcord__build_server` and `/mcp__renuxcord__audit_server` are ready-made prompts
 
 The bridge only listens on `127.0.0.1`, needs a random token that only local tools can read, rejects web pages, works at a human pace, and never touches DMs. Deleting stays off until you switch on **Allow deleting** in its settings.
+
+## Custom plugins
+
+Every `.js` file in `%APPDATA%\Renuxcord\plugins` loads before Discord does, so it can do everything a built-in plugin can: patches, slash commands, context menus, settings, flux events. The folder is created with a README and a working example (`HelloRenuxcord.js`). Open it from Settings › Renuxcord › **Custom Plugins**, reload Discord, then switch your plugin on in the plugin list (it has a 🧩 CUSTOM badge).
+
+```js
+const { definePlugin, CommandOptionType } = Renuxcord;
+
+module.exports = definePlugin({
+    name: "Hello",
+    description: "Adds /hello",
+    commands: [{
+        name: "hello",
+        description: "Say hi",
+        execute(args, ctx) {
+            Renuxcord.Api.Commands.sendBotMessage(ctx.channel.id, { content: "Hello! 👋" });
+        }
+    }]
+});
+```
+
+`Renuxcord` gives you `definePlugin`, `definePluginSettings`, `OptionType`, `CommandOptionType`, `StartAt`, `Common` (Discord stores, React, Menu, RestAPI…), `Webpack`, `Api`, `Util`, `Components`, `showToast` and `notify`. Only add plugins you trust: they run with full access to your account.
 
 ## Updates
 
