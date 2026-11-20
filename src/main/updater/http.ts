@@ -20,7 +20,7 @@ import { fetchBuffer, fetchJson } from "@main/utils/http";
 import { IpcEvents } from "@shared/IpcEvents";
 import { VENCORD_USER_AGENT } from "@shared/vencordUserAgent";
 import { ipcMain } from "electron";
-import { writeFile } from "fs/promises";
+import { rename, writeFile } from "fs/promises";
 import { join } from "path";
 
 import gitHash from "~git-hash";
@@ -30,6 +30,10 @@ import { serializeErrors, VENCORD_FILES } from "./common";
 
 const API_BASE = `https://api.github.com/repos/${gitRemote}`;
 let PendingUpdates = [] as [string, string][];
+// Renuxcord: the build on disk. Updates now download while Discord is open, so after one lands this is ahead of
+// the running gitHash, and we mustn't keep downloading the same release until the next restart
+let installedHash = gitHash;
+let pendingHash: string | null = null;
 
 async function githubGet<T = any>(endpoint: string) {
     return fetchJson<T>(API_BASE + endpoint, {
@@ -60,7 +64,10 @@ async function fetchUpdates() {
     const data = await githubGet("/releases/latest");
 
     const hash = data.name.slice(data.name.lastIndexOf(" ") + 1);
-    if (hash === gitHash)
+    // Every check starts fresh, or repeated checks would queue the same files again
+    PendingUpdates = [];
+    pendingHash = null;
+    if (hash === installedHash)
         return false;
 
     data.assets.forEach(({ name, browser_download_url }) => {
@@ -68,6 +75,7 @@ async function fetchUpdates() {
             PendingUpdates.push([name, browser_download_url]);
         }
     });
+    pendingHash = hash;
 
     return true;
 }
@@ -78,11 +86,14 @@ async function applyUpdates() {
         return [join(__dirname, name), contents] as const;
     }));
 
-    await Promise.all(fileContents.map(async ([filename, contents]) =>
-        writeFile(filename, contents))
-    );
+    // Write everything next to the live files first, then swap them in, so a crash or a failed download
+    // halfway through can't leave Discord with a half-written patcher.js
+    await Promise.all(fileContents.map(([filename, contents]) => writeFile(`${filename}.download`, contents)));
+    await Promise.all(fileContents.map(([filename]) => rename(`${filename}.download`, filename)));
 
+    if (pendingHash) installedHash = pendingHash;
     PendingUpdates = [];
+    pendingHash = null;
     return true;
 }
 
