@@ -24,40 +24,35 @@
 <br>
 <br>
 
-**Renuxcord is a client mod for the Discord desktop app.**<br>
-Every plugin you'd expect from a client mod, plus 43 you won't find anywhere else: friend folders in your DM sidebar,<br>
-Claude in your chat, a command palette, and a bridge that lets Claude Code build your servers. Free, open source, and it keeps itself updated.
+**Renuxcord is a client mod for the Discord desktop app.** Every plugin you'd expect from a client mod, plus 43 you won't find anywhere else: friend folders in your DM sidebar, Claude in your chat, a command palette, and a bridge that lets Claude Code build your servers. Free, open source, and it keeps itself updated.
 
 </div>
 
-<br>
+## What you get
 
-<table>
-  <tr>
-    <td width="50%" valign="top">
-      <img src="assets/friend-groups.png" alt="Friend Groups in the DM sidebar, and the editor for a new group">
-      <h3>Friend Groups</h3>
-      Friend folders right in your DM sidebar, each with an emoji, a colour and an online count. Fold them, drag people between them, and click anyone to open your DM.
-    </td>
-    <td width="50%" valign="top">
-      <img src="assets/palette.png" alt="The command palette, searching for fri">
-      <h3>Command palette</h3>
-      <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>K</kbd> turns any plugin on or off, switches plugin profiles, and jumps to any server, channel or DM. No digging through settings.
-    </td>
-  </tr>
-  <tr>
-    <td width="50%" valign="top">
-      <img src="assets/renuxai.png" alt="The RenuxAI right-click menu on an image">
-      <h3>RenuxAI</h3>
-      Claude in your chat. <code>/ai catchup</code> sums up what you missed, and the right-click menu explains, translates, suggests replies and reads images. It runs on your Claude Code login, so no API key needed.
-    </td>
-    <td width="50%" valign="top">
-      <img src="assets/safety.png" alt="A LinkSafety warning under a fake Steam link, and SecretGuard stopping a Roblox cookie">
-      <h3>LinkSafety and SecretGuard</h3>
-      Warnings under fake Discord, Steam and Roblox links, and a "you sure?" before you send your token, a Roblox cookie, an API key or a card number.
-    </td>
-  </tr>
-</table>
+### Friend Groups
+
+Friend folders right in your DM sidebar, each with an emoji, a colour and an online count. Fold them, drag people between them, and click anyone to open your DM.
+
+<p align="center"><img src="assets/friend-groups.png" alt="Friend Groups in the DM sidebar, and the editor for a new group" width="720"></p>
+
+### Command palette
+
+<kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>K</kbd> turns any plugin on or off, switches plugin profiles, and jumps to any server, channel or DM. No digging through settings.
+
+<p align="center"><img src="assets/palette.png" alt="The command palette, searching for fri" width="720"></p>
+
+### RenuxAI
+
+Claude in your chat. `/ai catchup` sums up what you missed, and the right-click menu explains, translates, suggests replies and reads images. It runs on your Claude Code login, so no API key needed.
+
+<p align="center"><img src="assets/renuxai.png" alt="The RenuxAI right-click menu on an image" width="720"></p>
+
+### LinkSafety and SecretGuard
+
+Warnings under fake Discord, Steam and Roblox links, and a "you sure?" before you send your token, a Roblox cookie, an API key or a card number.
+
+<p align="center"><img src="assets/safety.png" alt="A LinkSafety warning under a fake Steam link, and SecretGuard stopping a Roblox cookie" width="720"></p>
 
 ## Let Claude Code build your servers
 
