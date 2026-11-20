@@ -63,6 +63,11 @@ async function request(path, init, timeoutMs) {
         throw new BridgeError(`The bridge answered HTTP ${res.status} without JSON`);
     }
 
+    if (res.status === 403) throw new BridgeError(
+        `Discord rejected the key in ${info.file}. Discord writes a new key every time it starts, so this file is out of date. `
+        + "If this runs from a Microsoft Store/MSIX app (the Claude desktop app is one), Windows may be showing it that app's private copy of the folder: "
+        + "delete %LOCALAPPDATA%\\Packages\\<that app>\\LocalCache\\Roaming\\Renuxcord and try again."
+    );
     if (!body?.ok) throw new BridgeError(body?.error ?? `HTTP ${res.status}`);
     return body.result;
 }

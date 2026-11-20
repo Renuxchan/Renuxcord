@@ -7,7 +7,7 @@
 // Installs Renuxcord into the Discord desktop app on this computer.
 //
 //   node scripts/renuxcord/install.mjs status
-//   node scripts/renuxcord/install.mjs install   [--flavor stable|ptb|canary|development|all] [--dist <dir>] [--enable A,B] [--no-restart]
+//   node scripts/renuxcord/install.mjs install   [--flavor stable|ptb|canary|development|all] [--dist <dir>] [--enable A,B] [--no-restart] [--force]
 //   node scripts/renuxcord/install.mjs uninstall [--flavor ...] [--no-restart]
 //
 // install copies the built files (default: ./dist) to the Renuxcord data folder and points Discord at them,
@@ -16,7 +16,7 @@
 import { execFileSync, spawn } from "child_process";
 import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "fs";
 import { homedir } from "os";
-import { join, resolve } from "path";
+import { join, relative, resolve } from "path";
 
 const FLAVORS = {
     stable: { folder: "Discord", exe: "Discord.exe", mac: "Discord.app" },
@@ -44,6 +44,44 @@ function dataDir() {
 
 function vencordDir() {
     return join(dataDir(), "..", "Vencord");
+}
+
+// Microsoft Store/MSIX apps (the Claude desktop app is one) run their child processes with AppData writes redirected
+// into the app's private %LOCALAPPDATA%\Packages\<app>\LocalCache\Roaming. Installing from a terminal inside such an app
+// puts Renuxcord where only that app can see it: Discord started from the Start menu then can't find patcher.js.
+const packagesDir = () => join(process.env.LOCALAPPDATA ?? join(homedir(), "AppData", "Local"), "Packages");
+
+/** The package whose private storage our AppData writes land in, or null when they reach the real AppData */
+function redirectingPackage() {
+    if (process.platform !== "win32" || !process.env.APPDATA || !existsSync(packagesDir())) return null;
+    const probe = join(process.env.APPDATA, `.renuxcord-probe-${process.pid}-${Date.now()}`);
+    try {
+        writeFileSync(probe, "");
+        const rel = relative(process.env.APPDATA, probe);
+        return readdirSync(packagesDir()).find(pkg => existsSync(join(packagesDir(), pkg, "LocalCache", "Roaming", rel))) ?? null;
+    } catch {
+        return null;
+    } finally {
+        rmSync(probe, { force: true });
+    }
+}
+
+/** Packages holding their own private Renuxcord folder, which hides the real one from programs started inside them */
+function privateCopies() {
+    if (process.platform !== "win32" || !existsSync(packagesDir())) return [];
+    const rel = relative(process.env.APPDATA ?? "", dataDir());
+    if (rel.startsWith("..")) return [];
+    return readdirSync(packagesDir())
+        .map(pkg => join(packagesDir(), pkg, "LocalCache", "Roaming", rel))
+        .filter(existsSync);
+}
+
+function warnAboutRedirection() {
+    const pkg = redirectingPackage();
+    if (pkg) console.log(`  Warning: this terminal runs inside the packaged app ${pkg}. Windows redirects its AppData writes into that app's private storage, so Discord started normally won't see them. Use a normal PowerShell window.`);
+    for (const dir of privateCopies())
+        console.log(`  Warning: ${dir} is a private copy of the Renuxcord folder. Programs started from that app see it instead of the real one. Delete it unless you know you need it.`);
+    return pkg;
 }
 
 function compareVersions(a, b) {
@@ -176,11 +214,16 @@ function status() {
         }
     }
     if (!any) console.log("  No Discord installs found.");
+    warnAboutRedirection();
 }
 
 function install() {
     const flavors = selectedFlavors();
     if (!flavors.length) throw new Error("No Discord install found");
+
+    const pkg = warnAboutRedirection();
+    if (pkg && !flag("force"))
+        throw new Error(`Not installing: the files would only exist inside ${pkg}. Run this from a normal PowerShell window (or pass --force).`);
 
     const dist = join(dataDir(), "dist");
     const source = resolve(flag("dist") ?? "dist");
