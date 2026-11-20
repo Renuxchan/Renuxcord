@@ -3,360 +3,1276 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Renuxcord · Discord, maxed out</title>
+        <title>Renuxcord · a Discord client mod with 216 plugins</title>
         <meta
             name="description"
-            content="210+ plugins, AI built in, friend folders, a command palette, a theme engine and your own custom plugins. Free, open source, updates itself."
+            content="Renuxcord is a free, open-source client mod for the Discord desktop app. 216 plugins, 43 of them only here: friend folders in your DM sidebar, Claude in your chat, a command palette and a bridge that lets Claude Code build your servers."
         />
         <meta property="og:title" content="Renuxcord" />
         <meta
             property="og:description"
-            content="Discord, maxed out. 210+ plugins, AI built in, always up to date."
+            content="A Discord client mod with 216 plugins. 43 of them you won't find anywhere else."
         />
-        <meta name="theme-color" content="#0b0a12" />
+        <meta name="theme-color" content="#0c0c0d" />
         <link rel="icon" href="logo.svg" type="image/svg+xml" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
             rel="stylesheet"
         />
         <link rel="stylesheet" href="styles.css" />
     </head>
     <body data-repo="Renuxchan/Renuxcord">
-        <div class="glow glow-a"></div>
-        <div class="glow glow-b"></div>
+        <a class="skip" href="#main">Skip to content</a>
 
-        <nav class="nav">
-            <a class="brand" href="#top"
-                ><img src="logo.svg" alt="" width="32" height="32" /> Renuxcord</a
-            >
-            <div class="nav-links">
-                <a href="#features">Features</a>
-                <a href="#ai">AI</a>
-                <a href="#plugins">Plugins</a>
-                <a href="#custom">Custom plugins</a>
-                <a href="#faq">FAQ</a>
-                <a class="nav-gh" data-link="repo" href="#">GitHub</a>
-            </div>
-        </nav>
+        <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+            <defs>
+                <symbol id="i-chev" viewBox="0 0 24 24">
+                    <path
+                        d="M9 5.5 15.5 12 9 18.5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                </symbol>
+                <symbol id="i-down" viewBox="0 0 24 24">
+                    <path
+                        d="M5.5 9 12 15.5 18.5 9"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.6"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                </symbol>
+                <symbol id="i-friends" viewBox="0 0 24 24">
+                    <circle cx="9" cy="8" r="4" fill="currentColor" />
+                    <path
+                        d="M1.5 20.5c0-4.2 3.4-6.8 7.5-6.8s7.5 2.6 7.5 6.8z"
+                        fill="currentColor"
+                    />
+                    <path
+                        d="M15.8 4.2a4 4 0 0 1 0 7.6M18.8 13.8c2.2.9 3.7 3.2 3.7 6.7"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    />
+                </symbol>
+                <symbol id="i-people" viewBox="0 0 24 24">
+                    <circle cx="9" cy="8.5" r="3.6" fill="currentColor" />
+                    <path d="M2 20c0-3.6 3.1-6.1 7-6.1s7 2.5 7 6.1z" fill="currentColor" />
+                    <circle cx="17.2" cy="9.4" r="2.7" fill="currentColor" />
+                    <path
+                        d="M17.8 14c2.5.4 4.2 2.5 4.2 6h-4.2c0-2.3-.6-4.3-1.6-5.7z"
+                        fill="currentColor"
+                    />
+                </symbol>
+                <symbol id="i-mic" viewBox="0 0 24 24">
+                    <rect x="8.5" y="2.5" width="7" height="12" rx="3.5" fill="currentColor" />
+                    <path
+                        d="M5 11.5a7 7 0 0 0 14 0M12 18.5v3"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    />
+                </symbol>
+                <symbol id="i-headset" viewBox="0 0 24 24">
+                    <path
+                        d="M3.5 15v-3a8.5 8.5 0 0 1 17 0v3"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    />
+                    <rect x="2.5" y="13" width="5" height="8" rx="2" fill="currentColor" />
+                    <rect x="16.5" y="13" width="5" height="8" rx="2" fill="currentColor" />
+                </symbol>
+                <symbol id="i-cog" viewBox="0 0 24 24">
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="3.4"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                    />
+                    <path
+                        d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.9 1.9M16.6 16.6l1.9 1.9M5.5 18.5l1.9-1.9M16.6 7.4l1.9-1.9"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                    />
+                </symbol>
+                <symbol id="i-phone" viewBox="0 0 24 24">
+                    <path
+                        d="M6.6 3h3l1.5 4.6-2.1 1.5a12.5 12.5 0 0 0 5.9 5.9l1.5-2.1 4.6 1.5v3A2.6 2.6 0 0 1 18.4 20 15.5 15.5 0 0 1 4 5.6 2.6 2.6 0 0 1 6.6 3z"
+                        fill="currentColor"
+                    />
+                </symbol>
+                <symbol id="i-video" viewBox="0 0 24 24">
+                    <rect x="2" y="6" width="14" height="12" rx="3" fill="currentColor" />
+                    <path d="M17 10.6 22 7.5v9l-5-3.1z" fill="currentColor" />
+                </symbol>
+                <symbol id="i-eye" viewBox="0 0 24 24">
+                    <path
+                        d="M12 5.5C6.8 5.5 3 9.6 1.8 12c1.2 2.4 5 6.5 10.2 6.5s9-4.1 10.2-6.5C21 9.6 17.2 5.5 12 5.5zm0 10a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"
+                        fill="currentColor"
+                    />
+                </symbol>
+                <symbol id="i-bolt" viewBox="0 0 24 24">
+                    <path d="M13.2 2 4.6 13.4h6.2L9.8 22l8.9-12h-6.3z" fill="currentColor" />
+                </symbol>
+                <symbol id="i-sticker" viewBox="0 0 24 24">
+                    <path
+                        d="M4 4h16v9.5L13.5 20H4zM13.5 20v-4.5a2 2 0 0 1 2-2H20"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linejoin="round"
+                    />
+                </symbol>
+                <symbol id="i-smile" viewBox="0 0 24 24">
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="9.3"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    />
+                    <circle cx="8.8" cy="10" r="1.4" fill="currentColor" />
+                    <circle cx="15.2" cy="10" r="1.4" fill="currentColor" />
+                    <path
+                        d="M8 14.4a5 5 0 0 0 8 0"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    />
+                </symbol>
+                <symbol id="i-hash" viewBox="0 0 24 24">
+                    <path
+                        d="M10 3.5 8 20.5M16 3.5l-2 17M4.5 8.5h16M3.5 15.5h16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    />
+                </symbol>
+                <symbol id="i-voice" viewBox="0 0 24 24">
+                    <path d="M3.5 9h4l5-4.2v14.4l-5-4.2h-4z" fill="currentColor" />
+                    <path
+                        d="M15.6 9a4 4 0 0 1 0 6M18.2 6.4a7.6 7.6 0 0 1 0 11.2"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                    />
+                </symbol>
+                <symbol id="i-lock" viewBox="0 0 24 24">
+                    <rect x="5" y="10.5" width="14" height="10.5" rx="2.5" fill="currentColor" />
+                    <path
+                        d="M8 10.5V8a4 4 0 0 1 8 0v2.5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                    />
+                </symbol>
+                <symbol id="i-windows" viewBox="0 0 24 24">
+                    <path
+                        d="M3 5.5 10.5 4.4v7.1H3zm0 13 7.5 1.1v-7H3zm8.3 1.2L21 21v-8.4h-9.7zm0-15.4v7.2H21V3z"
+                        fill="currentColor"
+                    />
+                </symbol>
+            </defs>
+        </svg>
 
-        <header class="hero" id="top">
-            <div class="pill"><span class="pulse"></span> <span id="build">Latest build</span></div>
-            <h1>Discord, <span class="grad">maxed out.</span></h1>
-            <p class="lead">
-                210+ plugins, AI that builds your servers, friend folders, a command palette, a
-                theme engine and your own custom plugins. Free, open source, and it updates itself.
-            </p>
-            <div class="cta">
-                <a class="btn btn-primary" data-link="installer" href="#">
-                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                        <path
-                            fill="currentColor"
-                            d="M3 5.5 10.5 4.4v7.1H3V5.5Zm0 13 7.5 1.1v-7H3v5.9Zm8.3 1.2L21 21v-8.4h-9.7v7.1Zm0-15.4v7.2H21V3l-9.7 1.3Z"
-                        />
-                    </svg>
-                    Download for Windows
-                </a>
-                <a class="btn btn-ghost" href="#features">See what's inside</a>
-            </div>
-            <p class="fine" id="size">Free · Windows 10/11 · Discord Stable, PTB and Canary</p>
-
-            <div class="window" aria-hidden="true">
-                <div class="window-bar"><span></span><span></span><span></span><b>Friends</b></div>
-                <div class="window-body">
-                    <div class="tabs">
-                        <i>Online</i><i>All</i><i class="on">📁 Groups</i><i>Pending</i>
-                    </div>
-                    <div class="fg" style="--c: #ec4899">
-                        <b>💖 Besties</b><small>3/4 online</small>
-                    </div>
-                    <div class="fg-row">
-                        <span class="av a1"></span>
-                        <div><b>maya</b><small>🎮 Playing Valorant</small></div>
-                        <em class="st on"></em>
-                    </div>
-                    <div class="fg-row">
-                        <span class="av a2"></span>
-                        <div><b>jay</b><small>🎵 Spotify · 2 hours</small></div>
-                        <em class="st idle"></em>
-                    </div>
-                    <div class="fg" style="--c: #a78bfa">
-                        <b>🎮 Squad</b><small>5/9 online</small
-                        ><span class="stack"><i></i><i></i><i></i><i></i></span>
-                    </div>
-                    <div class="fg" style="--c: #38bdf8">
-                        <b>📚 School</b><small>2/12 online</small
-                        ><span class="stack"><i></i><i></i><i></i></span>
-                    </div>
-                </div>
+        <header class="top">
+            <div class="wrap top-in">
+                <a class="brand" href="#top"
+                    ><img src="logo.svg" alt="" width="26" height="26" />renuxcord</a
+                >
+                <nav class="top-nav" aria-label="Sections">
+                    <a href="#friend-groups">Features</a>
+                    <a href="#plugins">Plugins</a>
+                    <a href="#install">Install</a>
+                    <a href="#faq">FAQ</a>
+                    <a data-link="repo" href="https://github.com/Renuxchan/Renuxcord">GitHub</a>
+                </nav>
+                <a
+                    class="btn btn-accent"
+                    data-link="installer"
+                    href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller.exe"
+                    >Download</a
+                >
             </div>
         </header>
 
-        <section class="section" id="features">
-            <h2>Everything you wanted Discord to do</h2>
-            <p class="sub">
-                Every classic client mod plugin, plus the Renuxcord Exclusives you won't find
-                anywhere else.
-            </p>
-            <div class="grid">
-                <article class="card">
-                    <div class="ico">🤖</div>
-                    <h3>AI that builds servers</h3>
-                    <p>
-                        Tell Claude "make me a gaming server with roles and private staff channels"
-                        and it happens in Discord.
+        <main id="main">
+            <section class="hero wrap" id="top">
+                <p class="label">Client mod for the Discord desktop app</p>
+                <div class="hero-grid">
+                    <h1>
+                        <span><span data-count="total">216</span> plugins.</span
+                        ><span class="dim">One installer.</span>
+                    </h1>
+                    <p class="lede">
+                        Every plugin you'd expect from a client mod, plus
+                        <span data-count="exclusive">43</span> you won't find anywhere else: friend
+                        folders in your DM sidebar, Claude in your chat, a command palette, and a
+                        bridge that lets Claude Code build your servers. Free, open source, and it
+                        keeps itself updated.
                     </p>
-                </article>
-                <article class="card">
-                    <div class="ico">✨</div>
-                    <h3>Claude in your chat</h3>
-                    <p>
-                        <code>/ai ask</code>, <code>/ai catchup</code> on unread messages,
-                        summaries, rewrites, reply ideas and image reading. No API key needed, it
-                        runs on your Claude login.
-                    </p>
-                </article>
-                <article class="card">
-                    <div class="ico">📁</div>
-                    <h3>Friend Groups</h3>
-                    <p>
-                        Folders for your friends with icons and colours, right in your DM sidebar.
-                        Minimize them, drag people between them, click anyone to open your DM.
-                    </p>
-                </article>
-                <article class="card">
-                    <div class="ico">⌨️</div>
-                    <h3>Command Palette</h3>
-                    <p>
-                        <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>K</kbd> to toggle plugins, jump to any
-                        server, channel or DM, and run actions.
-                    </p>
-                </article>
-                <article class="card">
-                    <div class="ico">🎨</div>
-                    <h3>Theme engine</h3>
-                    <p>
-                        Presets, custom accent colours, background images with blur and glass,
-                        rounder corners, any Google Font.
-                    </p>
-                </article>
-                <article class="card">
-                    <div class="ico">🧩</div>
-                    <h3>Your own plugins</h3>
-                    <p>
-                        Drop a <code>.js</code> file in a folder and it loads, no rebuilding. Full
-                        plugin powers.
-                    </p>
-                </article>
-                <article class="card">
-                    <div class="ico">🛡️</div>
-                    <h3>Scam link warnings</h3>
-                    <p>
-                        Fake Discord, Steam and Roblox domains, look-alike characters and free-nitro
-                        bait get flagged right under the message.
-                    </p>
-                </article>
-                <article class="card">
-                    <div class="ico">⏰</div>
-                    <h3>Reminders &amp; scheduling</h3>
-                    <p>
-                        Remind me about this message in an hour. Send this tomorrow at 9. Ghost ping
-                        alerts. Keyword alerts.
-                    </p>
-                </article>
-                <article class="card">
-                    <div class="ico">🔄</div>
-                    <h3>Always up to date</h3>
-                    <p>
-                        Renuxcord updates itself, and upstream fixes for Discord updates flow in
-                        automatically every few hours.
-                    </p>
-                </article>
-                <article class="card">
-                    <div class="ico">🕵️</div>
-                    <h3>Snipe &amp; last seen</h3>
-                    <p>
-                        <code>/snipe</code> deleted messages, <code>/editsnipe</code> edits, and see
-                        when friends were last online.
-                    </p>
-                </article>
-                <article class="card">
-                    <div class="ico">🎯</div>
-                    <h3>Focus mode</h3>
-                    <p>
-                        <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F</kbd> goes Do Not Disturb, hides the
-                        noise and runs a Pomodoro timer.
-                    </p>
-                </article>
-                <article class="card">
-                    <div class="ico">🔐</div>
-                    <h3>Secret guard</h3>
-                    <p>
-                        Stops you sending your token, Roblox cookie, API keys or card numbers by
-                        accident.
-                    </p>
-                </article>
-                <article class="card">
-                    <div class="ico">✨</div>
-                    <h3>Fun stuff</h3>
-                    <p>𝓯𝓪𝓷𝓬𝔂 text, kaomoji, keyboard sounds, confetti cannons and fake deafen.</p>
-                </article>
-                <article class="card">
-                    <div class="ico">📥</div>
-                    <h3>Media downloader</h3>
-                    <p>
-                        Save every image and video from a message or a whole channel in one click.
-                    </p>
-                </article>
-                <article class="card">
-                    <div class="ico">🌦️</div>
-                    <h3>Lookups &amp; tools</h3>
-                    <p>
-                        <code>/weather</code>, <code>/define</code>, <code>/urban</code>,
-                        <code>/wiki</code>, <code>/calc</code>, <code>/roll</code>,
-                        <code>/timestamp</code> and more.
-                    </p>
-                </article>
-            </div>
-        </section>
-
-        <section class="section split" id="ai">
-            <div>
-                <h2>Let AI build your Discord</h2>
-                <p class="sub left">
-                    Renuxcord's bridge connects your Discord to Claude Code over MCP. Create
-                    servers, roles, channels, permissions and whole layouts by just asking.
-                </p>
-                <ol class="steps">
-                    <li>Turn on <b>RenuxBridge</b> in Settings › Renuxcord › Plugins.</li>
-                    <li>
-                        Press <b>Copy command</b> in its settings and run it once in a terminal.
-                    </li>
-                    <li>Open Claude Code and ask for what you want.</li>
-                </ol>
-                <p class="fine left">
-                    Local only (127.0.0.1), token-protected, never touches DMs, deleting is off
-                    until you allow it.
-                </p>
-            </div>
-            <div class="terminal" aria-label="Example">
-                <div class="window-bar"><span></span><span></span><span></span><b>claude</b></div>
-                <pre><span class="u">&gt;</span> make me a server called Night Shift for my valorant team.
-  roles for coach, players and subs, a private staff area,
-  voice lobbies and a rules channel
-
-<span class="a">●</span> create_server  <span class="m">Night Shift · 4 roles · 3 categories · 11 channels</span>
-<span class="a">●</span> create_invite  <span class="m">discord.gg/nightshift · 7 days</span>
-
-<span class="ok">✓</span> Done. Roles are ordered Coach › Players › Subs, staff
-  channels are hidden from everyone else, and #rules has
-  your rules posted.</pre>
-            </div>
-        </section>
-
-        <section class="section" id="plugins">
-            <h2>Every plugin</h2>
-            <p class="sub" id="plugin-count">Loading the plugin list…</p>
-            <div class="filters">
-                <input id="search" type="search" placeholder="Search plugins" autocomplete="off" />
-                <div class="chips" role="tablist">
-                    <button class="chip on" data-filter="all">All</button>
-                    <button class="chip" data-filter="exclusive">✦ Renuxcord Exclusive</button>
+                    <div>
+                        <div class="actions">
+                            <a
+                                class="btn btn-accent"
+                                data-link="installer"
+                                href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller.exe"
+                                ><svg aria-hidden="true"><use href="#i-windows" /></svg>Download for
+                                Windows</a
+                            >
+                            <a class="btn" href="#plugins">Browse the plugins</a>
+                        </div>
+                        <p class="build" data-build>Latest build</p>
+                        <p class="meta" id="size">Free · Windows 10 and 11</p>
+                    </div>
                 </div>
-            </div>
-            <div class="plugin-list" id="plugin-list"></div>
-        </section>
 
-        <section class="section split" id="custom">
-            <div>
-                <h2>Write your own plugins</h2>
-                <p class="sub left">
-                    Every <code>.js</code> file in <code>%APPDATA%\Renuxcord\plugins</code> loads
-                    before Discord does, so it can patch, add slash commands, menus, settings and
-                    more. The folder comes with a README and a working example.
-                </p>
-                <p class="fine left">
-                    Open it from Settings › Renuxcord › Custom Plugins. Only add plugins you trust.
-                </p>
-            </div>
-            <pre
-                class="code"
-            ><span class="k">const</span> { definePlugin, CommandOptionType } = Renuxcord;
+                <figure class="fig">
+                    <div class="dc win" aria-hidden="true">
+                        <div class="win-bar">
+                            <span>Discord</span>
+                            <span class="win-ctl"
+                                ><i class="min"></i><i class="max"></i><i class="x"></i
+                            ></span>
+                        </div>
+                        <div class="win-body">
+                            <nav class="rail">
+                                <span class="rail-i home"><img src="logo.svg" alt="" /></span>
+                                <span class="rail-sep"></span>
+                                <span class="rail-i" style="--c: #364fc7">NS</span>
+                                <span class="rail-i unread" style="--c: #2b8a3e">VL</span>
+                                <span class="rail-i" style="--c: #862e9c">AC</span>
+                                <span class="rail-i" style="--c: #a61e4d">LN</span>
+                                <span class="rail-i add">+</span>
+                            </nav>
+
+                            <div class="side">
+                                <div class="side-search">
+                                    <span>Find or start a conversation</span>
+                                </div>
+                                <ul class="side-list">
+                                    <li class="side-link">
+                                        <svg width="24" height="24"><use href="#i-friends" /></svg
+                                        >Friends
+                                    </li>
+                                    <li class="side-rule"></li>
+
+                                    <li class="fg-head" data-g="besties" style="--c: #ec4899">
+                                        <svg class="chev"><use href="#i-chev" /></svg
+                                        ><span class="fg-ic">💖</span
+                                        ><span class="fg-name">Besties</span
+                                        ><span class="fg-count">3/4</span
+                                        ><span class="fg-stack"
+                                            ><span class="av" style="--a: #d6336c">M</span
+                                            ><span class="av" style="--a: #0c8599">N</span
+                                            ><span class="av" style="--a: #1c7ed6">J</span></span
+                                        >
+                                    </li>
+                                    <li class="fg-row" data-g="besties" style="--c: #ec4899">
+                                        <span class="av" data-s="online" style="--a: #d6336c"
+                                            >M</span
+                                        ><span class="who"
+                                            ><b>maya</b><small>Playing Valorant</small></span
+                                        >
+                                    </li>
+                                    <li class="fg-row unread" data-g="besties" style="--c: #ec4899">
+                                        <span class="av" data-s="online" style="--a: #0c8599"
+                                            >N</span
+                                        ><span class="who"
+                                            ><b>noor</b><small>Watching Frieren</small></span
+                                        ><span class="badge">2</span>
+                                    </li>
+                                    <li class="fg-row" data-g="besties" style="--c: #ec4899">
+                                        <span class="av" data-s="idle" style="--a: #1c7ed6">J</span
+                                        ><span class="who"
+                                            ><b>jay</b><small>Listening to Spotify</small></span
+                                        >
+                                    </li>
+                                    <li class="fg-row off" data-g="besties" style="--c: #ec4899">
+                                        <span class="av" data-s="offline" style="--a: #7048e8"
+                                            >R</span
+                                        ><span class="who"
+                                            ><b>rio</b><small>Last seen 3 hours ago</small></span
+                                        >
+                                    </li>
+
+                                    <li class="fg-head folded" data-g="squad" style="--c: #a78bfa">
+                                        <svg class="chev"><use href="#i-chev" /></svg
+                                        ><span class="fg-ic">🎮</span
+                                        ><span class="fg-name">Squad</span
+                                        ><span class="fg-count">5/9</span
+                                        ><span class="fg-stack"
+                                            ><span class="av" style="--a: #2f9e44">D</span
+                                            ><span class="av" style="--a: #f08c00">K</span
+                                            ><span class="av" style="--a: #495057">L</span></span
+                                        >
+                                    </li>
+                                    <li class="fg-row" data-g="squad" style="--c: #a78bfa" hidden>
+                                        <span class="av" data-s="online" style="--a: #2f9e44"
+                                            >D</span
+                                        ><span class="who"
+                                            ><b>dev</b><small>Streaming Minecraft</small></span
+                                        >
+                                    </li>
+                                    <li class="fg-row" data-g="squad" style="--c: #a78bfa" hidden>
+                                        <span class="av" data-s="dnd" style="--a: #f08c00">K</span
+                                        ><span class="who"
+                                            ><b>kenji</b><small>Do Not Disturb</small></span
+                                        >
+                                    </li>
+                                    <li class="fg-row" data-g="squad" style="--c: #a78bfa" hidden>
+                                        <span class="av" data-s="online" style="--a: #495057"
+                                            >L</span
+                                        ><span class="who"
+                                            ><b>lucas</b><small>Playing Rocket League</small></span
+                                        >
+                                    </li>
+
+                                    <li class="fg-head folded" data-g="school" style="--c: #38bdf8">
+                                        <svg class="chev"><use href="#i-chev" /></svg
+                                        ><span class="fg-ic">📚</span
+                                        ><span class="fg-name">School</span
+                                        ><span class="fg-count">2/12</span
+                                        ><span class="fg-stack"
+                                            ><span class="av" style="--a: #c2255c">A</span
+                                            ><span class="av" style="--a: #5f3dc4">T</span></span
+                                        >
+                                    </li>
+                                    <li class="fg-row" data-g="school" style="--c: #38bdf8" hidden>
+                                        <span class="av" data-s="online" style="--a: #c2255c"
+                                            >A</span
+                                        ><span class="who"><b>amira</b><small>Online</small></span>
+                                    </li>
+                                    <li class="fg-row" data-g="school" style="--c: #38bdf8" hidden>
+                                        <span class="av" data-s="idle" style="--a: #5f3dc4">T</span
+                                        ><span class="who"><b>theo</b><small>Idle</small></span>
+                                    </li>
+
+                                    <li class="dm-head"><span>Direct Messages</span><b>+</b></li>
+                                    <li class="dm on">
+                                        <span class="av group"
+                                            ><svg width="18" height="18">
+                                                <use href="#i-people" /></svg></span
+                                        ><span class="who"
+                                            ><b>night shift</b><small>6 Members</small></span
+                                        >
+                                    </li>
+                                    <li class="dm">
+                                        <span class="av" data-s="dnd" style="--a: #f08c00">K</span
+                                        ><span class="who"
+                                            ><b>kenji</b><small>Playing Minecraft</small></span
+                                        >
+                                    </li>
+                                    <li class="dm">
+                                        <span class="av" data-s="online" style="--a: #099268"
+                                            >S</span
+                                        ><span class="who"><b>sam</b></span>
+                                    </li>
+                                    <li class="dm">
+                                        <span class="av" data-s="idle" style="--a: #5f3dc4">T</span
+                                        ><span class="who"><b>theo</b></span>
+                                    </li>
+                                </ul>
+                                <div class="me">
+                                    <span class="av" data-s="online" style="--a: #a61e4d">N</span
+                                    ><span class="who"><b>nova</b><small>Online</small></span
+                                    ><span class="me-icons"
+                                        ><svg><use href="#i-mic" /></svg
+                                        ><svg><use href="#i-headset" /></svg
+                                        ><svg><use href="#i-cog" /></svg
+                                    ></span>
+                                </div>
+                            </div>
+
+                            <div class="chat">
+                                <div class="chat-head">
+                                    <span class="av group"
+                                        ><svg width="14" height="14">
+                                            <use href="#i-people" /></svg></span
+                                    >night shift
+                                    <span class="chat-head-icons"
+                                        ><svg><use href="#i-phone" /></svg
+                                        ><svg><use href="#i-video" /></svg
+                                        ><svg><use href="#i-people" /></svg
+                                    ></span>
+                                </div>
+                                <div class="log">
+                                    <div class="msg">
+                                        <span class="av lg" style="--a: #d6336c">M</span>
+                                        <div class="msg-body">
+                                            <p class="msg-meta">
+                                                <b>maya</b><time>Yesterday at 11:48 PM</time>
+                                            </p>
+                                            <p>ok that lobby was actually insane</p>
+                                        </div>
+                                    </div>
+                                    <div class="msg cont">
+                                        <p>down 4–10 and we still won 13–11</p>
+                                    </div>
+                                    <div class="msg">
+                                        <span class="av lg" style="--a: #1c7ed6">J</span>
+                                        <div class="msg-body">
+                                            <p class="msg-meta">
+                                                <b>jay</b><time>Yesterday at 11:51 PM</time>
+                                            </p>
+                                            <p>
+                                                i flashed my own team twice. we're not talking about
+                                                it
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="msg">
+                                        <span class="av lg" style="--a: #0c8599">N</span>
+                                        <div class="msg-body">
+                                            <p class="msg-meta">
+                                                <b>noor</b><time>Yesterday at 11:52 PM</time>
+                                            </p>
+                                            <p>friday 8pm again? i can bring a fifth</p>
+                                        </div>
+                                    </div>
+                                    <div class="msg">
+                                        <span class="av lg bot"><img src="logo.svg" alt="" /></span>
+                                        <div class="msg-body">
+                                            <p class="msg-meta">
+                                                <b>RenuxAI</b><span class="app-tag">APP</span
+                                                ><time>Today at 9:12 AM</time>
+                                            </p>
+                                            <p>
+                                                You missed 48 messages. They came back from 4–10 to
+                                                win 13–11, Jay flashed his own team twice and hasn't
+                                                heard the end of it, and Friday at 8 PM is on, with
+                                                Noor bringing a fifth.
+                                            </p>
+                                            <p class="eph">
+                                                <svg><use href="#i-eye" /></svg>Only you can see
+                                                this ·
+                                                <u>Dismiss message</u>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="composer">
+                                    <span class="plus">+</span><span>Message night shift</span
+                                    ><span class="composer-icons"
+                                        ><svg class="bolt"><use href="#i-bolt" /></svg
+                                        ><svg class="opt"><use href="#i-sticker" /></svg
+                                        ><svg><use href="#i-smile" /></svg
+                                    ></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <figcaption>
+                        <b>Fig. 1</b> Friend folders in the DM sidebar, and RenuxAI catching you up
+                        on a group chat after <code>/ai catchup</code>. Click the folders.
+                    </figcaption>
+                </figure>
+            </section>
+
+            <section class="facts wrap" aria-label="Renuxcord in numbers">
+                <dl>
+                    <div>
+                        <dt>Plugins</dt>
+                        <dd data-count="total">216</dd>
+                    </div>
+                    <div>
+                        <dt>Only in Renuxcord</dt>
+                        <dd data-count="exclusive">43</dd>
+                    </div>
+                    <div>
+                        <dt>API keys needed for /ai</dt>
+                        <dd>0</dd>
+                    </div>
+                    <div>
+                        <dt>Discord builds: Stable, PTB, Canary</dt>
+                        <dd>3</dd>
+                    </div>
+                    <div>
+                        <dt>Open source, GPL-3.0</dt>
+                        <dd>Free</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="feature wrap" id="friend-groups">
+                <div class="copy">
+                    <p class="label"><span class="n">01</span>Friend Groups</p>
+                    <h2>Your friends, in folders.</h2>
+                    <p>
+                        Group your friends right in the DM sidebar. Every folder gets an emoji and a
+                        colour, folds away when you don't need it, and takes people by drag and
+                        drop. Click anyone to open your DM.
+                    </p>
+                    <ul class="specs">
+                        <li>Online count on every folder</li>
+                        <li>What they're playing, or when they were last on</li>
+                        <li>Unread badges, same as your DMs</li>
+                        <li>Also a Groups tab on the Friends page</li>
+                    </ul>
+                </div>
+                <figure class="fig">
+                    <div class="stage stage-fg dc" aria-hidden="true">
+                        <div class="side panel">
+                            <ul class="side-list">
+                                <li class="fg-head folded" data-g="besties" style="--c: #ec4899">
+                                    <svg class="chev"><use href="#i-chev" /></svg
+                                    ><span class="fg-ic">💖</span
+                                    ><span class="fg-name">Besties</span
+                                    ><span class="fg-count">3/4</span
+                                    ><span class="fg-stack"
+                                        ><span class="av" style="--a: #d6336c">M</span
+                                        ><span class="av" style="--a: #0c8599">N</span
+                                        ><span class="av" style="--a: #1c7ed6">J</span></span
+                                    >
+                                </li>
+                                <li class="fg-row" data-g="besties" style="--c: #ec4899" hidden>
+                                    <span class="av" data-s="online" style="--a: #d6336c">M</span
+                                    ><span class="who"
+                                        ><b>maya</b><small>Playing Valorant</small></span
+                                    >
+                                </li>
+                                <li class="fg-row" data-g="besties" style="--c: #ec4899" hidden>
+                                    <span class="av" data-s="online" style="--a: #0c8599">N</span
+                                    ><span class="who"
+                                        ><b>noor</b><small>Watching Frieren</small></span
+                                    >
+                                </li>
+                                <li class="fg-row" data-g="besties" style="--c: #ec4899" hidden>
+                                    <span class="av" data-s="idle" style="--a: #1c7ed6">J</span
+                                    ><span class="who"
+                                        ><b>jay</b><small>Listening to Spotify</small></span
+                                    >
+                                </li>
+                                <li class="fg-row off" data-g="besties" style="--c: #ec4899" hidden>
+                                    <span class="av" data-s="offline" style="--a: #7048e8">R</span
+                                    ><span class="who"
+                                        ><b>rio</b><small>Last seen 3 hours ago</small></span
+                                    >
+                                </li>
+
+                                <li class="fg-head" data-g="squad" style="--c: #a78bfa">
+                                    <svg class="chev"><use href="#i-chev" /></svg
+                                    ><span class="fg-ic">🎮</span><span class="fg-name">Squad</span
+                                    ><span class="fg-count">5/9</span
+                                    ><span class="fg-stack"
+                                        ><span class="av" style="--a: #2f9e44">D</span
+                                        ><span class="av" style="--a: #f08c00">K</span
+                                        ><span class="av" style="--a: #495057">L</span></span
+                                    >
+                                </li>
+                                <li class="fg-row" data-g="squad" style="--c: #a78bfa">
+                                    <span class="av" data-s="online" style="--a: #2f9e44">D</span
+                                    ><span class="who"
+                                        ><b>dev</b><small>Streaming Minecraft</small></span
+                                    >
+                                </li>
+                                <li class="fg-row unread" data-g="squad" style="--c: #a78bfa">
+                                    <span class="av" data-s="online" style="--a: #495057">L</span
+                                    ><span class="who"
+                                        ><b>lucas</b><small>Playing Rocket League</small></span
+                                    ><span class="badge">5</span>
+                                </li>
+                                <li class="fg-row" data-g="squad" style="--c: #a78bfa">
+                                    <span class="av" data-s="dnd" style="--a: #f08c00">K</span
+                                    ><span class="who"
+                                        ><b>kenji</b><small>Do Not Disturb</small></span
+                                    >
+                                </li>
+                                <li class="fg-row" data-g="squad" style="--c: #a78bfa">
+                                    <span class="av" data-s="idle" style="--a: #099268">S</span
+                                    ><span class="who"><b>sam</b><small>Idle</small></span>
+                                </li>
+                                <li class="fg-row off" data-g="squad" style="--c: #a78bfa">
+                                    <span class="av" data-s="offline" style="--a: #868e96">E</span
+                                    ><span class="who"
+                                        ><b>eli</b><small>Last seen yesterday</small></span
+                                    >
+                                </li>
+
+                                <li class="fg-head folded" data-g="school" style="--c: #38bdf8">
+                                    <svg class="chev"><use href="#i-chev" /></svg
+                                    ><span class="fg-ic">📚</span><span class="fg-name">School</span
+                                    ><span class="fg-count">2/12</span
+                                    ><span class="fg-stack"
+                                        ><span class="av" style="--a: #c2255c">A</span
+                                        ><span class="av" style="--a: #5f3dc4">T</span></span
+                                    >
+                                </li>
+                                <li class="fg-row" data-g="school" style="--c: #38bdf8" hidden>
+                                    <span class="av" data-s="online" style="--a: #c2255c">A</span
+                                    ><span class="who"><b>amira</b><small>Online</small></span>
+                                </li>
+                                <li class="fg-row" data-g="school" style="--c: #38bdf8" hidden>
+                                    <span class="av" data-s="idle" style="--a: #5f3dc4">T</span
+                                    ><span class="who"><b>theo</b><small>Idle</small></span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="modal">
+                            <div class="modal-head">
+                                <h4>New friend group</h4>
+                                <p>Pick a name, an icon and a colour</p>
+                            </div>
+                            <div class="modal-body">
+                                <div class="preview"><span>🌙</span>Late night crew</div>
+                                <p class="field-label">Name</p>
+                                <div class="field">Late night crew</div>
+                                <p class="field-label">Icon</p>
+                                <div class="icons">
+                                    <span>⭐</span><span>💖</span><span>🎮</span><span>🔥</span
+                                    ><span>👑</span><span>🏠</span><span>📚</span><span>🎵</span
+                                    ><span class="sel">🌙</span><span>🍕</span><span>🐱</span
+                                    ><span>🎧</span>
+                                </div>
+                                <p class="field-label">Colour</p>
+                                <div class="colours">
+                                    <span style="--c: #a78bfa"></span
+                                    ><span style="--c: #ec4899"></span
+                                    ><span style="--c: #f43f5e"></span
+                                    ><span style="--c: #f97316"></span
+                                    ><span class="sel" style="--c: #facc15"></span
+                                    ><span style="--c: #4ade80"></span
+                                    ><span style="--c: #2dd4bf"></span
+                                    ><span style="--c: #38bdf8"></span
+                                    ><span style="--c: #6366f1"></span
+                                    ><span style="--c: #e879f9"></span>
+                                </div>
+                            </div>
+                            <div class="modal-foot">
+                                <span class="dbtn">Cancel</span
+                                ><span class="dbtn brand">Create group</span>
+                            </div>
+                        </div>
+                    </div>
+                    <figcaption>
+                        <b>Fig. 2</b> Folders in the sidebar, and a new one on the way. Click a
+                        folder to fold it.
+                    </figcaption>
+                </figure>
+            </section>
+
+            <section class="feature flip wrap" id="palette-feature">
+                <div class="copy">
+                    <p class="label"><span class="n">02</span>Command Palette</p>
+                    <h2><kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>K</kbd></h2>
+                    <p>
+                        One shortcut to turn any plugin on or off, switch plugin profiles, jump to a
+                        server, channel or DM, or reload Discord. No more digging through settings.
+                    </p>
+                    <p>
+                        It works on this page too. Press it to search every section and plugin here.
+                    </p>
+                    <ul class="specs">
+                        <li>Plugins, profiles, servers, channels and DMs in one list</li>
+                        <li>Arrow keys and Enter, no mouse needed</li>
+                        <li>Turn CommandPalette on once, change the shortcut if you like</li>
+                    </ul>
+                    <button class="btn" type="button" data-palette>Open the palette</button>
+                </div>
+                <figure class="fig">
+                    <div class="stage stage-pal dc" aria-hidden="true">
+                        <div class="modal pal" data-palette>
+                            <div class="modal-head">
+                                <h4>Command Palette</h4>
+                                <p>Plugins, settings, profiles, servers and quick actions</p>
+                            </div>
+                            <div class="modal-body">
+                                <div class="pal-input pal-fake">fri<span class="caret"></span></div>
+                                <div class="pal-list">
+                                    <div class="pal-item sel">
+                                        <span class="pal-sec">Plugins</span
+                                        ><span class="pal-label">Enable FriendGroups</span>
+                                    </div>
+                                    <div class="pal-item">
+                                        <span class="pal-sec">Plugins</span
+                                        ><span class="pal-label">Enable FriendTimes</span>
+                                    </div>
+                                    <div class="pal-item">
+                                        <span class="pal-sec">Plugins</span
+                                        ><span class="pal-label">Disable FriendWatch</span>
+                                    </div>
+                                    <div class="pal-item">
+                                        <span class="pal-sec">FriendGroups</span
+                                        ><span class="pal-label">Open Friend Groups</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <figcaption>
+                        <b>Fig. 3</b> The palette inside Discord, three letters in.
+                    </figcaption>
+                </figure>
+            </section>
+
+            <section class="feature wrap" id="renuxai">
+                <div class="copy">
+                    <p class="label"><span class="n">03</span>RenuxAI</p>
+                    <h2>Claude, in your chat.</h2>
+                    <p>
+                        <code>/ai catchup</code> tells you what you missed. Right-click any message
+                        to get it explained, summed up from there, translated or answered. Point it
+                        at an image and it describes it or pulls the text out.
+                    </p>
+                    <p>
+                        It runs on your Claude Code login, so there's no API key to buy. An
+                        Anthropic API key works too, if you have one.
+                    </p>
+                    <ul class="specs">
+                        <li>/ai ask, catchup, summarize, rewrite, translate</li>
+                        <li>Answers only you can see, unless you choose to send them</li>
+                        <li>Explain, reply, translate and read images from the right-click menu</li>
+                    </ul>
+                </div>
+                <figure class="fig">
+                    <div class="stage stage-ai dc" aria-hidden="true">
+                        <div class="chat panel">
+                            <div class="chat-head"><span class="hash">#</span>events</div>
+                            <div class="log">
+                                <div class="msg">
+                                    <span class="av lg" style="--a: #7048e8">R</span>
+                                    <div class="msg-body">
+                                        <p class="msg-meta">
+                                            <b>rio</b><time>Today at 5:58 PM</time>
+                                        </p>
+                                        <p>are we still doing the lan thing</p>
+                                    </div>
+                                </div>
+                                <div class="msg">
+                                    <span class="av lg" style="--a: #0c8599">N</span>
+                                    <div class="msg-body">
+                                        <p class="msg-meta">
+                                            <b>noor</b><time>Today at 6:02 PM</time>
+                                        </p>
+                                        <p>yes. flyer's done, posting it everywhere tomorrow</p>
+                                        <div class="poster">
+                                            <b>LAN<br />NIGHT</b><i>Sat · 7 PM</i
+                                            ><small>noor's place · bring your own headset</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="composer">
+                                <span class="plus">+</span><span>Message #events</span
+                                ><span class="composer-icons"
+                                    ><svg class="bolt"><use href="#i-bolt" /></svg
+                                    ><svg class="opt"><use href="#i-sticker" /></svg
+                                    ><svg><use href="#i-smile" /></svg
+                                ></span>
+                            </div>
+                        </div>
+                        <div class="menus">
+                            <div class="cm cm-main">
+                                <div class="cm-i">
+                                    Add Reaction<svg><use href="#i-chev" /></svg>
+                                </div>
+                                <div class="cm-i">Reply</div>
+                                <div class="cm-i">Copy Text</div>
+                                <div class="cm-sep"></div>
+                                <div class="cm-i open">
+                                    RenuxAI<svg><use href="#i-chev" /></svg>
+                                </div>
+                                <div class="cm-sep"></div>
+                                <div class="cm-i">Copy Message Link</div>
+                            </div>
+                            <div class="cm cm-sub">
+                                <div class="cm-i">Explain this</div>
+                                <div class="cm-i">Summarize from here</div>
+                                <div class="cm-i">Suggest a reply</div>
+                                <div class="cm-i">Translate to English</div>
+                                <div class="cm-sep"></div>
+                                <div class="cm-i">Describe image</div>
+                                <div class="cm-i hot">Copy text from image</div>
+                            </div>
+                        </div>
+                    </div>
+                    <figcaption>
+                        <b>Fig. 4</b> Right-click a message, then RenuxAI. Image options show up
+                        when there's an image.
+                    </figcaption>
+                </figure>
+            </section>
+
+            <section class="feature flip wrap" id="safety">
+                <div class="copy">
+                    <p class="label"><span class="n">04</span>LinkSafety and SecretGuard</p>
+                    <h2>Catches the stuff you'd regret.</h2>
+                    <p>
+                        LinkSafety puts a warning under look-alike Discord, Steam and Roblox links
+                        before anyone clicks. SecretGuard stops you before you paste your token, a
+                        Roblox cookie, an API key or a card number into a chat.
+                    </p>
+                    <ul class="specs">
+                        <li>Fake domains, look-alike letters, raw IPs, masked links</li>
+                        <li>Free Nitro and free gift bait</li>
+                        <li>Tokens, cookies, API keys, passwords, card numbers</li>
+                        <li>Nothing gets blocked. It just asks first</li>
+                    </ul>
+                </div>
+                <figure class="fig">
+                    <div class="stage stage-safe dc" aria-hidden="true">
+                        <div class="chat panel">
+                            <div class="chat-head"><span class="hash">#</span>general</div>
+                            <div class="log">
+                                <div class="msg">
+                                    <span class="av lg" style="--a: #868e96">K</span>
+                                    <div class="msg-body">
+                                        <p class="msg-meta">
+                                            <b>kai</b><time>Today at 4:17 PM</time>
+                                        </p>
+                                        <p>
+                                            free steam gift for the first 5 people
+                                            <span class="link"
+                                                >https://steamcommunlty.com/gift/7a2c</span
+                                            >
+                                        </p>
+                                        <div class="ls">
+                                            <b>⚠️ Careful with this link</b>
+                                            <ul>
+                                                <li>
+                                                    steamcommunlty.com looks like steamcommunity but
+                                                    isn't an official steamcommunity site
+                                                </li>
+                                                <li>
+                                                    Classic free-gift scam wording next to a link
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="composer">
+                                <span class="plus">+</span
+                                ><span class="typed"
+                                    >can you finish my trades for me? cookie:
+                                    _|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you</span
+                                >
+                            </div>
+                        </div>
+                        <div class="modal">
+                            <div class="modal-head">
+                                <h4>🛡️ Hold on, that looks secret</h4>
+                                <p>
+                                    Your message seems to contain a Roblox login cookie
+                                    (.ROBLOSECURITY). Anyone who sees it can use it.
+                                </p>
+                            </div>
+                            <div class="modal-body">
+                                <div class="secret-list">
+                                    a Roblox login cookie (.ROBLOSECURITY): _|WA••••••••••••C4
+                                </div>
+                            </div>
+                            <div class="modal-foot">
+                                <span class="dbtn">Don't send</span
+                                ><span class="dbtn red">Send anyway</span>
+                            </div>
+                        </div>
+                    </div>
+                    <figcaption>
+                        <b>Fig. 5</b> A fake Steam link in #general, and a Roblox cookie that didn't
+                        get sent.
+                    </figcaption>
+                </figure>
+            </section>
+
+            <section class="feature wide wrap" id="bridge">
+                <div class="copy">
+                    <div>
+                        <p class="label"><span class="n">05</span>RenuxBridge</p>
+                        <h2>Let Claude Code build your server.</h2>
+                        <p>
+                            RenuxBridge hooks your Discord up to Claude Code over MCP. Describe the
+                            server you want and it gets built: roles in the right order, private
+                            categories, voice lobbies, permissions and all.
+                        </p>
+                    </div>
+                    <ul class="specs">
+                        <li>One request can lay out a whole server</li>
+                        <li>Only listens on your own PC, behind a token</li>
+                        <li>Never touches your DMs</li>
+                        <li>Deleting stays off until you switch it on</li>
+                        <li>Setup: turn it on, copy the command from its settings, run it once</li>
+                    </ul>
+                </div>
+                <figure class="fig">
+                    <div class="stage stage-bridge" aria-hidden="true">
+                        <div class="term">
+                            <p class="you">
+                                &gt; make me a server called Night Shift for my valorant team. roles
+                                for coach, players and subs, a private staff area, voice lobbies and
+                                a rules channel
+                            </p>
+                            <p class="call">
+                                <span class="dot">⏺</span> renuxcord - create_server (MCP)(name:
+                                "Night Shift", layout: {…})
+                            </p>
+                            <p class="out">
+                                ⎿&nbsp; Created Night Shift: 4 roles, 3 categories, 11 channels
+                            </p>
+                            <p class="call">
+                                <span class="dot">⏺</span> renuxcord - create_invite (MCP)(server:
+                                "Night Shift", channel: "welcome")
+                            </p>
+                            <p class="out">⎿&nbsp; Invite ready, expires in 7 days</p>
+                            <p class="call you">
+                                <span class="dot">⏺</span> Done. Roles go Coach › Players › Subs ›
+                                Members, STAFF is hidden from everyone but Coach, and both voice
+                                lobbies are open to Players and Subs.
+                            </p>
+                        </div>
+
+                        <div class="dc side panel">
+                            <div class="srv-head">
+                                Night Shift<svg><use href="#i-down" /></svg>
+                            </div>
+                            <div class="cat">
+                                <svg><use href="#i-down" /></svg>Info
+                            </div>
+                            <div class="ch">
+                                <svg><use href="#i-hash" /></svg>welcome
+                            </div>
+                            <div class="ch on">
+                                <svg><use href="#i-hash" /></svg>rules
+                            </div>
+                            <div class="ch">
+                                <svg><use href="#i-hash" /></svg>announcements
+                            </div>
+                            <div class="cat">
+                                <svg><use href="#i-down" /></svg>Team
+                            </div>
+                            <div class="ch">
+                                <svg><use href="#i-hash" /></svg>general
+                            </div>
+                            <div class="ch">
+                                <svg><use href="#i-hash" /></svg>strats
+                            </div>
+                            <div class="ch">
+                                <svg><use href="#i-hash" /></svg>vod-review
+                            </div>
+                            <div class="ch">
+                                <svg><use href="#i-hash" /></svg>clips
+                            </div>
+                            <div class="ch">
+                                <svg><use href="#i-voice" /></svg>Lobby 1
+                            </div>
+                            <div class="ch">
+                                <svg><use href="#i-voice" /></svg>Lobby 2
+                            </div>
+                            <div class="cat">
+                                <svg><use href="#i-down" /></svg>Staff<svg class="lock">
+                                    <use href="#i-lock" />
+                                </svg>
+                            </div>
+                            <div class="ch">
+                                <svg><use href="#i-hash" /></svg>staff
+                            </div>
+                            <div class="ch">
+                                <svg><use href="#i-voice" /></svg>Staff room
+                            </div>
+                        </div>
+                    </div>
+                    <figcaption>
+                        <b>Fig. 6</b> One prompt in Claude Code, and the server it built.
+                    </figcaption>
+                </figure>
+            </section>
+
+            <section class="feature flip wrap" id="custom">
+                <div class="copy">
+                    <p class="label"><span class="n">06</span>Custom plugins</p>
+                    <h2>Write your own.</h2>
+                    <p>
+                        Drop a <code>.js</code> file into
+                        <code>%APPDATA%\Renuxcord\plugins</code> and it loads with Discord, with the
+                        same powers as the built-in plugins: patches, slash commands, menus and
+                        settings. The folder comes with a README and a working example.
+                    </p>
+                    <ul class="specs">
+                        <li>Reload with Ctrl+R, nothing to build</li>
+                        <li>Rename a file to _Name.js to switch it off</li>
+                        <li>Only add plugins you wrote or trust</li>
+                    </ul>
+                </div>
+                <figure class="fig">
+                    <div class="code">
+                        <div class="code-tab">
+                            HelloRenuxcord.js<span>%APPDATA%\Renuxcord\plugins</span>
+                        </div>
+                        <pre><span class="c">// Example Renuxcord custom plugin. Turn it on in Settings &gt; Renuxcord &gt; Plugins.</span>
+<span class="k">const</span> { definePlugin, definePluginSettings, OptionType, CommandOptionType } = Renuxcord;
+
+<span class="k">const</span> settings = definePluginSettings({
+    greeting: { type: OptionType.STRING, description: <span class="s">"What /hello says"</span>, default: <span class="s">"Hello"</span> }
+});
 
 module.exports = definePlugin({
-    name: <span class="s">"Hello"</span>,
-    description: <span class="s">"Adds /hello"</span>,
+    name: <span class="s">"HelloRenuxcord"</span>,
+    description: <span class="s">"Example custom plugin: a /hello command and a toast when it starts"</span>,
+    authors: [{ name: <span class="s">"You"</span> }],
+    settings,
+
     commands: [{
         name: <span class="s">"hello"</span>,
-        description: <span class="s">"Say hi"</span>,
+        description: <span class="s">"Say hi (only you can see it)"</span>,
+        options: [{ name: <span class="s">"who"</span>, description: <span class="s">"Who to greet"</span>, type: CommandOptionType.STRING, required: <span class="k">false</span> }],
         execute(args, ctx) {
-            Renuxcord.Api.Commands.sendBotMessage(
-                ctx.channel.id, { content: <span class="s">"Hello! 👋"</span> });
+            <span class="k">const</span> who = args.find(a =&gt; a.name === <span class="s">"who"</span>)?.value ?? <span class="s">"world"</span>;
+            Renuxcord.Api.Commands.sendBotMessage(ctx.channel.id, { content: <span class="s">`${settings.store.greeting} ${who}! 👋`</span> });
         }
-    }]
+    }],
+
+    start() {
+        Renuxcord.showToast(<span class="s">"HelloRenuxcord is running"</span>);
+    }
 });</pre>
-        </section>
+                    </div>
+                    <figcaption>
+                        <b>Fig. 7</b> The example plugin that ships in the folder.
+                    </figcaption>
+                </figure>
+            </section>
 
-        <section class="section" id="faq">
-            <h2>FAQ</h2>
-            <div class="faq">
-                <details>
-                    <summary>Windows says "Windows protected your PC"</summary>
+            <section class="index wrap" id="plugins">
+                <div class="index-head">
+                    <div>
+                        <p class="label">Index</p>
+                        <h2>Every plugin.</h2>
+                    </div>
                     <p>
-                        The installer isn't code-signed yet, so SmartScreen doesn't recognise it.
-                        Click <b>More info</b> › <b>Run anyway</b>. The source code it's built from
-                        is on GitHub.
+                        All <span data-count="switchable">208</span> plugins you can switch on, with
+                        the <span data-count="switchable-exclusive">41</span> Renuxcord exclusives
+                        first. <span data-count="background">8</span> more run in the background.
+                        Press <kbd>/</kbd> to search.
                     </p>
-                </details>
-                <details>
-                    <summary>Does it keep my settings from another client mod?</summary>
-                    <p>
-                        Yes. The first time Renuxcord starts it copies your existing settings,
-                        QuickCSS and themes over.
-                    </p>
-                </details>
-                <details>
-                    <summary>How do I uninstall?</summary>
-                    <p>
-                        Run the installer again and press <b>Uninstall</b>. Discord goes back to
-                        normal and your Renuxcord settings stay in <code>%APPDATA%\Renuxcord</code>.
-                    </p>
-                </details>
-                <details>
-                    <summary>Will Discord updates break it?</summary>
-                    <p>
-                        Renuxcord re-applies itself after Discord updates, and fixes for Discord
-                        changes are pulled in and released automatically.
-                    </p>
-                </details>
-                <details>
-                    <summary>Is it allowed?</summary>
-                    <p>
-                        Client mods are against Discord's Terms of Service. Plenty of people use
-                        them, but it's at your own risk.
-                    </p>
-                </details>
-                <details>
-                    <summary>Mac or Linux?</summary>
-                    <p>
-                        The installer is Windows-only for now. Renuxcord itself runs on macOS and
-                        Linux if you build it from source (instructions on GitHub).
-                    </p>
-                </details>
+                </div>
+                <div class="tools">
+                    <label class="search"
+                        ><span class="sr">Search plugins</span
+                        ><input
+                            id="search"
+                            type="search"
+                            placeholder="Search plugins"
+                            autocomplete="off"
+                            spellcheck="false"
+                        /><kbd aria-hidden="true">/</kbd></label
+                    >
+                    <button class="toggle" id="only-rx" type="button" aria-pressed="false">
+                        Renuxcord exclusives only
+                    </button>
+                </div>
+                <div class="tags" id="tags" role="group" aria-label="Filter by tag"></div>
+                <p class="count" id="count" aria-live="polite">Loading the plugin list…</p>
+                <ul class="plist" id="plist"></ul>
+                <button class="btn more" id="more" type="button" hidden>Show all</button>
+            </section>
+
+            <section class="install wrap" id="install">
+                <p class="label">Install</p>
+                <h2>Up and running in a minute.</h2>
+                <div class="install-grid">
+                    <ol class="steps">
+                        <li>
+                            <span class="n">01</span>
+                            <div>
+                                <h3>Download the installer</h3>
+                                <p>
+                                    <a
+                                        data-link="installer"
+                                        href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller.exe"
+                                        >RenuxcordInstaller.exe</a
+                                    >
+                                    from the latest release. It's tiny because it downloads the
+                                    newest build when you run it.
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="n">02</span>
+                            <div>
+                                <h3>Get past SmartScreen</h3>
+                                <p>
+                                    The installer isn't code-signed yet, so Windows may say it
+                                    protected your PC. Click <b>More info</b> › <b>Run anyway</b>.
+                                    It's built from the source on GitHub.
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="n">03</span>
+                            <div>
+                                <h3>Pick your Discord</h3>
+                                <p>
+                                    Choose Stable, PTB or Canary and press <b>Install / Repair</b>.
+                                    Discord restarts with Renuxcord in it.
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="n">04</span>
+                            <div>
+                                <h3>Switch plugins on</h3>
+                                <p>
+                                    Settings › Renuxcord › Plugins. Turn on CommandPalette and
+                                    <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>K</kbd> gets you to the
+                                    rest.
+                                </p>
+                            </div>
+                        </li>
+                    </ol>
+                    <aside class="box">
+                        <dl>
+                            <dt>Needs</dt>
+                            <dd>
+                                Windows 10 or 11 and the Discord desktop app: Stable, PTB or Canary.
+                            </dd>
+                            <dt>Updates</dt>
+                            <dd>
+                                Renuxcord updates itself, and puts itself back after Discord
+                                updates.
+                            </dd>
+                            <dt>Uninstall</dt>
+                            <dd>
+                                Run the installer again and press Uninstall. Your settings stay in
+                                <code>%APPDATA%\Renuxcord</code>.
+                            </dd>
+                            <dt>Mac or Linux</dt>
+                            <dd>Build it from source. The steps are on GitHub.</dd>
+                            <dt>Latest build</dt>
+                            <dd data-build>Checking…</dd>
+                        </dl>
+                    </aside>
+                </div>
+            </section>
+
+            <section class="faq wrap" id="faq">
+                <div>
+                    <p class="label">FAQ</p>
+                    <h2>Things people ask.</h2>
+                </div>
+                <div class="faq-list">
+                    <details>
+                        <summary>Windows says "Windows protected your PC"</summary>
+                        <p>
+                            The installer isn't code-signed yet, so SmartScreen doesn't recognise
+                            it. Click <b>More info</b> › <b>Run anyway</b>. The source it's built
+                            from is on GitHub.
+                        </p>
+                    </details>
+                    <details>
+                        <summary>Do I need an API key for /ai?</summary>
+                        <p>
+                            No. RenuxAI uses your Claude Code login if you're signed in to Claude
+                            Code on the same PC. An Anthropic API key works too, if you'd rather use
+                            one.
+                        </p>
+                    </details>
+                    <details>
+                        <summary>Will Discord updates break it?</summary>
+                        <p>
+                            Renuxcord puts itself back after Discord updates, and fixes for Discord
+                            changes get pulled in and released automatically.
+                        </p>
+                    </details>
+                    <details>
+                        <summary>Does it keep my settings from another client mod?</summary>
+                        <p>
+                            If you're coming from the client mod Renuxcord is built on, yes. The
+                            first time it starts, it copies your settings, QuickCSS and themes over.
+                        </p>
+                    </details>
+                    <details>
+                        <summary>Is it allowed?</summary>
+                        <p>
+                            Client mods are against Discord's Terms of Service. Lots of people use
+                            them anyway, but it's at your own risk.
+                        </p>
+                    </details>
+                    <details>
+                        <summary>Mac or Linux?</summary>
+                        <p>
+                            The installer is Windows only for now. Renuxcord itself runs on macOS
+                            and Linux if you build it from source. The steps are on GitHub.
+                        </p>
+                    </details>
+                    <details>
+                        <summary>How do I uninstall?</summary>
+                        <p>
+                            Run the installer again and press <b>Uninstall</b>. Discord goes back to
+                            normal, and your Renuxcord settings stay in
+                            <code>%APPDATA%\Renuxcord</code>.
+                        </p>
+                    </details>
+                </div>
+            </section>
+        </main>
+
+        <footer class="foot">
+            <div class="wrap">
+                <div class="foot-row">
+                    <a class="brand" href="#top"
+                        ><img src="logo.svg" alt="" width="26" height="26" />renuxcord</a
+                    >
+                    <p>Free and open source under GPL-3.0. Not affiliated with Discord.</p>
+                    <nav aria-label="Links">
+                        <a data-link="repo" href="https://github.com/Renuxchan/Renuxcord">GitHub</a>
+                        <a
+                            data-link="releases"
+                            href="https://github.com/Renuxchan/Renuxcord/releases"
+                            >Releases</a
+                        >
+                        <a
+                            data-link="license"
+                            href="https://github.com/Renuxchan/Renuxcord/blob/main/LICENSE"
+                            >License</a
+                        >
+                    </nav>
+                </div>
+                <div class="foot-mark" aria-hidden="true">renuxcord</div>
             </div>
-        </section>
-
-        <section class="final">
-            <h2>Ready to max out Discord?</h2>
-            <a class="btn btn-primary" data-link="installer" href="#">Download Renuxcord</a>
-        </section>
-
-        <footer>
-            <span>Renuxcord · free and open source (GPL-3.0)</span>
-            <a data-link="repo" href="#">Source on GitHub</a>
-            <a data-link="releases" href="#">All releases</a>
         </footer>
+
+        <div class="pal-back" id="palette" hidden>
+            <div class="modal pal dc" role="dialog" aria-modal="true" aria-labelledby="pal-title">
+                <div class="modal-head">
+                    <h4 id="pal-title">Command Palette</h4>
+                    <p>Sections, plugins and links on this page</p>
+                </div>
+                <div class="modal-body">
+                    <input
+                        class="pal-input"
+                        id="pal-input"
+                        type="text"
+                        placeholder="Type to search…"
+                        autocomplete="off"
+                        spellcheck="false"
+                        role="combobox"
+                        aria-expanded="true"
+                        aria-controls="pal-list"
+                        aria-autocomplete="list"
+                        aria-label="Search the palette"
+                    />
+                    <div class="pal-list" id="pal-list" role="listbox"></div>
+                </div>
+                <p class="pal-keys">↑ ↓ to move · Enter to open · Esc to close</p>
+            </div>
+        </div>
 
         <script src="app.js"></script>
     </body>
