@@ -5,24 +5,37 @@
  */
 
 import { NavContextMenuPatchCallback } from "@api/ContextMenu";
+import { showNotification } from "@api/Notifications";
 import { FormSwitch } from "@components/FormSwitch";
 import { Paragraph } from "@components/Paragraph";
 import { actions } from "@plugins/renuxBridge/actions";
+import { rest } from "@plugins/renuxBridge/discord";
 import { applyLayout, exportLayout, ServerLayout } from "@plugins/renuxBridge/layout";
-import { confirmAction, copyWithToast } from "@utils/discord";
+import { copyWithToast } from "@utils/discord";
 import { RenuxDevs } from "@utils/renuxcord";
 import definePlugin from "@utils/types";
 import { Guild } from "@vencord/discord-types";
-import { Menu, Modal, openModal, PermissionsBits, PermissionStore, showToast, TextArea, useState } from "@webpack/common";
+import { Menu, Modal, NavigationRouter, openModal, PermissionsBits, PermissionStore, showToast, TextArea, TextInput, useEffect, useRef, useState } from "@webpack/common";
+
+type BuildResult = Awaited<ReturnType<typeof applyLayout>>;
 
 const canBuild = (guild: Guild) =>
     PermissionStore.can(PermissionsBits.MANAGE_CHANNELS, guild) && PermissionStore.can(PermissionsBits.MANAGE_ROLES, guild);
 
+const errorText = (err: unknown) => String(err instanceof Error ? err.message : err);
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+const muted = { color: "var(--text-muted)" };
+
 function copyBlueprint(guild: Guild) {
     try {
-        copyWithToast(JSON.stringify(exportLayout(guild.id), null, 2), "Server blueprint copied");
+        const layout = exportLayout(guild.id);
+        const left = layout.skipped?.length ?? 0;
+        copyWithToast(
+            JSON.stringify(layout, null, 2),
+            left ? `Server blueprint copied. ${plural(left, "channel")} couldn't be included, see "skipped"` : "Server blueprint copied"
+        );
     } catch (err) {
-        showToast({ text: `Couldn't export: ${String(err)}`, variant: "critical" });
+        showToast({ text: `Couldn't export: ${errorText(err)}`, variant: "critical" });
     }
 }
 
@@ -56,7 +69,7 @@ function openApplyModal(guild: Guild) {
                         props.onClose();
                     }
                 } catch (err) {
-                    setError(String(err instanceof Error ? err.message : err));
+                    setError(errorText(err));
                 } finally {
                     setBusy(false);
                 }
@@ -82,7 +95,7 @@ function openApplyModal(guild: Guild) {
                         onChange={setWipe}
                         hideBorder
                     />
-                    {status && <Paragraph style={{ color: "var(--text-muted)" }}>{status}</Paragraph>}
+                    {status && <Paragraph style={muted}>{status}</Paragraph>}
                 </Modal>
             );
         }
@@ -90,27 +103,162 @@ function openApplyModal(guild: Guild) {
     });
 }
 
-function cloneServer(guild: Guild) {
-    confirmAction({
-        title: `Clone ${guild.name}?`,
-        subtitle: "Makes a brand new server with the same roles, categories, channels and permissions. Messages and members aren't copied.",
-        confirmText: "Clone it",
-        variant: "primary",
-        onConfirm: async () => {
-            showToast({ text: `Cloning ${guild.name}…` });
-            try {
-                const layout = exportLayout(guild.id);
-                await actions.createServer({ name: `${guild.name} (copy)`.slice(0, 100), layout, open: true }, {
-                    allowWrite: true,
-                    allowDestructive: false,
-                    allowMessages: false,
-                    log: text => showToast({ text, variant: "success" }),
-                    progress: () => { }
-                });
-            } catch (err) {
-                showToast({ text: `Clone failed: ${String(err instanceof Error ? err.message : err)}`, variant: "critical" });
+/** The icon as a PNG data URI, which is what Discord takes for a new icon */
+async function iconDataUri(guild: Guild) {
+    const res = await fetch(`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=512`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+    });
+}
+
+interface Cloned {
+    id: string;
+    name: string;
+    channels: number;
+    roles: number;
+    notes: string[];
+}
+
+const openServer = (id: string) => NavigationRouter.transitionToGuild(id);
+
+function countLayout(layout: ServerLayout) {
+    const channels = (layout.channels?.length ?? 0) + (layout.categories ?? []).reduce((n, c) => n + (c.channels?.length ?? 0), 0);
+    return { roles: layout.roles?.length ?? 0, categories: layout.categories?.length ?? 0, channels };
+}
+
+function openCloneModal(guild: Guild) {
+    let layout: ServerLayout;
+    try {
+        layout = exportLayout(guild.id);
+    } catch (err) {
+        showToast({ text: `Couldn't read ${guild.name}: ${errorText(err)}`, variant: "critical" });
+        return;
+    }
+
+    const counts = countLayout(layout);
+    const steps = counts.roles + counts.categories + counts.channels;
+
+    openModal(props => {
+        function CloneServer() {
+            const [name, setName] = useState(`${guild.name} (copy)`.slice(0, 100));
+            const [busy, setBusy] = useState(false);
+            const [status, setStatus] = useState("");
+            const [error, setError] = useState("");
+            const [done, setDone] = useState<Cloned | null>(null);
+
+            // Closing the window mid-clone doesn't stop it, so the result then comes as a notification
+            const shown = useRef(true);
+            useEffect(() => () => { shown.current = false; }, []);
+
+            async function run() {
+                setBusy(true);
+                setError("");
+                let step = 0;
+
+                try {
+                    const made = await actions.createServer({ name: name.trim(), layout, open: false }, {
+                        allowWrite: true,
+                        allowDestructive: false,
+                        allowMessages: false,
+                        log: () => { },
+                        progress: text => {
+                            const counted = /^(Role|Category|Channel|Voice) /.test(text);
+                            if (counted) step++;
+                            if (shown.current) setStatus(counted ? `${text} (${Math.min(step, steps)} of ${steps})` : text);
+                        }
+                    }) as { id: string; name: string; layout?: BuildResult; };
+
+                    const built = made.layout;
+                    const notes = [...built?.warnings ?? []];
+                    if (guild.icon) {
+                        if (shown.current) setStatus("Server icon");
+                        try {
+                            await rest("patch", `/guilds/${made.id}`, { icon: await iconDataUri(guild) });
+                        } catch (err) {
+                            notes.push(`Couldn't copy the server icon: ${errorText(err)}`);
+                        }
+                    }
+
+                    const result: Cloned = {
+                        id: made.id,
+                        name: made.name,
+                        channels: (built?.created.channels.length ?? 0) + (built?.created.categories.length ?? 0),
+                        roles: built?.created.roles.length ?? 0,
+                        notes
+                    };
+
+                    if (!shown.current) {
+                        showNotification({
+                            title: `Cloned ${guild.name}`,
+                            body: `${result.name} is ready${notes.length ? `, with ${plural(notes.length, "note")}: ${notes.join(" · ")}` : ""}. Click to open it.`,
+                            onClick: () => openServer(result.id)
+                        });
+                    } else if (notes.length) {
+                        setDone(result);
+                    } else {
+                        showToast({ text: `Cloned ${guild.name}`, variant: "success" });
+                        props.onClose();
+                        openServer(result.id);
+                    }
+                } catch (err) {
+                    if (shown.current) setError(errorText(err));
+                    else showToast({ text: `Clone failed: ${errorText(err)}`, variant: "critical" });
+                } finally {
+                    if (shown.current) {
+                        setBusy(false);
+                        setStatus("");
+                    }
+                }
             }
+
+            if (done) {
+                return (
+                    <Modal
+                        {...props}
+                        size="md"
+                        title={`Cloned ${guild.name}`}
+                        subtitle={`${done.name} has ${plural(done.channels, "channel")} and ${plural(done.roles, "role")}. A few things couldn't be copied as they are:`}
+                        actions={[
+                            { text: "Close", variant: "secondary", onClick: props.onClose },
+                            { text: "Open server", variant: "primary", onClick: () => { props.onClose(); openServer(done.id); } }
+                        ]}
+                    >
+                        {done.notes.map((note, i) => <Paragraph key={i} style={{ marginBottom: 6 }}>• {note}</Paragraph>)}
+                    </Modal>
+                );
+            }
+
+            const what = [
+                plural(counts.roles, "role"),
+                plural(counts.categories, "category", "categories"),
+                plural(counts.channels, "channel")
+            ].join(", ");
+
+            return (
+                <Modal
+                    {...props}
+                    size="md"
+                    title={`Clone ${guild.name}`}
+                    subtitle="Makes a brand new server with the same roles, categories, channels, permissions, settings and icon"
+                    notice={error ? { message: error, type: "critical" } : undefined}
+                    actions={[
+                        { text: busy ? "Hide" : "Cancel", variant: "secondary", onClick: props.onClose },
+                        { text: "Clone it", variant: "primary", onClick: run, loading: busy, disabled: busy || !name.trim() }
+                    ]}
+                >
+                    <TextInput value={name} onChange={setName} placeholder="New server name" maxLength={100} disabled={busy} />
+                    <Paragraph style={{ marginTop: 12 }}>Copies {what}. Messages, members, emojis and bots stay behind.</Paragraph>
+                    {layout.skipped?.map((note, i) => <Paragraph key={i} style={{ ...muted, marginTop: 8 }}>{note}</Paragraph>)}
+                    {busy && <Paragraph style={{ ...muted, marginTop: 8 }}>{status || "Creating the server"}… You can hide this, it keeps going.</Paragraph>}
+                </Modal>
+            );
         }
+        return <CloneServer />;
     });
 }
 
@@ -121,7 +269,7 @@ const guildContext: NavContextMenuPatchCallback = (children, { guild }: { guild?
         <Menu.MenuGroup key="rx-blueprints">
             <Menu.MenuItem id="rx-blueprints" label="Server Blueprints">
                 <Menu.MenuItem id="rx-blueprint-copy" label="Copy blueprint" action={() => copyBlueprint(guild)} />
-                <Menu.MenuItem id="rx-blueprint-clone" label="Clone into a new server" action={() => cloneServer(guild)} />
+                <Menu.MenuItem id="rx-blueprint-clone" label="Clone into a new server…" action={() => openCloneModal(guild)} />
                 {canBuild(guild) && <Menu.MenuItem id="rx-blueprint-apply" label="Apply blueprint…" action={() => openApplyModal(guild)} />}
             </Menu.MenuItem>
         </Menu.MenuGroup>

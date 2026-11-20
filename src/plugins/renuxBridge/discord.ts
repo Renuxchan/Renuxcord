@@ -166,10 +166,16 @@ export type ChannelTypeName = keyof typeof CHANNEL_TYPES;
 
 const CHANNEL_TYPE_ALIASES: Record<string, ChannelTypeName> = { news: "announcement", vc: "voice" };
 
+// Server channel kinds that can't be made through the API, so layouts can't hold them
+const OTHER_CHANNEL_KINDS: Record<number, string> = { 6: "store", 14: "directory", 20: "Space", 21: "app" };
+
 export function channelType(type: unknown): number {
     if (type == null || type === "") return CHANNEL_TYPES.text;
     if (typeof type === "number") return type;
     const key = String(type).toLowerCase().trim();
+    // Older exports wrote kinds they didn't know as "type 20"
+    const numbered = /^type (\d+)$/.exec(key);
+    if (numbered) return Number(numbered[1]);
     const t = CHANNEL_TYPES[key as ChannelTypeName] ?? CHANNEL_TYPES[CHANNEL_TYPE_ALIASES[key]];
     if (t == null) throw new Error(`Unknown channel type "${type}". Use one of: ${Object.keys(CHANNEL_TYPES).join(", ")}`);
     return t;
@@ -179,7 +185,12 @@ export function channelTypeName(type: number): string {
     return Object.entries(CHANNEL_TYPES).find(([, v]) => v === type)?.[0] ?? `type ${type}`;
 }
 
-const THREAD_TYPES = new Set([10, 11, 12]);
+export const isCreatableType = (type: number) => (Object.values(CHANNEL_TYPES) as number[]).includes(type);
+
+/** "Space", "announcement"... for messages */
+export const channelKind = (type: number) => isCreatableType(type) ? channelTypeName(type) : OTHER_CHANNEL_KINDS[type] ?? `type ${type}`;
+
+const THREAD_TYPES = new Set([10, 11, 12, 19]);
 
 // ---- lookups ----
 

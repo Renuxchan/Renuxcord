@@ -7,9 +7,9 @@
 import { GuildRoleStore, GuildStore, SnowflakeUtils } from "@webpack/common";
 
 import {
-    CHANNEL_TYPES, channelType, ChannelTypeName, channelTypeName, describeOverwriteTarget, forgetChannel, fromBits,
-    guildChannels, guildRoles, isSnowflake, parseColor, rememberChannel, rememberRole, resolveChannel, resolveMember,
-    resolveRole, rest, toBits, toHex
+    CHANNEL_TYPES, channelKind, channelType, ChannelTypeName, channelTypeName, describeOverwriteTarget, forgetChannel,
+    fromBits, guildChannels, guildRoles, isCreatableType, isSnowflake, parseColor, rememberChannel, rememberRole,
+    resolveChannel, resolveMember, resolveRole, rest, toBits, toHex
 } from "./discord";
 
 export interface LayoutOverwrite {
@@ -64,6 +64,8 @@ export interface ServerLayout {
     system_channel?: string;
     rules_channel?: string;
     afk_channel?: string;
+    /** What an export had to leave out. Only for reading: applying shows these as warnings */
+    skipped?: string[];
 }
 
 export interface ApplyOptions {
@@ -115,6 +117,8 @@ export function overwriteTarget(guildId: string, spec: Omit<LayoutOverwrite, "al
     if (!target) throw new Error("A permission overwrite is missing its target");
 
     if (spec.type === "member") return { id: resolveMember(guildId, target), type: 1 };
+    // @everyone's ID is the server's, so it works before the role store knows a new server
+    if (/^@everyone$/i.test(target)) return { id: guildId, type: 0 };
 
     const fromLayout = roleIds?.get(lowerName(target));
     if (fromLayout) return { id: fromLayout, type: 0 };
@@ -127,10 +131,21 @@ export function overwriteTarget(guildId: string, spec: Omit<LayoutOverwrite, "al
     }
 }
 
-/** Resolves layout overwrites into API permission_overwrites, dropping empty ones */
-export function buildOverwrites(guildId: string, specs: LayoutOverwrite[] | undefined, roleIds?: Map<string, string>) {
+/**
+ * Resolves layout overwrites into API permission_overwrites, dropping empty ones.
+ * With warn, a target that doesn't exist here (a bot's role, someone who isn't a member) is left out instead of failing
+ */
+export function buildOverwrites(guildId: string, specs: LayoutOverwrite[] | undefined, roleIds?: Map<string, string>, warn?: (text: string) => void) {
     return (specs ?? []).flatMap(spec => {
-        const { id, type } = overwriteTarget(guildId, spec, roleIds);
+        let target: { id: string; type: number; };
+        try {
+            target = overwriteTarget(guildId, spec, roleIds);
+        } catch (err: any) {
+            if (!warn) throw err;
+            warn(`Left out the permissions for ${spec.target}: ${err.message}`);
+            return [];
+        }
+        const { id, type } = target;
         const allow = toBits(spec.allow);
         const deny = toBits(spec.deny);
         if (!allow && !deny) return [];
@@ -221,6 +236,61 @@ function validateLayout(layout: ServerLayout) {
     guildSettingsBody(layout);
 }
 
+// Kinds Discord only makes in some servers (announcement and stage need Community), so a copy falls back to the nearest one
+const FALLBACK_TYPES: Partial<Record<number, number>> = {
+    [CHANNEL_TYPES.announcement]: CHANNEL_TYPES.text,
+    [CHANNEL_TYPES.stage]: CHANNEL_TYPES.voice,
+    [CHANNEL_TYPES.media]: CHANNEL_TYPES.forum,
+    [CHANNEL_TYPES.forum]: CHANNEL_TYPES.text
+};
+
+// Highest voice bitrate for each boost level
+const MAX_BITRATE = [96000, 128000, 256000, 384000];
+
+const isVoiceType = (type: number) => type === CHANNEL_TYPES.voice || type === CHANNEL_TYPES.stage;
+
+const aKind = (type: number) => {
+    const kind = channelKind(type);
+    return `${/^[aeiou]/i.test(kind) ? "an" : "a"} ${kind}`;
+};
+
+/** Only the fields Discord takes for that kind of channel, within its limits */
+function channelBody(ch: LayoutChannel, type: number, maxBitrate: number) {
+    const voice = isVoiceType(type);
+    const threadsOnly = type === CHANNEL_TYPES.forum || type === CHANNEL_TYPES.media;
+    return stripUndefined({
+        name: ch.name,
+        type,
+        topic: voice ? undefined : ch.topic?.slice(0, threadsOnly ? 4096 : 1024),
+        nsfw: ch.nsfw,
+        rate_limit_per_user: ch.slowmode,
+        user_limit: voice && ch.user_limit != null ? Math.min(ch.user_limit, type === CHANNEL_TYPES.stage ? 10000 : 99) : undefined,
+        bitrate: voice && ch.bitrate != null ? Math.min(Math.max(ch.bitrate, 8000), maxBitrate) : undefined
+    });
+}
+
+/** For building a server that was just made: its own name stays, and nobody else is a member yet */
+export function layoutForNewServer(layout: ServerLayout) {
+    let removed = 0;
+    const roleOnly = (perms?: LayoutOverwrite[]) => {
+        if (!perms) return perms;
+        const kept = perms.filter(o => o.type !== "member");
+        removed += perms.length - kept.length;
+        return kept.length ? kept : undefined;
+    };
+    const channels = (list?: LayoutChannel[]) => list?.map(c => stripUndefined({ ...c, permissions: roleOnly(c.permissions) }) as LayoutChannel);
+
+    const result = stripUndefined({
+        ...layout,
+        name: undefined,
+        categories: layout.categories?.map(cat => stripUndefined({ ...cat, permissions: roleOnly(cat.permissions), channels: channels(cat.channels) }) as LayoutCategory),
+        channels: channels(layout.channels)
+    }) as ServerLayout;
+
+    if (removed) result.skipped = [...result.skipped ?? [], `Left out ${removed} permission ${removed === 1 ? "overwrite" : "overwrites"} for single members, since members aren't copied`];
+    return result;
+}
+
 export async function applyLayout(guildId: string, layout: ServerLayout, opts: ApplyOptions) {
     validateLayout(layout);
 
@@ -237,7 +307,15 @@ export async function applyLayout(guildId: string, layout: ServerLayout, opts: A
         roleIds: {} as Record<string, string>,
         channelIds: {} as Record<string, string>
     };
-    const warn = (text: string) => summary.warnings.push(text);
+    // Each problem once, however many channels run into it
+    const warn = (text: string) => {
+        if (!summary.warnings.includes(text)) summary.warnings.push(text);
+    };
+    if (Array.isArray(layout.skipped)) layout.skipped.forEach(note => warn(String(note)));
+
+    const features = new Set<string>(guild.features ?? []);
+    const isCommunity = features.has("COMMUNITY");
+    const maxBitrate = features.has("VIP_REGIONS") ? 384000 : MAX_BITRATE[guild.premiumTier ?? 0] ?? MAX_BITRATE[0];
 
     const deletedRoles = new Set<string>();
     const deletedChannels = new Set<string>();
@@ -279,19 +357,32 @@ export async function applyLayout(guildId: string, layout: ServerLayout, opts: A
     }
 
     const settingsBody = guildSettingsBody(layout);
+    if (settingsBody.description && !isCommunity) {
+        delete settingsBody.description;
+        warn("Left out the server description: only Community servers have one");
+    }
     if (Object.keys(settingsBody).length) {
         progress("Updating server settings");
-        await rest("patch", `/guilds/${guildId}`, settingsBody);
-        summary.updated.push("server settings");
+        try {
+            await rest("patch", `/guilds/${guildId}`, settingsBody);
+            summary.updated.push("server settings");
+        } catch (err: any) {
+            warn(`Couldn't update the server settings: ${err.message}`);
+        }
     }
 
     if (layout.everyone?.permissions) {
-        await rest("patch", `/guilds/${guildId}/roles/${guildId}`, { permissions: toBits(layout.everyone.permissions).toString() });
-        summary.updated.push("@everyone permissions");
+        try {
+            await rest("patch", `/guilds/${guildId}/roles/${guildId}`, { permissions: toBits(layout.everyone.permissions).toString() });
+            summary.updated.push("@everyone permissions");
+        } catch (err: any) {
+            warn(`Couldn't set the @everyone permissions: ${err.message}`);
+        }
     }
 
     // Roles
     const roleIds = new Map<string, string>();
+    const roleOrder: string[] = [];
     for (const role of layout.roles ?? []) {
         progress(`Role @${role.name}`);
         const body = stripUndefined({
@@ -302,32 +393,36 @@ export async function applyLayout(guildId: string, layout: ServerLayout, opts: A
             permissions: role.permissions ? toBits(role.permissions).toString() : undefined
         });
 
+        // Two roles can share a name, so each existing role is only matched once
         const existing = opts.wipe ? undefined : guildRoles(guildId)
-            .find(r => r.id !== guildId && !deletedRoles.has(r.id) && r.name.toLowerCase() === role.name.toLowerCase());
+            .find(r => r.id !== guildId && !deletedRoles.has(r.id) && !roleOrder.includes(r.id) && r.name.toLowerCase() === role.name.toLowerCase());
 
         try {
+            let id: string;
             if (existing?.managed) {
                 warn(`@${role.name} is managed by an integration, left it alone`);
-                roleIds.set(lowerName(role.name), existing.id);
+                id = existing.id;
             } else if (existing) {
                 await rest("patch", `/guilds/${guildId}/roles/${existing.id}`, body);
-                roleIds.set(lowerName(role.name), existing.id);
+                id = existing.id;
                 summary.updated.push(`@${role.name}`);
             } else {
                 const created = await rest("post", `/guilds/${guildId}/roles`, body);
                 rememberRole(guildId, created);
-                roleIds.set(lowerName(role.name), created.id);
+                id = created.id;
                 summary.created.roles.push(role.name);
             }
+            roleOrder.push(id);
+            // Overwrites naming a shared name go to the highest of those roles
+            if (!roleIds.has(lowerName(role.name))) roleIds.set(lowerName(role.name), id);
         } catch (err: any) {
             warn(`Role @${role.name}: ${err.message}`);
         }
     }
 
-    if ((layout.roles?.length ?? 0) > 1) {
-        const order = layout.roles!.map(r => roleIds.get(lowerName(r.name))).filter((id): id is string => !!id);
+    if (roleOrder.length > 1) {
         try {
-            await reorderRoles(guildId, order, deletedRoles);
+            await reorderRoles(guildId, roleOrder, deletedRoles);
         } catch (err: any) {
             warn(`Couldn't reorder roles: ${err.message}`);
         }
@@ -348,28 +443,40 @@ export async function applyLayout(guildId: string, layout: ServerLayout, opts: A
     const upsertChannel = async (ch: LayoutChannel, parentId: string | null, parentPerms?: LayoutOverwrite[]) => {
         const type = channelType(ch.type);
         progress(`${type === CHANNEL_TYPES.voice ? "Voice" : "Channel"} ${ch.name}`);
+        if (!isCreatableType(type)) throw new Error(`${channelKind(type)} channels can't be copied, so it was skipped`);
+
+        if (isVoiceType(type) && ch.bitrate && ch.bitrate > maxBitrate)
+            warn(`${ch.name}: bitrate lowered to ${maxBitrate / 1000}kbps, the most this server's boost level allows`);
 
         const hasPerms = !!(ch.permissions?.length || parentPerms?.length);
-        const body = stripUndefined({
-            name: ch.name,
-            type,
-            topic: ch.topic,
-            nsfw: ch.nsfw,
-            rate_limit_per_user: ch.slowmode,
-            user_limit: ch.user_limit,
-            bitrate: ch.bitrate,
+        const extra = stripUndefined({
             parent_id: parentId ?? undefined,
-            permission_overwrites: hasPerms ? buildOverwrites(guildId, mergeOverwriteSpecs(parentPerms, ch.permissions), roleIds) : undefined
+            permission_overwrites: hasPerms ? buildOverwrites(guildId, mergeOverwriteSpecs(parentPerms, ch.permissions), roleIds, warn) : undefined
         });
+        const bodyFor = (t: number) => ({ ...channelBody(ch, t, maxBitrate), ...extra });
 
         const existing = findExisting(ch.name, type, parentId);
         let channel: any;
         if (existing) {
-            const { type: _, ...patch } = body;
+            const { type: _, ...patch } = bodyFor(type);
             channel = await rest("patch", `/channels/${existing.id}`, { ...patch, parent_id: parentId });
             summary.updated.push(`#${channel.name}`);
         } else {
-            channel = await rest("post", `/guilds/${guildId}/channels`, body);
+            let firstError: any;
+            for (let t: number | undefined = type; t != null && !channel; t = FALLBACK_TYPES[t]) {
+                try {
+                    channel = await rest("post", `/guilds/${guildId}/channels`, bodyFor(t));
+                } catch (err) {
+                    firstError ??= err;
+                }
+            }
+            if (!channel) throw firstError;
+            if (firstError) {
+                const why = !isCommunity && (type === CHANNEL_TYPES.announcement || type === CHANNEL_TYPES.stage)
+                    ? `${channelKind(type)} channels need a Community server`
+                    : `Discord wouldn't make ${aKind(type)} channel here (${firstError.message})`;
+                warn(`${channel.name} became ${aKind(channel.type)} channel: ${why}`);
+            }
             rememberChannel(guildId, channel);
             summary.created.channels.push(channel.name);
         }
@@ -403,7 +510,7 @@ export async function applyLayout(guildId: string, layout: ServerLayout, opts: A
         progress(`Category ${cat.name}`);
         let catId: string;
         try {
-            const overwrites = cat.permissions ? buildOverwrites(guildId, cat.permissions, roleIds) : undefined;
+            const overwrites = cat.permissions ? buildOverwrites(guildId, cat.permissions, roleIds, warn) : undefined;
             const existing = findExisting(cat.name, CHANNEL_TYPES.category, null);
             if (existing) {
                 if (overwrites) await rest("patch", `/channels/${existing.id}`, { permission_overwrites: overwrites });
@@ -446,6 +553,10 @@ export async function applyLayout(guildId: string, layout: ServerLayout, opts: A
     const refs = { system_channel_id: layout.system_channel, rules_channel_id: layout.rules_channel, afk_channel_id: layout.afk_channel };
     for (const [field, ref] of Object.entries(refs)) {
         if (!ref) continue;
+        if (field === "rules_channel_id" && !isCommunity) {
+            warn(`#${String(ref).replace(/^#/, "")} isn't set as the rules channel: only Community servers have one`);
+            continue;
+        }
         const id = channelIds.get(String(ref).trim().toLowerCase().replace(/^#/, "").replace(/\s+/g, "-"))
             ?? channelIds.get(String(ref).trim().toLowerCase().replace(/^#/, ""));
         try {
@@ -468,10 +579,16 @@ export async function applyLayout(guildId: string, layout: ServerLayout, opts: A
     return summary;
 }
 
+// A role this client can't name is written as its bare ID, marked as a role so applying never mistakes it for a member
+function specTarget(guildId: string, o: { id: string; type: number; }) {
+    const target = describeOverwriteTarget(guildId, o.id, o.type);
+    const type = o.type === 1 ? "member" as const : target === o.id ? "role" as const : undefined;
+    return type ? { target, type } : { target };
+}
+
 function overwriteSpecs(guildId: string, overwrites: Record<string, any> | undefined): LayoutOverwrite[] {
     return Object.values(overwrites ?? {}).map(o => stripUndefined({
-        target: describeOverwriteTarget(guildId, o.id, o.type),
-        type: o.type === 1 ? "member" as const : undefined,
+        ...specTarget(guildId, o),
         allow: fromBits(o.allow).length ? fromBits(o.allow) : undefined,
         deny: fromBits(o.deny).length ? fromBits(o.deny) : undefined
     }) as LayoutOverwrite);
@@ -492,8 +609,7 @@ function channelOnlyOverwrites(guildId: string, channel: any, parent: any): Layo
     }
 
     const specs = Object.values(diff).map(o => ({
-        target: describeOverwriteTarget(guildId, o.id, o.type),
-        ...(o.type === 1 ? { type: "member" as const } : {}),
+        ...specTarget(guildId, o),
         allow: fromBits(o.allow),
         deny: fromBits(o.deny)
     }));
@@ -506,7 +622,13 @@ export function exportLayout(guildId: string): ServerLayout {
 
     const sortChannels = (a: any, b: any) => (a.position - b.position) || (BigInt(a.id) < BigInt(b.id) ? -1 : 1);
     // Raw REST objects (snake_case) are only kept for name lookups; export reads the client's channel records
-    const all = guildChannels(guildId).filter(c => !Array.isArray(c.permission_overwrites));
+    const records = guildChannels(guildId).filter(c => !Array.isArray(c.permission_overwrites));
+    // Kinds no layout can make (Spaces, directories...) are left out, and listed so nobody wonders where they went
+    const all = records.filter(c => isCreatableType(c.type));
+    const skipped = records
+        .filter(c => !isCreatableType(c.type))
+        .sort(sortChannels)
+        .map(c => `#${c.name} is left out: ${channelKind(c.type)} channels can't be made from a blueprint`);
     const byId = new Map(all.map(c => [c.id, c]));
     const ownOverwrites = (c: any) => {
         const specs = overwriteSpecs(guildId, c.permissionOverwrites);
@@ -568,6 +690,7 @@ export function exportLayout(guildId: string): ServerLayout {
         channels: uncategorised.length ? uncategorised.map(toChannel) : undefined,
         system_channel: channelName(guild.systemChannelId),
         rules_channel: channelName(guild.rulesChannelId),
-        afk_channel: channelName(guild.afkChannelId)
+        afk_channel: channelName(guild.afkChannelId),
+        skipped: skipped.length ? skipped : undefined
     }) as ServerLayout;
 }

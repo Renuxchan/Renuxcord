@@ -16,7 +16,7 @@ import {
     isSnowflake, parseColor, permissionNames, rememberChannel, rememberRole, resolveChannel, resolveGuild, resolveMember,
     resolveRole, rest, sleep, toBits, toHex
 } from "./discord";
-import { applyLayout, buildOverwrites, exportLayout, guildSettingsBody, overwriteTarget, postMessage, reorderRoles, stripUndefined } from "./layout";
+import { applyLayout, buildOverwrites, exportLayout, guildSettingsBody, layoutForNewServer, overwriteTarget, postMessage, reorderRoles, stripUndefined } from "./layout";
 
 export interface ActionContext {
     allowWrite: boolean;
@@ -205,15 +205,19 @@ export const actions: Record<string, Action> = {
         createdThisSession.add(guild.id);
         ctx.log(`Created server ${guild.name}`);
 
-        let layoutResult: unknown;
+        let layoutResult: Awaited<ReturnType<typeof applyLayout>> | undefined;
         if (layout) {
-            await waitForGuild(guild.id);
-            layoutResult = await applyLayout(guild.id, layout, {
-                wipe: true,
-                allowDeletes: true,
-                allowMessages: ctx.allowMessages,
-                onProgress: ctx.progress
-            });
+            try {
+                await waitForGuild(guild.id);
+                layoutResult = await applyLayout(guild.id, layoutForNewServer(layout), {
+                    wipe: true,
+                    allowDeletes: true,
+                    allowMessages: ctx.allowMessages,
+                    onProgress: ctx.progress
+                });
+            } catch (err: any) {
+                throw new Error(`Made the server ${guild.name}, but couldn't build its layout: ${err.message}`);
+            }
             ctx.log(`Built the layout for ${guild.name}`);
         }
 
