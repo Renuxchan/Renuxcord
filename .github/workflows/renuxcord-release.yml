@@ -68,8 +68,17 @@ jobs:
             - name: Build the MCP server
               run: node scripts/renuxcord/buildMcp.mjs
 
+            # browser.js/css are what the Android and iOS apps load, Renuxcord.user.js is for userscript managers
+            - name: Build the web version
+              run: pnpm buildWeb --standalone
+              env:
+                  VENCORD_HASH: ${{ steps.hash.outputs.hash }}
+
             - name: Clean up
-              run: rm -rf dist/*-unpacked dist/vendor dist/vencordDesktop* dist/Installer
+              run: |
+                  cp scripts/renuxcord/install.sh dist/install.sh
+                  mv dist/Vencord.user.js dist/Renuxcord.user.js
+                  rm -rf dist/*-unpacked dist/vendor dist/vencordDesktop* dist/Installer dist/extension* dist/Vencord.user.* dist/browser.*.map dist/browser.js.LEGAL.txt
 
             - name: Upload build
               uses: actions/upload-artifact@v4
@@ -118,9 +127,17 @@ jobs:
                   GH_REPO: ${{ github.repository }}
                   HASH: ${{ needs.build.outputs.hash }}
               run: |
+                  cat > notes.md << 'EOF'
+                  Rolling Renuxcord build. Installed clients update from here by themselves.
+
+                  - **Windows:** download **RenuxcordInstaller.exe** and run it.
+                  - **macOS and Linux:** open a terminal and run `curl -fsSL https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/install.sh | sh`
+                  - **Android:** install **Renuxcord.apk**.
+                  - **iPhone and iPad:** sideload **Renuxcord.ipa** with SideStore, AltStore, Sideloadly or TrollStore. No sideloading? Install the free Userscripts app, add **Renuxcord.user.js** and open discord.com in Safari.
+                  - **Any desktop browser:** open **Renuxcord.user.js** with Tampermonkey.
+                  EOF
                   if ! gh release view devbuild > /dev/null 2>&1; then
-                      gh release create devbuild --target "$GITHUB_SHA" --title "DevBuild $HASH" --latest \
-                          --notes "Rolling Renuxcord build. New users: download **RenuxcordInstaller.exe** below and run it. Installed clients update from here automatically."
+                      gh release create devbuild --target "$GITHUB_SHA" --title "DevBuild $HASH" --latest --notes-file notes.md
                   fi
                   gh release upload devbuild --clobber dist/*
-                  gh release edit devbuild --title "DevBuild $HASH" --latest
+                  gh release edit devbuild --title "DevBuild $HASH" --latest --notes-file notes.md

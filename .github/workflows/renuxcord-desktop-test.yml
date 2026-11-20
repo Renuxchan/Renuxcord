@@ -1,0 +1,86 @@
+# Installs the real Discord on Linux and macOS, puts Renuxcord in with install.sh and checks that Discord loads it,
+# then uninstalls and checks Discord is back to normal.
+name: Renuxcord on macOS and Linux
+on:
+    push:
+        paths:
+            - .github/workflows/renuxcord-desktop-test.yml
+            - scripts/renuxcord/install.sh
+            - src/main/**
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    install:
+        if: github.repository != 'Vendicated/Vencord'
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, macos-latest]
+        runs-on: ${{ matrix.os }}
+        timeout-minutes: 30
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+            - name: Use Node.js
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              with:
+                  node-version: 24
+                  cache: "pnpm"
+
+            - name: Build Renuxcord
+              run: |
+                  pnpm install --frozen-lockfile
+                  pnpm build --standalone
+
+            - name: Install Discord (Linux)
+              if: runner.os == 'Linux'
+              run: |
+                  curl -fsSL -o discord.deb "https://discord.com/api/download?platform=linux&format=deb"
+                  sudo apt-get update -qq
+                  sudo apt-get install -y -qq ./discord.deb xvfb
+
+            - name: Install Discord (macOS)
+              if: runner.os == 'macOS'
+              run: |
+                  curl -fsSL -o Discord.dmg "https://discord.com/api/download?platform=osx"
+                  hdiutil attach Discord.dmg -nobrowse -readonly -mountpoint /Volumes/Discord
+                  cp -R /Volumes/Discord/Discord.app /Applications/
+                  hdiutil detach /Volumes/Discord
+
+            - name: Install Renuxcord with install.sh
+              env:
+                  RENUXCORD_RELEASE_URL: file://${{ github.workspace }}/dist
+              run: |
+                  sh scripts/renuxcord/install.sh status
+                  sh scripts/renuxcord/install.sh install
+                  sh scripts/renuxcord/install.sh status | tee status.txt
+                  grep -q "Renuxcord ->" status.txt
+
+            - name: Discord loads Renuxcord
+              run: sh .github/scripts/run-discord.sh renuxcord
+
+            - name: Uninstall
+              run: |
+                  sh scripts/renuxcord/install.sh uninstall
+                  sh scripts/renuxcord/install.sh status | tee status.txt
+                  grep -q "vanilla" status.txt
+
+            - name: Discord is back to normal
+              run: sh .github/scripts/run-discord.sh vanilla
+
+            - name: Upload logs and screenshots
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: discord-${{ matrix.os }}
+                  path: |
+                      discord-*.log
+                      discord-*.png
