@@ -36,6 +36,11 @@ export const settings = definePluginSettings({
         default: "Groups",
         restartNeeded: true
     },
+    sidebar: {
+        type: OptionType.BOOLEAN,
+        description: "Show your groups in the DM sidebar, under Friends",
+        default: true
+    },
     showOffline: {
         type: OptionType.BOOLEAN,
         description: "Show offline friends inside groups",

@@ -91,7 +91,8 @@ export function getCurrentGuild(): Guild | undefined {
 }
 
 export function openPrivateChannel(userId: string) {
-    ChannelActionCreators.openPrivateChannel(userId);
+    // Discord takes an options object now. A bare id reads as no recipients, which creates an empty group DM
+    ChannelActionCreators.openPrivateChannel({ recipientIds: userId });
 }
 
 export const enum Theme {

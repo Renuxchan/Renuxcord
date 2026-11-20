@@ -18,7 +18,7 @@ Uninstall the same way. Your Renuxcord settings stay in `%APPDATA%\Renuxcord`.
 | --- | --- |
 | **RenuxBridge** | AI bridge for Claude Code (MCP). Say "make me a gaming server with roles and private staff channels" and it happens in Discord |
 | **RenuxAI** | Claude inside Discord: `/ai ask`, `/ai catchup` (unread messages), `/ai summarize`, `/ai rewrite`, `/ai translate`, right-click any message to explain it or get a reply suggestion, and describe or read the text in images. **No API key needed**: it uses your Claude Code login (or an Anthropic API key if you prefer) |
-| **FriendGroups** | A Groups tab on the Friends page: friend folders with emoji icons and colours, minimize them, drag friends between them, see who's online and what they're playing |
+| **FriendGroups** | Friend folders with emoji icons and colours, right in your DM sidebar: minimize them, drag friends between them, click anyone to open your DM, see who's online and what they're playing. Also a Groups tab on the Friends page |
 | **CustomPlugins** | Loads your own `.js` plugins from `%APPDATA%\Renuxcord\plugins` (see below) |
 | **CommandPalette** | `Ctrl+Shift+K`: toggle any plugin, switch profiles, run toolbox actions, open settings, jump to servers, channels and DMs |
 | **MessageReminders** | Right-click a message → Remind me in 15m / 1h / tomorrow / any time, with a notification that jumps back to it |

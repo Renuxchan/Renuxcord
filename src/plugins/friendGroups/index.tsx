@@ -18,6 +18,7 @@ import { patches } from "@webpack/patcher";
 
 import { openGroupEditor } from "./EditGroupModal";
 import { GroupsPage } from "./GroupsPage";
+import { rowHeight, useSidebarRows } from "./Sidebar";
 import { addToGroup, getGroups, groupsOf, removeFromGroup, settings } from "./store";
 
 const SECTION = "RENUX_GROUPS";
@@ -35,7 +36,8 @@ function openGroupsModal() {
 
 /** Opens the Groups tab on the Friends page, or a popup if Discord changed that page */
 export function openFriendGroups() {
-    const tabMissing = patches.some(p => p.plugin === "FriendGroups");
+    // Only the Friends page patch matters here; the sidebar patches have nothing to do with the tab
+    const tabMissing = patches.some(p => p.plugin === "FriendGroups" && [p.replacement].flat().some(r => typeof r.replace === "string" && r.replace.includes("renderPage")));
     if (tabMissing) return openGroupsModal();
     try {
         FriendsNavigation.transitionToSection(SECTION);
@@ -79,7 +81,7 @@ const userContext: NavContextMenuPatchCallback = (children, { user }: { user?: U
 
 export default definePlugin({
     name: "FriendGroups",
-    description: "Put friends into groups with emoji icons and colours, minimize them like folders, drag friends between them. Lives in a Groups tab on the Friends page",
+    description: "Put friends into groups with emoji icons and colours, minimize them like folders, drag friends between them. Your groups sit in the DM sidebar (click a friend to open your DM) and in a Groups tab on the Friends page",
     tags: ["Renuxcord", "Friends", "Organisation"],
     authors: [RenuxDevs.Larpbase],
     settings,
@@ -100,11 +102,43 @@ export default definePlugin({
                     replace: `$1===$2.${SECTION}?$self.renderPage():$&`
                 }
             ]
+        },
+        {
+            // The DM sidebar: Friends, Nitro, Shop, Quests, then the Direct Messages list
+            find: '.FRIENDS},"friends"',
+            group: true,
+            replacement: [
+                {
+                    // Read the groups with a hook at the top of the component, so it re-renders when they change
+                    match: /let{showLibrary:\i,/,
+                    replace: "let rxFg=$self.useSidebarRows();$&"
+                },
+                {
+                    // Our rows go right under Quests, above Direct Messages
+                    match: /"section-divider-top"\)(?=\])/,
+                    replace: "$&,...rxFg.rows"
+                },
+                {
+                    // The list ignores changes to these rows unless one of its other props changes too
+                    match: /(?<=listScrollerRef:\i)(?=,children:\[)/,
+                    replace: ",rxFgVersion:rxFg.version"
+                }
+            ]
+        },
+        {
+            // Heights for our rows. Without this they all get Discord's 40px and still work
+            find: '"dm-quick-launcher"===',
+            replacement: {
+                match: /(?<=\.isValidElement\((\i)\)&&\(\i=)\i\.key\?\.startsWith\("section-divider"\)\?\d+:"dm-quick-launcher"===\i\.key\?\d+:\d+/,
+                replace: "$self.rowHeight($1)??($&)"
+            }
         }
     ],
 
     tabLabel: () => `📁 ${settings.store.tabName || "Groups"}`,
     renderPage: () => <Page />,
+    useSidebarRows,
+    rowHeight,
 
     contextMenus: {
         "user-context": userContext

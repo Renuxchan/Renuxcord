@@ -20,11 +20,11 @@ const cl = classNameFactory("rx-fg-");
 const DRAG_TYPE = "application/x-renuxcord-friend";
 const STATUS_ORDER: Record<string, number> = { online: 0, streaming: 0, idle: 1, dnd: 2, offline: 3, invisible: 3, unknown: 4 };
 
-const isOnline = (status: string) => status !== "offline" && status !== "invisible" && status !== "unknown";
-const statusOf = (id: string) => PresenceStore.getStatus(id) ?? "offline";
-const displayName = (id: string, user?: User) => RelationshipStore.getNickname(id) || user?.globalName || user?.username || "Unknown user";
+export const isOnline = (status: string) => status !== "offline" && status !== "invisible" && status !== "unknown";
+export const statusOf = (id: string) => PresenceStore.getStatus(id) ?? "offline";
+export const displayName = (id: string, user?: User) => RelationshipStore.getNickname(id) || user?.globalName || user?.username || "Unknown user";
 
-function activityText(id: string) {
+export function activityText(id: string) {
     const activities: any[] = PresenceStore.getActivities(id) ?? [];
     const by = (type: number) => activities.find(a => a.type === type);
     const stream = by(1);
@@ -40,7 +40,7 @@ function activityText(id: string) {
     return null;
 }
 
-function sortMembers(ids: string[]) {
+export function sortMembers(ids: string[]) {
     return [...ids].sort((a, b) =>
         (STATUS_ORDER[statusOf(a)] ?? 4) - (STATUS_ORDER[statusOf(b)] ?? 4)
         || displayName(a, UserStore.getUser(a)).localeCompare(displayName(b, UserStore.getUser(b))));
@@ -66,12 +66,12 @@ function useLiveStores() {
     }, []);
 }
 
-function writeDrag(e: DragEvent, userId: string, from: string | null) {
+export function writeDrag(e: DragEvent, userId: string, from: string | null) {
     e.dataTransfer.setData(DRAG_TYPE, JSON.stringify({ userId, from }));
     e.dataTransfer.effectAllowed = "move";
 }
 
-function readDrag(e: DragEvent): { userId: string; from: string | null; } | null {
+export function readDrag(e: DragEvent): { userId: string; from: string | null; } | null {
     try {
         return JSON.parse(e.dataTransfer.getData(DRAG_TYPE));
     } catch {
@@ -79,22 +79,23 @@ function readDrag(e: DragEvent): { userId: string; from: string | null; } | null
     }
 }
 
-const isFriendDrag = (e: DragEvent) => e.dataTransfer.types.includes(DRAG_TYPE);
+export const isFriendDrag = (e: DragEvent) => e.dataTransfer.types.includes(DRAG_TYPE);
 
-function openGroupMenu(e: MouseEvent, group: FriendGroup, index: number, total: number) {
+export function openGroupMenu(e: MouseEvent, group: FriendGroup, index: number, total: number) {
     ContextMenuApi.openContextMenu(e, () => (
         <Menu.Menu navId="rx-fg-group" onClose={ContextMenuApi.closeContextMenu} aria-label="Group options">
             <Menu.MenuItem id="rx-fg-edit" label="Edit name, icon and colour…" action={() => openGroupEditor(group)} />
             <Menu.MenuItem id="rx-fg-toggle" label={group.collapsed ? "Expand" : "Minimize"} action={() => updateGroup(group.id, { collapsed: !group.collapsed })} />
             <Menu.MenuItem id="rx-fg-up" label="Move up" disabled={index === 0} action={() => moveGroup(group.id, -1)} />
             <Menu.MenuItem id="rx-fg-down" label="Move down" disabled={index === total - 1} action={() => moveGroup(group.id, 1)} />
+            <Menu.MenuItem id="rx-fg-new-group" label="New group…" action={() => openGroupEditor()} />
             <Menu.MenuSeparator />
             <Menu.MenuItem id="rx-fg-delete" label="Delete group" color="danger" action={() => deleteGroup(group.id)} />
         </Menu.Menu>
     ));
 }
 
-function openMemberMenu(e: MouseEvent, userId: string, groupId: string | null) {
+export function openMemberMenu(e: MouseEvent, userId: string, groupId: string | null) {
     e.preventDefault();
     const groups = settings.store.groups ?? [];
     ContextMenuApi.openContextMenu(e, () => (
@@ -117,7 +118,7 @@ function openMemberMenu(e: MouseEvent, userId: string, groupId: string | null) {
     ));
 }
 
-function Chevron({ open }: { open: boolean; }) {
+export function Chevron({ open }: { open: boolean; }) {
     return (
         <svg className={cl("chevron", open && "chevron-open")} width="14" height="14" viewBox="0 0 24 24">
             <path fill="currentColor" d="M9.3 5.3a1 1 0 0 1 1.4 0l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 1 1-1.4-1.4l5.3-5.3-5.3-5.3a1 1 0 0 1 0-1.4Z" />
