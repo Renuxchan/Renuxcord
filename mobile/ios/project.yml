@@ -1,0 +1,50 @@
+# XcodeGen project: `brew install xcodegen && xcodegen generate` makes Renuxcord.xcodeproj
+name: Renuxcord
+options:
+    bundleIdPrefix: dev.renuxcord
+    deploymentTarget:
+        iOS: "15.0"
+
+targets:
+    Renuxcord:
+        type: application
+        platform: iOS
+        sources:
+            - path: Renuxcord
+        info:
+            path: Renuxcord/Info.plist
+            properties:
+                CFBundleDisplayName: Renuxcord
+                CFBundleShortVersionString: "1.0.0"
+                CFBundleVersion: "1"
+                ITSAppUsesNonExemptEncryption: false
+                UILaunchScreen: {}
+                UIApplicationSceneManifest:
+                    UIApplicationSupportsMultipleScenes: false
+                UISupportedInterfaceOrientations:
+                    - UIInterfaceOrientationPortrait
+                    - UIInterfaceOrientationLandscapeLeft
+                    - UIInterfaceOrientationLandscapeRight
+                UISupportedInterfaceOrientations~ipad:
+                    - UIInterfaceOrientationPortrait
+                    - UIInterfaceOrientationPortraitUpsideDown
+                    - UIInterfaceOrientationLandscapeLeft
+                    - UIInterfaceOrientationLandscapeRight
+                NSMicrophoneUsageDescription: Discord voice and video calls use your microphone.
+                NSCameraUsageDescription: Discord video calls and photos use your camera.
+                NSPhotoLibraryUsageDescription: Lets you send photos and videos in Discord.
+                NSPhotoLibraryAddUsageDescription: Lets you save images from Discord.
+        settings:
+            base:
+                PRODUCT_BUNDLE_IDENTIFIER: dev.renuxcord.app
+                PRODUCT_NAME: Renuxcord
+                TARGETED_DEVICE_FAMILY: "1,2"
+                ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+                SWIFT_VERSION: "5.0"
+                GENERATE_INFOPLIST_FILE: NO
+                # Sideloading tools (SideStore, AltStore, Sideloadly, TrollStore) sign it with your own account
+                CODE_SIGN_STYLE: Manual
+                CODE_SIGN_IDENTITY: ""
+                CODE_SIGNING_ALLOWED: NO
+                CODE_SIGNING_REQUIRED: NO
+        scheme: {}

@@ -54,7 +54,7 @@ fetch(`https://api.github.com/repos/${repo}/releases/latest`)
         const exe = release.assets?.find(a => a.name === "RenuxcordInstaller.exe");
         if (exe)
             document.getElementById("size").textContent =
-                `Free · ${Math.max(1, Math.round(exe.size / 1024))} KB installer · Windows 10 and 11`;
+                `Free · ${Math.max(1, Math.round(exe.size / 1024))} KB installer · also on macOS, Linux, Android and iOS`;
     })
     .catch(() => {});
 

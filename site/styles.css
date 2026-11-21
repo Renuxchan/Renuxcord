@@ -1909,6 +1909,44 @@ h2 kbd {
     font-size: 15px;
 }
 
+/* Other platforms */
+
+.platform-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.platform-grid h3 {
+    margin: 0 0 10px;
+    font-size: 21px;
+    font-weight: 700;
+    font-stretch: 104%;
+    letter-spacing: -0.01em;
+}
+
+.platform-grid p {
+    margin: 0 0 14px;
+    color: var(--text-2);
+}
+
+.platform-grid .code {
+    margin: 0 0 14px;
+}
+
+.platform-grid .code pre {
+    padding: 14px 16px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font: 13px/1.5 var(--mono);
+}
+
+.platform-grid .small {
+    color: var(--muted);
+    font-size: 14px;
+}
+
 /* FAQ */
 
 .faq {
@@ -2146,6 +2184,7 @@ h2 kbd {
     .feature.wide .copy,
     .index-head,
     .install-grid,
+    .platform-grid,
     .faq {
         grid-template-columns: minmax(0, 1fr);
         gap: 40px;

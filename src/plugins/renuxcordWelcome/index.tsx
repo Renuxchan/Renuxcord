@@ -31,7 +31,7 @@ export const RENUXCORD_PLUGINS = [
     ...FIRST_RELEASE,
     "QuickTools", "TextFX", "QuickReplies", "TypingSounds", "Notepad", "FocusMode", "SecretGuard", "Snipe", "LastSeen",
     "WhoIs", "ChannelWatch", "SpoilerShield", "Lookup", "MediaDownloader", "PlaytimeTracker", "BirthdayReminders",
-    "StatusRotator", "FakeDeafen", "Confetti", "CSSSnippets"
+    "StatusRotator", "FakeDeafen", "Confetti", "CSSSnippets", "Drover"
 ];
 
 function openWelcome(onlyNew?: string[]) {

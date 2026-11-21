@@ -11,20 +11,22 @@
 &nbsp;
 <a href="https://renuxchan.github.io/Renuxcord/#plugins"><img src="assets/button-plugins.png" alt="Browse the plugins" height="52"></a>
 
+**Also on [macOS and Linux](#macos-and-linux), [Android](#android) and [iPhone and iPad](#iphone-and-ipad).**
+
 <br>
 <br>
 
 <a href="https://github.com/Renuxchan/Renuxcord/actions/workflows/renuxcord-release.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/Renuxchan/Renuxcord/renuxcord-release.yml?branch=main&style=for-the-badge&label=build&labelColor=17171a"></a>
 <a href="https://github.com/Renuxchan/Renuxcord/commits/main"><img alt="Last update" src="https://img.shields.io/github/last-commit/Renuxchan/Renuxcord/main?style=for-the-badge&label=updated&labelColor=17171a&color=2c2c31"></a>
-<img alt="216 plugins" src="https://img.shields.io/badge/plugins-216-ff5a2c?style=for-the-badge&labelColor=17171a">
-<img alt="43 exclusive plugins" src="https://img.shields.io/badge/exclusive-43-ff5a2c?style=for-the-badge&labelColor=17171a">
-<img alt="Windows 10 and 11" src="https://img.shields.io/badge/windows-10%20%7C%2011-2c2c31?style=for-the-badge&labelColor=17171a">
+<img alt="217 plugins" src="https://img.shields.io/badge/plugins-217-ff5a2c?style=for-the-badge&labelColor=17171a">
+<img alt="44 exclusive plugins" src="https://img.shields.io/badge/exclusive-44-ff5a2c?style=for-the-badge&labelColor=17171a">
+<img alt="Windows, macOS, Linux, Android and iOS" src="https://img.shields.io/badge/runs%20on-windows%20%7C%20macos%20%7C%20linux%20%7C%20android%20%7C%20ios-2c2c31?style=for-the-badge&labelColor=17171a">
 <a href="../LICENSE"><img alt="License GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-2c2c31?style=for-the-badge&labelColor=17171a"></a>
 
 <br>
 <br>
 
-**Renuxcord is a client mod for the Discord desktop app.** Every plugin you'd expect from a client mod, plus 43 you won't find anywhere else: friend folders in your DM sidebar, Claude in your chat, a command palette, and a bridge that lets Claude Code build your servers. Free, open source, and it keeps itself updated.
+**Renuxcord is a Discord client mod for Windows, macOS, Linux, Android and iOS.** Every plugin you'd expect from a client mod, plus 44 you won't find anywhere else: friend folders in your DM sidebar, Claude in your chat, a command palette, and a bridge that lets Claude Code build your servers. Free, open source, and it keeps itself updated.
 
 </div>
 
@@ -77,6 +79,8 @@ The bridge only listens on `127.0.0.1` behind a random token, rejects web pages,
 
 ## Install
 
+### Windows
+
 1. Download **[RenuxcordInstaller.exe](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller.exe)** from the latest release.
 2. The installer isn't code-signed yet, so Windows may say it protected your PC. Click **More info › Run anyway**.
 3. Pick your Discord (Stable, PTB or Canary) and press **Install / Repair**. Discord restarts with Renuxcord.
@@ -84,7 +88,33 @@ The bridge only listens on `127.0.0.1` behind a random token, rejects web pages,
 
 Uninstall the same way. Your settings stay in `%APPDATA%\Renuxcord`. Renuxcord updates itself from this repository's `devbuild` release, and puts itself back after Discord updates.
 
-## The 43 Renuxcord exclusives
+### macOS and Linux
+
+1. Download the installer: **[macOS](https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/RenuxcordInstaller-mac.zip)** (Apple silicon and Intel) or **[Linux](https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/RenuxcordInstaller-linux-x64.tar.gz)** (x64).
+2. **Mac:** open the zip and run **Renuxcord Installer**. The installer isn't notarized, so macOS blocks it the first time: open **System Settings › Privacy & Security** and press **Open Anyway**. **Linux:** extract it and double-click **RenuxcordInstaller**.
+3. Pick your Discord (Stable, PTB or Canary) and press **Install / Repair**. Discord restarts with Renuxcord.
+
+If macOS says it blocked changes to Discord, turn the installer on in **System Settings › Privacy & Security › App Management** and press Install again. Settings live in `~/Library/Application Support/Renuxcord` on macOS and `~/.config/Renuxcord` on Linux.
+
+Rather use a terminal? This does the same (works with the normal download, .deb, .rpm, tar.gz and Flatpak, not Snap):
+
+```sh
+curl -fsSL https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/install.sh | sh
+```
+
+`... | sh -s -- uninstall` takes it out again and `status` shows what it found. On a Mac, run it again after Discord itself updates.
+
+### Android
+
+Install **[Renuxcord.apk](https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/Renuxcord.apk)** (Android 8 or newer, allow installing from your browser when Android asks). It opens Discord with Renuxcord loaded, keeps Renuxcord updated and adds a **Renuxcord app** page to Discord's settings. More in [mobile/android](../mobile/android).
+
+### iPhone and iPad
+
+Sideload **[Renuxcord.ipa](https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/Renuxcord.ipa)** with SideStore, AltStore, Sideloadly or TrollStore. No sideloading? Install the free **Userscripts** app from the App Store, add **[Renuxcord.user.js](https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/Renuxcord.user.js)** and open discord.com in Safari. More in [mobile/ios](../mobile/ios).
+
+The phone apps run Discord's web app with Renuxcord in it, so plugins that need a computer (the AI bridge, files on your PC, Drover) stay on desktop.
+
+## The 44 Renuxcord exclusives
 
 Every one carries the **✦ RENUXCORD EXCLUSIVE** badge in Settings › Renuxcord › Plugins, sorted to the top. The 170+ classic plugins are all there too, and anyone updating gets a one-time list of the newest exclusives to switch on.
 
@@ -153,11 +183,12 @@ Every one carries the **✦ RENUXCORD EXCLUSIVE** badge in Settings › Renuxcor
 </details>
 
 <details>
-<summary><b>Voice and status</b> · FakeDeafen, VoiceLog, FocusMode, StatusRotator, PanicBlur</summary>
+<summary><b>Voice and status</b> · Drover, FakeDeafen, VoiceLog, FocusMode, StatusRotator, PanicBlur</summary>
 <br>
 
 | Plugin | What it does |
 | --- | --- |
+| **Drover** | Gets Discord voice working where it's blocked (like the UAE) and can send Discord through an HTTP or SOCKS5 proxy. Sets up [hdrover's Discord Drover](https://github.com/hdrover/discord-drover) for you on Windows: it downloads the official release and checks it before installing |
 | **FakeDeafen** | Look deafened to everyone in the call while you can still hear (`Ctrl+Alt+D`) |
 | **VoiceLog** | Timestamped log of who joined and left your voice channel |
 | **FocusMode** | `Ctrl+Alt+F`: Do Not Disturb, hides the server and member lists, Pomodoro timer, automatic quiet hours |
@@ -230,7 +261,9 @@ node scripts/renuxcord/install.mjs status
 node scripts/renuxcord/install.mjs uninstall
 ```
 
-The Windows installer builds with the C# compiler that ships with Windows: `powershell -ExecutionPolicy Bypass -File installer/build.ps1`.
+The Windows installer builds with the C# compiler that ships with Windows: `powershell -ExecutionPolicy Bypass -File installer/build.ps1`. The macOS and Linux installer is a Go app in [`installer/desktop`](../installer/desktop): `sh installer/desktop/build.sh` on a Mac or a Linux box.
+
+The phone apps live in [`mobile/android`](../mobile/android) (Gradle) and [`mobile/ios`](../mobile/ios) (XcodeGen). The **Renuxcord Mobile** workflow builds both, checks Renuxcord loads in an Android emulator and an iOS simulator, and adds Renuxcord.apk and Renuxcord.ipa to the release.
 
 **Updates:** Renuxcord updates itself from this repository's `devbuild` release (Settings › Renuxcord › Updater, auto-update is on by default). A workflow merges the upstream project every 6 hours, checks that it builds and publishes a new release.
 

@@ -28,7 +28,7 @@ $work = Join-Path ([IO.Path]::GetTempPath()) ("renuxcord-installer-" + [Guid]::N
 New-Item -ItemType Directory -Path $work | Out-Null
 
 try {
-    # Icon: gradient rounded square with an R, written as a PNG-backed .ico
+    # Icon: the logo (orange rounded square with a dark R), written as a PNG-backed .ico
     Add-Type -AssemblyName System.Drawing
     $size = 256
     $bmp = New-Object System.Drawing.Bitmap $size, $size
@@ -36,7 +36,7 @@ try {
     $g.SmoothingMode = "AntiAlias"
     $g.TextRenderingHint = "AntiAliasGridFit"
     $rect = New-Object System.Drawing.Rectangle 0, 0, $size, $size
-    $brush = New-Object System.Drawing.Drawing2D.LinearGradientBrush $rect, ([System.Drawing.Color]::FromArgb(167, 139, 250)), ([System.Drawing.Color]::FromArgb(236, 72, 153)), 45
+    $brush = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 90, 44))
     $path = New-Object System.Drawing.Drawing2D.GraphicsPath
     $d = 128
     $path.AddArc(0, 0, $d, $d, 180, 90); $path.AddArc($size - $d, 0, $d, $d, 270, 90)
@@ -46,7 +46,8 @@ try {
     $font = New-Object System.Drawing.Font "Segoe UI Black", 120, ([System.Drawing.FontStyle]::Bold), ([System.Drawing.GraphicsUnit]::Pixel)
     $fmt = New-Object System.Drawing.StringFormat
     $fmt.Alignment = "Center"; $fmt.LineAlignment = "Center"
-    $g.DrawString("R", $font, [System.Drawing.Brushes]::White, (New-Object System.Drawing.RectangleF 0, 6, $size, $size), $fmt)
+    $ink = New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(12, 12, 13))
+    $g.DrawString("R", $font, $ink, (New-Object System.Drawing.RectangleF 0, 6, $size, $size), $fmt)
     $g.Dispose()
 
     $ms = New-Object System.IO.MemoryStream
