@@ -6,10 +6,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.StrictMode;
 import android.view.KeyEvent;
 import android.view.View;
@@ -39,6 +40,9 @@ public class MainActivity extends Activity {
 
     private boolean wvInitialized = false;
     private boolean pageFailed = false;
+    private boolean pageShown = false;
+    private final Handler ui = new Handler(Looper.getMainLooper());
+    private final Runnable showPageAnyway = this::showPage;
     private WebView wv;
     private View loadingView;
     private View errorView;
@@ -70,8 +74,8 @@ public class MainActivity extends Activity {
         explodeAndroid();
         Notifier.createChannel(this);
 
-        var isDarkMode = (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
-        wv.setBackgroundColor(isDarkMode ? 0xff313338 : 0xffffffff);
+        // Discord's dark background behind the page: Discord paints over it in whichever theme you use
+        wv.setBackgroundColor(getColor(R.color.background));
         wv.setOverScrollMode(View.OVER_SCROLL_NEVER);
 
         wv.setWebViewClient(new VWebviewClient(this));
@@ -139,10 +143,26 @@ public class MainActivity extends Activity {
 
     void onPageStarted() {
         pageFailed = false;
+        pageShown = false;
+        ui.removeCallbacks(showPageAnyway);
     }
 
+    // The page finishes loading a few seconds before Discord draws anything, so the loading screen stays up until
+    // the page script says Discord is on screen (no white flash), or 15 seconds at most
     void onPageFinished() {
-        if (pageFailed) return;
+        if (pageFailed || pageShown) return;
+        ui.removeCallbacks(showPageAnyway);
+        ui.postDelayed(showPageAnyway, 15000);
+    }
+
+    void onDiscordDrawn() {
+        runOnUiThread(this::showPage);
+    }
+
+    private void showPage() {
+        ui.removeCallbacks(showPageAnyway);
+        if (pageFailed || wv == null) return;
+        pageShown = true;
         wv.setVisibility(View.VISIBLE);
         loadingView.setVisibility(View.GONE);
         errorView.setVisibility(View.GONE);
@@ -183,6 +203,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        ui.removeCallbacks(showPageAnyway);
         if (wv != null) {
             if (wv.getParent() instanceof ViewGroup) ((ViewGroup) wv.getParent()).removeView(wv);
             wv.destroy();

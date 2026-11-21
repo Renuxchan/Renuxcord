@@ -207,6 +207,16 @@
         FluxDispatcher.subscribe("MOBILE_WEB_SIDEBAR_CLOSE", () => {
             isSidebarOpen = false;
         });
+
+        // Tells the app once Discord has drawn something, so it swaps its loading screen for the page then and not
+        // while the page is still blank
+        const started = Date.now();
+        const drawn = () => {
+            const mount = document.getElementById("app-mount");
+            if ((mount && mount.childElementCount > 0) || Date.now() - started > 8000) RenuxcordNative.discordDrawn();
+            else setTimeout(drawn, 100);
+        };
+        drawn();
     });
 
     // ---- swipe right for the server and channel list, left to close it, like Discord's own app ----

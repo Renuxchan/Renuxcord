@@ -42,6 +42,22 @@ async function check(name, expression, ok) {
     console.log(`${passed ? "ok  " : "FAIL"} ${name}: ${JSON.stringify(value)}`);
 }
 
+// Discord drew its own screen (the login screen in CI), not a blank page
+await check(
+    "Discord's own screen is drawn",
+    `new Promise(resolve => {
+        const end = Date.now() + 60000;
+        const look = () => {
+            if (document.querySelector("input[name=email], input[name=password]")) return resolve("login screen");
+            if (document.querySelector("nav[class*=guilds], [class*=sidebar_]")) return resolve("app");
+            if (Date.now() > end) return resolve("nothing after 60s at " + location.pathname);
+            setTimeout(look, 500);
+        };
+        look();
+    })`,
+    v => v === "login screen" || v === "app"
+);
+
 // The emulator runs without a microphone, so a device error is fine. NotAllowedError means the app refused Discord
 await check(
     "Discord may use the microphone (voice calls)",

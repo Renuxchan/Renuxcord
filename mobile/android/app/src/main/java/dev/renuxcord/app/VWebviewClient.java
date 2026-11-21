@@ -99,8 +99,12 @@ public class VWebviewClient extends WebViewClient {
         var headers = conn.getHeaderFields();
         var modifiedHeaders = new HashMap<String, String>(headers.size());
         for (var header : headers.entrySet()) {
-            if (header.getKey() != null && !"Content-Security-Policy".equalsIgnoreCase(header.getKey())) {
-                modifiedHeaders.put(header.getKey(), header.getValue().get(0));
+            var name = header.getKey();
+            // The policy would block Renuxcord, and the report-only one would send Discord a report about every
+            // script Renuxcord touches
+            if (name != null && !"Content-Security-Policy".equalsIgnoreCase(name)
+                    && !"Content-Security-Policy-Report-Only".equalsIgnoreCase(name)) {
+                modifiedHeaders.put(name, header.getValue().get(0));
             }
         }
         if (url.endsWith(".css")) modifiedHeaders.put("Content-Type", "text/css");

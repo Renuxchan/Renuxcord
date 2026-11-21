@@ -36,6 +36,12 @@ public class RenuxcordNative {
         return HttpClient.RenuxcordCss == null ? "" : HttpClient.RenuxcordCss;
     }
 
+    /** Discord has drawn itself, so the loading screen can go */
+    @JavascriptInterface
+    public void discordDrawn() {
+        activity.onDiscordDrawn();
+    }
+
     @JavascriptInterface
     public String notificationPermission() {
         return activity.notificationPermission();

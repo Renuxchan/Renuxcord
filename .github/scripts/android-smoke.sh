@@ -36,19 +36,18 @@ wait_loaded() {
 adb logcat -c
 adb shell am start -n $pkg/dev.renuxcord.app.MainActivity
 wait_loaded 90
-sleep 10
-adb exec-out screencap -p > android-shot.png
 adb logcat -d > android-logcat.txt
 grep -E "Renuxcord|AndroidRuntime" android-logcat.txt | head -60
 
 if loaded; then
     echo "Renuxcord loaded in the Android app"
 else
+    adb exec-out screencap -p > android-shot.png
     echo "Renuxcord never reported loading"
     exit 1
 fi
 
-# ---- calls and notifications, checked inside the page ----
+# ---- Discord's screen, calls and notifications, checked inside the page ----
 socket=$(adb shell cat /proc/net/unix | grep -o "webview_devtools_remote_[0-9]*" | head -1)
 if [ -n "$socket" ]; then
     adb forward tcp:9222 "localabstract:$socket" > /dev/null
@@ -64,6 +63,18 @@ if [ -n "$socket" ]; then
 else
     echo "FAIL no WebView DevTools socket (is this the debug APK?)"
     failed=1
+fi
+
+# The app's own loading screen has made way for Discord
+adb shell cmd statusbar collapse > /dev/null 2>&1
+sleep 2
+adb exec-out screencap -p > android-shot.png
+adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
+if adb shell cat /sdcard/ui.xml | grep -q "Starting Renuxcord"; then
+    echo "FAIL the loading screen is still up"
+    failed=1
+else
+    echo "ok   the loading screen made way for Discord"
 fi
 
 # ---- no internet: the app shows its own screen with Try again instead of closing ----
