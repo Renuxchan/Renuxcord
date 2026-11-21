@@ -1,6 +1,6 @@
 #!/bin/sh
 # CI only: starts Discord for a while, saves its output and a screenshot, then checks whether Renuxcord loaded.
-#   sh .github/scripts/run-discord.sh renuxcord   # expect Renuxcord
+#   sh .github/scripts/run-discord.sh renuxcord   # expect Renuxcord (any name but vanilla does; it names the log)
 #   sh .github/scripts/run-discord.sh vanilla     # expect plain Discord
 set -u
 expect=$1
@@ -15,7 +15,8 @@ case "$(uname -s)" in
             discord --no-sandbox > '$log' 2>&1 &
             sleep $seconds
             command -v import > /dev/null && import -window root '$shot'
-            pkill -f -i 'discord' || true
+            # By process name only: a command-line match would also hit this script (run-discord.sh)
+            pkill -x Discord || true
             sleep 3
         "
         ;;
@@ -31,7 +32,7 @@ esac
 echo "---- first lines of $log"
 head -40 "$log"
 
-if [ "$expect" = renuxcord ]; then
+if [ "$expect" != vanilla ]; then
     grep -q "\[Renuxcord\] Starting up" "$log" || { echo "Renuxcord's patcher never ran"; exit 1; }
     grep -q "\[Renuxcord\] Loading original Discord app.asar" "$log" || { echo "Renuxcord didn't hand over to Discord"; exit 1; }
     echo "Renuxcord loaded"

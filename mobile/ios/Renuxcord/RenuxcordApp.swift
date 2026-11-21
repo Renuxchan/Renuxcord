@@ -8,7 +8,8 @@ import SwiftUI
 struct RenuxcordApp: App {
     var body: some Scene {
         WindowGroup {
-            DiscordView().ignoresSafeArea()
+            // Discord is dark by default, so the status bar area matches it instead of showing a white strip
+            DiscordView().ignoresSafeArea().preferredColorScheme(.dark)
         }
     }
 }

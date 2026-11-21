@@ -1,11 +1,14 @@
-# Installs the real Discord on Linux and macOS, puts Renuxcord in with install.sh and checks that Discord loads it,
-# then uninstalls and checks Discord is back to normal.
+# Installs the real Discord on Linux and macOS, then for both install.sh and the Renuxcord Installer app: puts
+# Renuxcord in, checks Discord loads it, takes it out and checks Discord is back to normal. Also screenshots the
+# installer's window.
 name: Renuxcord on macOS and Linux
 on:
     push:
         paths:
             - .github/workflows/renuxcord-desktop-test.yml
+            - .github/scripts/run-discord.sh
             - scripts/renuxcord/install.sh
+            - installer/desktop/**
             - src/main/**
     workflow_dispatch:
 
@@ -20,7 +23,7 @@ jobs:
             matrix:
                 os: [ubuntu-latest, macos-latest]
         runs-on: ${{ matrix.os }}
-        timeout-minutes: 30
+        timeout-minutes: 40
 
         steps:
             - name: Checkout repository
@@ -35,6 +38,12 @@ jobs:
                   node-version: 24
                   cache: "pnpm"
 
+            - name: Use Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: stable
+                  cache-dependency-path: installer/desktop/go.mod
+
             - name: Build Renuxcord
               run: |
                   pnpm install --frozen-lockfile
@@ -45,7 +54,7 @@ jobs:
               run: |
                   curl -fsSL -o discord.deb "https://discord.com/api/download?platform=linux&format=deb"
                   sudo apt-get update -qq
-                  sudo apt-get install -y -qq ./discord.deb xvfb
+                  sudo apt-get install -y -qq ./discord.deb xvfb imagemagick gcc libgl1-mesa-dev libgl1-mesa-dri xorg-dev libxkbcommon-dev
                   # The package is only a launcher: Discord downloads the app into ~/.config/discord on first start
                   # (what /usr/bin/discord does before starting it the first time)
                   bootstrap=$(dpkg -L discord | grep -m1 "/updater_bootstrap$")
@@ -61,7 +70,9 @@ jobs:
                   cp -R /Volumes/Discord/Discord.app /Applications/
                   hdiutil detach /Volumes/Discord
 
-            - name: Install Renuxcord with install.sh
+            # ---- install.sh ----
+
+            - name: install.sh puts Renuxcord in
               env:
                   RENUXCORD_RELEASE_URL: file://${{ github.workspace }}/dist
               run: |
@@ -73,7 +84,7 @@ jobs:
             - name: Discord loads Renuxcord
               run: sh .github/scripts/run-discord.sh renuxcord
 
-            - name: Uninstall
+            - name: install.sh takes it out again
               run: |
                   sh scripts/renuxcord/install.sh uninstall
                   sh scripts/renuxcord/install.sh status | tee status.txt
@@ -82,11 +93,54 @@ jobs:
             - name: Discord is back to normal
               run: sh .github/scripts/run-discord.sh vanilla
 
-            - name: Upload logs and screenshots
+            # ---- Renuxcord Installer (the window app) ----
+
+            - name: Build Renuxcord Installer
+              run: |
+                  sh installer/desktop/build.sh
+                  if [ "$(uname -s)" = Darwin ]; then
+                      echo "INSTALLER=$PWD/installer/desktop/build/Renuxcord Installer.app/Contents/MacOS/RenuxcordInstaller" >> "$GITHUB_ENV"
+                  else
+                      echo "INSTALLER=$PWD/installer/desktop/build/RenuxcordInstaller" >> "$GITHUB_ENV"
+                  fi
+
+            - name: The installer puts Renuxcord in
+              env:
+                  RENUXCORD_RELEASE_URL: file://${{ github.workspace }}/dist
+              run: |
+                  "$INSTALLER" --cli status
+                  "$INSTALLER" --cli install
+                  "$INSTALLER" --cli status | tee status.txt
+                  grep -q "Renuxcord is installed" status.txt
+
+            - name: Discord loads Renuxcord (installed by the installer)
+              run: sh .github/scripts/run-discord.sh installer
+
+            - name: The installer takes it out again
+              run: |
+                  "$INSTALLER" --cli uninstall
+                  "$INSTALLER" --cli status | tee status.txt
+                  grep -q "Renuxcord isn't installed" status.txt
+
+            - name: Screenshot the installer window
+              run: |
+                  if [ "$(uname -s)" = Darwin ]; then
+                      open "installer/desktop/build/Renuxcord Installer.app"
+                      sleep 10
+                      screencapture -x installer-window.png
+                      pkill -x RenuxcordInstaller || true
+                  else
+                      xvfb-run -a -s "-screen 0 1280x800x24" sh -c '"$INSTALLER" & sleep 10; import -window root installer-window.png; kill $! || true'
+                  fi
+                  ls -la installer-window.png
+
+            - name: Upload logs, screenshots and the installer
               if: always()
               uses: actions/upload-artifact@v4
               with:
-                  name: discord-${{ matrix.os }}
+                  name: desktop-${{ matrix.os }}
                   path: |
                       discord-*.log
                       discord-*.png
+                      installer-window.png
+                      dist/RenuxcordInstaller-*
