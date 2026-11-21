@@ -42,7 +42,10 @@ public class HttpClient {
     public static String RenuxcordRuntime;
     public static String MobileRuntime;
     public static String RenuxcordCss;
+    /** Renuxcord was downloaded this start, so there's nothing newer to check for */
+    public static boolean freshlyInstalled;
 
+    /** Gets Renuxcord ready to go into the page. Downloads it on the first start, so never call it on the main thread */
     public static void fetchRenuxcord(Activity activity) throws IOException {
         if (RenuxcordRuntime != null) return;
 
@@ -51,11 +54,7 @@ public class HttpClient {
             MobileRuntime = readAsText(is);
         }
 
-        var freshlyInstalled = BundleUpdater.ensureInstalled(activity);
-        if (!freshlyInstalled && AppSettings.isAutoUpdatesEnabled(activity)) {
-            BundleUpdater.autoUpdate(activity);
-        }
-
+        freshlyInstalled = BundleUpdater.ensureInstalled(activity);
         BundleUpdater.loadBundles(activity);
     }
 

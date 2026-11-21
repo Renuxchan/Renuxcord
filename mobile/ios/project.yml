@@ -34,6 +34,9 @@ targets:
                 NSCameraUsageDescription: Discord video calls and photos use your camera.
                 NSPhotoLibraryUsageDescription: Lets you send photos and videos in Discord.
                 NSPhotoLibraryAddUsageDescription: Lets you save images from Discord.
+                # Keeps a voice call's sound going when you lock the phone or switch apps
+                UIBackgroundModes:
+                    - audio
         settings:
             base:
                 PRODUCT_BUNDLE_IDENTIFIER: dev.renuxcord.app

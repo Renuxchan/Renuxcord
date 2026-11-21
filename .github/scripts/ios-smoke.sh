@@ -45,6 +45,14 @@ for launch in 1 2; do
     loaded && break
 done
 
+# The viewport line comes once the page's HTML is in, a little after Renuxcord itself
+waited=0
+while loaded && [ $waited -lt 30 ] && ! grep -q "Viewport: " ios-app.log; do
+    sleep 3
+    waited=$((waited + 3))
+done
+sleep 5
+
 xcrun simctl io "$udid" screenshot ios-shot.png > /dev/null 2>&1 || true
 kill "$logger" 2> /dev/null || true
 xcrun simctl terminate "$udid" "$bundle" 2> /dev/null || true
@@ -52,7 +60,13 @@ xcrun simctl terminate "$udid" "$bundle" 2> /dev/null || true
 grep -i "renuxcord" ios-app.log | head -20
 if loaded; then
     echo "Renuxcord loaded in the iOS app"
-    exit 0
+    # Text boxes smaller than 16px make iOS zoom the whole page when tapped, unless the viewport says not to
+    if grep -q "Viewport: .*maximum-scale=1" ios-app.log; then
+        echo "ok   the page can't zoom when you tap a text box"
+        exit 0
+    fi
+    echo "FAIL the viewport fix didn't apply"
+    exit 1
 fi
 
 echo "Renuxcord never reported loading"

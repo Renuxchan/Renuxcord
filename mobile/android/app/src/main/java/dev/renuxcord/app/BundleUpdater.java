@@ -1,7 +1,6 @@
 package dev.renuxcord.app;
 
 import android.content.Context;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,7 +49,7 @@ public final class BundleUpdater {
     public static boolean ensureInstalled(Context ctx) throws IOException {
         if (isInstalled(ctx)) return false;
 
-        Toast.makeText(ctx, R.string.downloading_renuxcord, Toast.LENGTH_LONG).show();
+        Utils.toast(ctx, ctx.getString(R.string.downloading_renuxcord));
         installRelease(ctx, withRetries(BundleUpdater::fetchLatestRelease));
         return true;
     }
@@ -62,7 +61,8 @@ public final class BundleUpdater {
             if (release.hash.equals(AppSettings.getInstalledHash(ctx))) return;
 
             installRelease(ctx, release);
-            Toast.makeText(ctx, ctx.getString(R.string.updated_to, release.title), Toast.LENGTH_SHORT).show();
+            // Already running pages keep the version they started with
+            Utils.toast(ctx, ctx.getString(R.string.update_ready, release.title));
         } catch (IOException ex) {
             Logger.w("Failed to auto update Renuxcord: " + ex);
         }

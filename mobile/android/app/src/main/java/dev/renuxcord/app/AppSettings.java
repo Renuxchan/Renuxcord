@@ -15,6 +15,7 @@ public class AppSettings {
     private static final String KEY_AUTO_UPDATES = "auto_updates";
     private static final String KEY_INSTALLED_HASH = "installed_hash";
     private static final String KEY_BRANCH = "branch";
+    private static final String KEY_ASKED_NOTIFICATIONS = "asked_notifications";
     private static final Pattern CHROME_VERSION = Pattern.compile("Chrome/[\\d.]+");
 
     private static SharedPreferences prefs(Context ctx) {
@@ -51,6 +52,14 @@ public class AppSettings {
 
     public static void setBranch(Context ctx, String branch) {
         prefs(ctx).edit().putString(KEY_BRANCH, branch).apply();
+    }
+
+    public static boolean askedForNotifications(Context ctx) {
+        return prefs(ctx).getBoolean(KEY_ASKED_NOTIFICATIONS, false);
+    }
+
+    public static void setAskedForNotifications(Context ctx) {
+        prefs(ctx).edit().putBoolean(KEY_ASKED_NOTIFICATIONS, true).apply();
     }
 
     public static String desktopUserAgent(String currentUserAgent) {

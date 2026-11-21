@@ -34,6 +34,17 @@ public class VChromeClient extends WebChromeClient {
         return true;
     }
 
+    // getUserMedia: Discord asking for the mic (voice) or camera (video)
+    @Override
+    public void onPermissionRequest(PermissionRequest request) {
+        activity.onMediaPermissionRequest(request);
+    }
+
+    @Override
+    public void onPermissionRequestCanceled(PermissionRequest request) {
+        activity.onMediaPermissionCanceled(request);
+    }
+
     @Override
     public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
         if (activity.filePathCallback != null)

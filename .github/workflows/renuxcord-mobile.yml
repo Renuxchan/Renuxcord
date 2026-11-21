@@ -6,6 +6,7 @@ on:
         paths:
             - .github/workflows/renuxcord-mobile.yml
             - .github/scripts/android-smoke.sh
+            - .github/scripts/webview-check.mjs
             - .github/scripts/ios-smoke.sh
             - mobile/**
     workflow_dispatch:
@@ -66,6 +67,11 @@ jobs:
             - name: Setup Gradle
               uses: gradle/actions/setup-gradle@v4
 
+            - name: Use Node.js
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              with:
+                  node-version: 24
+
             - name: Download the web version
               uses: actions/download-artifact@v4
               with:
@@ -120,6 +126,7 @@ jobs:
                       Renuxcord.apk
                       android-shot.png
                       android-logcat.txt
+                      android-offline.png
 
     ios:
         needs: web

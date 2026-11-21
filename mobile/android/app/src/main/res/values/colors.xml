@@ -1,2 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources><color name="background">#FFFFFF</color></resources>
+<resources>
+    <!-- Discord's dark background (so the status bar strip matches it), and Renuxcord's orange -->
+    <color name="background">#1A1A1E</color>
+    <color name="accent">#FF5A2C</color>
+    <color name="ink">#F4F4F5</color>
+    <color name="muted">#A1A1AA</color>
+</resources>

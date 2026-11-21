@@ -47,6 +47,9 @@ let nextId = 1;
 
 const sameAddress = (a: string, b: string) => a.replace(/^::ffff:/, "") === b.replace(/^::ffff:/, "");
 
+/** Discord's IP discovery request: type 1, length 70, 74 bytes in all */
+const isDiscovery = (msg: Buffer) => msg.length === 74 && msg.readUInt16BE(0) === 1 && msg.readUInt16BE(2) === 70;
+
 export class VoiceRelay {
     readonly id = nextId++;
     port = 0;
@@ -63,7 +66,11 @@ export class VoiceRelay {
     private remote: Socket | null = null;
     private client: RemoteInfo | null = null;
     private first: Buffer | null = null;
+    private early: Buffer | null = null;
+    private earlyTimer: ReturnType<typeof setTimeout> | null = null;
     private attempt = -1;
+    /** False while a try opens its socket and sends its decoys */
+    private flowing = false;
     private timer: ReturnType<typeof setTimeout> | null = null;
 
     constructor(readonly owner: string, readonly serverIp: string, readonly serverPort: number, private readonly opts: RelayOptions) { }
@@ -96,13 +103,37 @@ export class VoiceRelay {
         this.lastActivity = Date.now();
         this.up++;
 
+        const discovery = isDiscovery(msg);
+        // Kept for every new try, newest first: Discord repeats the request when it hears nothing back
+        if (discovery) this.first = Buffer.from(msg);
+
         if (this.attempt < 0) {
-            // The first packet is the IP discovery request: the flow has to start with decoys, so hold it
-            this.first = Buffer.from(msg);
-            void this.nextAttempt();
+            // The flow has to start with decoys, then the IP discovery request, so hold it. Whatever comes before it is
+            // dropped: with Drover on too, its own junk packets reach the relay first, and the decoys take their place
+            if (discovery) {
+                this.clearEarly();
+                void this.nextAttempt();
+            } else {
+                // In case a future Discord changes the request: start with the newest packet after a few seconds
+                this.early = Buffer.from(msg);
+                this.earlyTimer ??= setTimeout(() => {
+                    this.earlyTimer = null;
+                    if (this.attempt >= 0 || this.closed || !this.early) return;
+                    this.first = this.early;
+                    void this.nextAttempt();
+                }, 3000);
+            }
             return;
         }
+        // Mid-way through a try's decoys: the request goes out after them (it was kept above)
+        if (!this.flowing) return;
         this.toServer(msg);
+    }
+
+    private clearEarly() {
+        if (this.earlyTimer) clearTimeout(this.earlyTimer);
+        this.earlyTimer = null;
+        this.early = null;
     }
 
     private fromServer(socket: Socket, msg: Buffer, rinfo: RemoteInfo) {
@@ -148,11 +179,13 @@ export class VoiceRelay {
     private async nextAttempt() {
         if (this.closed) return;
         this.attempt++;
+        this.flowing = false;
         await this.openRemote();
         if (!this.remote) return;
 
         await this.sendDecoys(this.trick!);
         if (this.first) this.toServer(this.first);
+        this.flowing = true;
 
         if (this.timer) clearTimeout(this.timer);
         this.timer = setTimeout(() => {
@@ -224,6 +257,7 @@ export class VoiceRelay {
         if (this.closed) return;
         this.closed = true;
         if (this.timer) clearTimeout(this.timer);
+        this.clearEarly();
         for (const socket of [this.local, this.remote]) {
             try {
                 socket?.close();
