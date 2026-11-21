@@ -122,6 +122,8 @@ jobs:
                   "$INSTALLER" --cli status | tee status.txt
                   grep -q "Renuxcord isn't installed" status.txt
 
+            # GitHub's macOS machines are virtual and have no GPU OpenGL, so the window can't open there (real Macs
+            # are fine); the installer then explains itself instead. Linux gets a real screenshot through Xvfb.
             - name: Screenshot the installer window
               run: |
                   if [ "$(uname -s)" = Darwin ]; then

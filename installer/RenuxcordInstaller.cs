@@ -307,12 +307,12 @@ namespace Renuxcord.Installer
 
     class MainForm : Form
     {
-        static readonly Color Bg = Color.FromArgb(13, 12, 20);
-        static readonly Color Surface = Color.FromArgb(25, 23, 38);
-        static readonly Color Accent = Color.FromArgb(139, 92, 246);
-        static readonly Color Pink = Color.FromArgb(236, 72, 153);
-        static readonly Color Text1 = Color.FromArgb(236, 234, 246);
-        static readonly Color Muted = Color.FromArgb(150, 146, 172);
+        static readonly Color Bg = Color.FromArgb(12, 12, 13);
+        static readonly Color Surface = Color.FromArgb(23, 23, 26);
+        static readonly Color Accent = Color.FromArgb(255, 90, 44);
+        static readonly Color Ink = Color.FromArgb(12, 12, 13);
+        static readonly Color Text1 = Color.FromArgb(242, 240, 235);
+        static readonly Color Muted = Color.FromArgb(154, 151, 143);
 
         readonly ComboBox flavorBox;
         readonly Label statusLabel;
@@ -343,6 +343,7 @@ namespace Renuxcord.Installer
             statusLabel = new Label { AutoSize = true, Location = new Point(292, 158), ForeColor = Muted };
 
             installButton = MakeButton("Install / Repair", Accent, new Point(28, 202), 190);
+            installButton.ForeColor = Ink;
             uninstallButton = MakeButton("Uninstall", Surface, new Point(228, 202), 150);
             Button folderButton = MakeButton("Open Renuxcord folder", Surface, new Point(388, 202), 224);
 
@@ -402,21 +403,24 @@ namespace Renuxcord.Installer
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-            using (var brush = new LinearGradientBrush(new Rectangle(0, 0, 640, 112), Color.FromArgb(40, 25, 70), Bg, 90f))
+            using (var brush = new SolidBrush(Bg))
                 g.FillRectangle(brush, 0, 0, 640, 112);
+            using (var line = new Pen(Color.FromArgb(44, 44, 49)))
+                g.DrawLine(line, 28, 111, 612, 111);
 
             var logo = new Rectangle(28, 26, 60, 60);
             using (var path = RoundedRect(logo, 16))
-            using (var brush = new LinearGradientBrush(logo, Accent, Pink, 45f))
+            using (var brush = new SolidBrush(Accent))
                 g.FillPath(brush, path);
             using (var f = new Font("Segoe UI Black", 26f, FontStyle.Bold))
             using (var fmt = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
-                g.DrawString("R", f, Brushes.White, logo, fmt);
+            using (var ink = new SolidBrush(Ink))
+                g.DrawString("R", f, ink, logo, fmt);
 
             using (var f = new Font("Segoe UI Semibold", 24f))
                 g.DrawString("Renuxcord", f, new SolidBrush(Text1), 100, 22);
             using (var f = new Font("Segoe UI", 10f))
-                g.DrawString("190 plugins, Renuxcord exclusives, the AI bridge and auto-updates", f, new SolidBrush(Muted), 104, 66);
+                g.DrawString("217 plugins, Renuxcord exclusives, the AI bridge and auto-updates", f, new SolidBrush(Muted), 104, 66);
         }
 
         static GraphicsPath RoundedRect(Rectangle r, int radius)

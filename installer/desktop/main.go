@@ -14,13 +14,44 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"runtime"
 )
+
+const terminalCommand = "curl -fsSL https://github.com/" + repo + "/releases/download/devbuild/install.sh | sh"
 
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "--cli" {
 		os.Exit(runCLI(os.Args[2:]))
 	}
+	defer func() {
+		if r := recover(); r != nil {
+			windowFailed(r)
+			os.Exit(1)
+		}
+	}()
 	runGUI()
+}
+
+// The window needs OpenGL. Without it (some virtual machines), say what to do instead of just vanishing
+func windowFailed(reason any) {
+	msg := "Renuxcord Installer couldn't open its window on this computer (" + fmt.Sprint(reason) + ").\n\n" +
+		"You can install Renuxcord from a terminal instead:\n" + terminalCommand
+	fmt.Fprintln(os.Stderr, msg)
+	if runtime.GOOS == "darwin" {
+		script := fmt.Sprintf("display dialog %q with title %q buttons {\"OK\"} default button 1 with icon caution", msg, "Renuxcord Installer")
+		exec.Command("osascript", "-e", script).Run()
+		return
+	}
+	for _, tool := range [][]string{
+		{"zenity", "--error", "--title=Renuxcord Installer", "--text=" + msg},
+		{"kdialog", "--title", "Renuxcord Installer", "--error", msg},
+	} {
+		if _, err := exec.LookPath(tool[0]); err == nil {
+			exec.Command(tool[0], tool[1:]...).Run()
+			return
+		}
+	}
 }
 
 func runCLI(args []string) int {
