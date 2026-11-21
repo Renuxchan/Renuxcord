@@ -57,17 +57,17 @@ await check(
 );
 await check(
     "notifications are allowed",
-    `typeof Notification === "function" ? Notification.permission : "missing"`,
+    "typeof Notification === 'function' ? Notification.permission : 'missing'",
     v => v === "granted"
 );
 await check(
     "a notification reaches Android",
-    `(() => { const n = new Notification("Renuxcord CI", { body: "Notification check", tag: "ci" }); return n.id > 0 ? "shown" : "no id"; })()`,
+    "(() => { const n = new Notification('Renuxcord CI', { body: 'Notification check', tag: 'ci' }); return n.id > 0 ? 'shown' : 'no id'; })()",
     v => v === "shown"
 );
 await check(
     "the app's hooks are in the page",
-    `typeof RenuxcordMobile?.notificationClicked === "function" && typeof RenuxcordMobile?.onBackPress === "function"`,
+    "typeof RenuxcordMobile?.notificationClicked === 'function' && typeof RenuxcordMobile?.onBackPress === 'function'",
     v => v === true
 );
 
