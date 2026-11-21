@@ -203,17 +203,30 @@ export function remove(): ApplyResult {
     return result;
 }
 
-export function status() {
+export interface DroverStatus {
+    platform: string;
+    release: string;
+    /** Drover was running in this Discord from the start */
+    loaded: boolean;
+    /** The proxy this Discord started with, without its password */
+    proxy: string | null;
+    folders: { name: string; current: boolean; dll: "drover" | "other" | "none"; ini: boolean; }[];
+}
+
+export function status(): DroverStatus {
     const base = { platform: process.platform, release: RELEASE, loaded: loadedAtStart };
-    if (process.platform !== "win32") return { ...base, proxy: proxyFromSettings(), folders: [] };
+    if (process.platform !== "win32") {
+        const config = proxyFromSettings();
+        return { ...base, proxy: config ? proxyUrl(config, false) : null, folders: [] };
+    }
 
     return {
         ...base,
-        proxy: iniAtStart?.match(/^proxy\s*=\s*(.*)$/m)?.[1]?.replace(/\/\/[^@/]*@/, "//***@").trim() ?? null,
+        proxy: iniAtStart?.match(/^proxy\s*=\s*(.*)$/m)?.[1]?.replace(/\/\/[^@/]*@/, "//").trim() || null,
         folders: appDirs().map(dir => ({
             name: basename(dir),
             current: dir === currentDir(),
-            dll: hashOf(join(dir, "version.dll")) === FILES["version.dll"] ? "drover" : existsSync(join(dir, "version.dll")) ? "other" : "none",
+            dll: hashOf(join(dir, "version.dll")) === FILES["version.dll"] ? "drover" as const : existsSync(join(dir, "version.dll")) ? "other" as const : "none" as const,
             ini: existsSync(join(dir, INI))
         }))
     };

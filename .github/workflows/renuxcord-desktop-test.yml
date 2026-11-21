@@ -46,6 +46,8 @@ jobs:
                   curl -fsSL -o discord.deb "https://discord.com/api/download?platform=linux&format=deb"
                   sudo apt-get update -qq
                   sudo apt-get install -y -qq ./discord.deb xvfb
+                  echo "Where the package put Discord:"
+                  dpkg -L discord | grep -E "app\.asar|/resources$|/bin/" || true
 
             - name: Install Discord (macOS)
               if: runner.os == 'macOS'

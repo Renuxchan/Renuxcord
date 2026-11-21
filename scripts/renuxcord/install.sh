@@ -8,9 +8,9 @@
 #
 #   sh install.sh [install|uninstall|status] [--flavor stable|ptb|canary|all] [--location <Discord resources folder>]
 #
-# install downloads Renuxcord into its data folder and points Discord at it with a small "app" folder next to
-# Discord's app.asar, which Discord loads first. Renuxcord then keeps itself updated. A Discord update replaces
-# that folder, so run this again after Discord itself updates.
+# install downloads Renuxcord into its data folder, renames Discord's app.asar to _app.asar and puts a tiny app.asar
+# in its place that loads Renuxcord, which then loads Discord's own code (the same way the Windows installer works).
+# Renuxcord keeps itself updated from there. A Discord update replaces app.asar, so run this again after one.
 
 set -eu
 
@@ -174,21 +174,56 @@ js_string() {
     printf '"%s"' "$(say "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')"
 }
 
+# Little-endian 32-bit number as raw bytes
+u32() {
+    printf "\\$(printf '%03o' $(($1 & 255)))\\$(printf '%03o' $((($1 >> 8) & 255)))\\$(printf '%03o' $((($1 >> 16) & 255)))\\$(printf '%03o' $((($1 >> 24) & 255)))"
+}
+
+byte_count() {
+    printf '%s' "$1" | wc -c | tr -d ' '
+}
+
+# The tiny app.asar Discord loads instead of its own, in the same format install.mjs and Vencord's installer write
+write_stub_asar() {
+    index="require($(js_string "$2")); // Renuxcord"
+    pkg='{"name":"discord","main":"index.js"}'
+    index_size=$(byte_count "$index")
+    pkg_size=$(byte_count "$pkg")
+    header="{\"files\":{\"index.js\":{\"size\":$index_size,\"offset\":\"0\"},\"package.json\":{\"size\":$pkg_size,\"offset\":\"$index_size\"}}}"
+    header_size=$(byte_count "$header")
+    padded=$(((header_size + 3) / 4 * 4))
+    {
+        u32 4
+        u32 $((8 + padded))
+        u32 $((4 + padded))
+        u32 "$header_size"
+        printf '%s' "$header"
+        pad=$((padded - header_size))
+        while [ $pad -gt 0 ]; do
+            printf '\000'
+            pad=$((pad - 1))
+        done
+        printf '%s' "$index"
+        printf '%s' "$pkg"
+    } > "$1"
+}
+
+is_stub() {
+    [ -f "$1" ] && [ "$(wc -c < "$1" | tr -d ' ')" -lt 4096 ]
+}
+
 state_of() {
     res=$1
-    if [ -f "$res/app/index.js" ]; then
-        if grep -q "Renuxcord" "$res/app/index.js" 2> /dev/null; then
-            say "Renuxcord -> $(sed -n 's/.*require("\(.*\)").*/\1/p' "$res/app/index.js")"
+    if [ -f "$res/_app.asar" ] && is_stub "$res/app.asar"; then
+        if grep -q "Renuxcord" "$res/app.asar" 2> /dev/null; then
+            say "Renuxcord -> $(LC_ALL=C sed -n 's/.*require("\([^"]*\)").*/\1/p' "$res/app.asar" | head -1)"
         else
-            say "patched by another mod (it has an app folder)"
+            say "patched by another mod (probably Vencord)"
         fi
     elif [ -f "$res/_app.asar" ]; then
-        # install.mjs (and Vencord's installer) swap app.asar for a tiny one that loads the mod
-        if [ "$(wc -c < "$res/app.asar")" -lt 4096 ] && grep -q "Renuxcord" "$res/app.asar" 2> /dev/null; then
-            say "Renuxcord (app.asar method)"
-        else
-            say "patched by another mod (probably Vencord, it has _app.asar)"
-        fi
+        say "patched by another mod (it has _app.asar)"
+    elif [ -f "$res/app/index.js" ]; then
+        say "patched by another mod (it has an app folder)"
     else
         say "vanilla"
     fi
@@ -222,34 +257,33 @@ download_renuxcord() {
 patch_install() {
     res=$1
     data=$2
-    app="$res/app"
 
     case "$(state_of "$res")" in
         "patched by another mod"*)
             warn "Skipping $res: $(state_of "$res"). Uninstall that mod first"
             return 1
             ;;
-        "Renuxcord (app.asar method)")
-            say "  $res: already loads Renuxcord"
-            return 0
-            ;;
     esac
 
-    index="require($(js_string "$data/dist/patcher.js")); // Renuxcord"
-    pkg='{ "name": "discord", "main": "index.js" }'
-    tmp=$(mktemp -d)
-    say "$index" > "$tmp/index.js"
-    say "$pkg" > "$tmp/package.json"
+    stub=$(mktemp)
+    write_stub_asar "$stub" "$data/dist/patcher.js"
 
     ok=1
-    as_owner "$res" mkdir -p "$app" 2> /dev/null || ok=0
-    if [ $ok = 1 ]; then
-        as_owner "$res" cp "$tmp/index.js" "$tmp/package.json" "$app/" 2> /dev/null || ok=0
+    if [ ! -f "$res/_app.asar" ]; then
+        as_owner "$res" mv "$res/app.asar" "$res/_app.asar" 2> /dev/null || ok=0
     fi
-    rm -rf "$tmp"
+    if [ $ok = 1 ]; then
+        as_owner "$res" cp "$stub" "$res/app.asar" 2> /dev/null || ok=0
+        as_owner "$res" chmod 644 "$res/app.asar" 2> /dev/null || true
+    fi
+    rm -f "$stub"
     if [ $ok = 0 ]; then
+        # Never leave Discord without an app.asar
+        if [ ! -f "$res/app.asar" ] && [ -f "$res/_app.asar" ]; then
+            as_owner "$res" mv "$res/_app.asar" "$res/app.asar" 2> /dev/null || true
+        fi
         mac_permission_hint
-        warn "Couldn't write to $app"
+        warn "Couldn't patch $res"
         return 1
     fi
     say "  $res: $(state_of "$res")"
@@ -257,11 +291,14 @@ patch_install() {
 
 unpatch_install() {
     res=$1
-    if [ -f "$res/app/index.js" ] && grep -q "Renuxcord" "$res/app/index.js"; then
-        as_owner "$res" rm -rf "$res/app" || { mac_permission_hint; die "Couldn't remove $res/app"; }
-    elif [ "$(state_of "$res")" = "Renuxcord (app.asar method)" ]; then
-        as_owner "$res" mv -f "$res/_app.asar" "$res/app.asar" || { mac_permission_hint; die "Couldn't restore $res/app.asar"; }
-    fi
+    case "$(state_of "$res")" in
+        "Renuxcord ->"*)
+            as_owner "$res" mv -f "$res/_app.asar" "$res/app.asar" || {
+                mac_permission_hint
+                die "Couldn't restore $res/app.asar"
+            }
+            ;;
+    esac
     say "  $res: $(state_of "$res")"
 }
 

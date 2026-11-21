@@ -16,7 +16,7 @@ import { RenuxDevs } from "@utils/renuxcord";
 import definePlugin, { OptionType, PluginNative } from "@utils/types";
 import { showToast } from "@webpack/common";
 
-import type { DroverConfig } from "./native";
+import type { DroverConfig, DroverStatus } from "./native";
 
 const Native = VencordNative.pluginHelpers.Drover as PluginNative<typeof import("./native")>;
 const logger = new Logger("Drover");
@@ -65,25 +65,27 @@ const askRestart = (message: string) => showNotice({ message, buttonText: "Resta
 async function applyNow() {
     try {
         const res = await Native.apply(config());
-        for (const s of res.skipped) showToast(`Drover: ${s}`);
+        for (const s of res.skipped) showToast({ text: `Drover: ${s}`, variant: "critical" });
         if (res.restartNeeded) askRestart("Drover is set up. Restart Discord to turn it on.");
     } catch (err) {
         logger.error("Couldn't set up Drover", err);
-        showToast(`Drover: ${err instanceof Error ? err.message : String(err)}`);
+        showToast({ text: `Drover: ${err instanceof Error ? err.message : String(err)}`, variant: "critical" });
     }
 }
 
 function Panel() {
-    const [status] = useAwaiter(() => Native.status(), { fallbackValue: null });
+    const [status] = useAwaiter<DroverStatus | null>(() => Native.status(), { fallbackValue: null });
     return (
         <div>
             {!IS_WINDOWS && <Paragraph>On macOS and Linux only the proxy works (Renuxcord sets it when Discord starts). Voice unblocking needs Windows.</Paragraph>}
             {status && IS_WINDOWS && (
                 <Paragraph>
-                    Drover {status.release} is {status.loaded ? "running" : "not running"} in this Discord.{" "}
+                    Drover {status.release} is {status.loaded ? "running" : "not running"} in this Discord
+                    {status.loaded && (status.proxy ? `, through ${status.proxy}` : ", unblocking voice without a proxy")}.{" "}
                     {status.folders.map(f => `${f.name}: ${f.dll === "drover" ? "installed" : f.dll === "other" ? "has another version.dll" : "not installed"}`).join(" · ")}
                 </Paragraph>
             )}
+            {status && !IS_WINDOWS && status.proxy && <Paragraph>Discord started with the proxy {status.proxy}.</Paragraph>}
             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 {IS_WINDOWS && <Button size="small" onClick={applyNow}>Apply now</Button>}
                 <Button size="small" variant="secondary" onClick={relaunch}>Restart Discord</Button>

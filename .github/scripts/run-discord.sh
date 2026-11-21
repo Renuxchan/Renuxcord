@@ -15,7 +15,7 @@ case "$(uname -s)" in
             discord --no-sandbox > '$log' 2>&1 &
             sleep $seconds
             command -v import > /dev/null && import -window root '$shot'
-            pkill -f /usr/share/discord/Discord
+            pkill -f -i 'discord' || true
             sleep 3
         "
         ;;
