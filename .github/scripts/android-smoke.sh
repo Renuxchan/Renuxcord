@@ -69,6 +69,7 @@ fi
 adb shell cmd statusbar collapse > /dev/null 2>&1
 sleep 2
 adb exec-out screencap -p > android-shot.png
+adb shell rm -f /sdcard/ui.xml
 adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
 if adb shell cat /sdcard/ui.xml | grep -q "Starting Renuxcord"; then
     echo "FAIL the loading screen is still up"
@@ -85,13 +86,25 @@ sleep 8
 if online; then
     echo "skip the emulator stayed online in airplane mode, can't check the offline screen"
 else
-    adb logcat -c
-    adb shell am start -n $pkg/dev.renuxcord.app.MainActivity
-    sleep 20
-    adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
-    adb shell cat /sdcard/ui.xml > android-offline.xml
-    adb exec-out screencap -p > android-offline.png
-    if grep -q "reach Discord" android-offline.xml && adb shell pidof $pkg > /dev/null; then
+    offline_ok=0
+    # Twice at most: the emulator sometimes restarts Play Services, and Android then kills every app using its
+    # font provider (WebView does), which has nothing to do with Renuxcord
+    for attempt in 1 2; do
+        adb logcat -c
+        adb shell am start -n $pkg/dev.renuxcord.app.MainActivity
+        sleep 20
+        adb shell rm -f /sdcard/ui.xml
+        adb shell uiautomator dump /sdcard/ui.xml > /dev/null 2>&1
+        adb shell cat /sdcard/ui.xml > android-offline.xml 2> /dev/null
+        adb exec-out screencap -p > android-offline.png
+        if grep -q "reach Discord" android-offline.xml && adb shell pidof $pkg > /dev/null; then
+            offline_ok=1
+            break
+        fi
+        echo "note offline try $attempt didn't show the screen:"
+        adb logcat -d | grep -E "Killing .*$pkg|Discord failed to load|FATAL" | tail -3
+    done
+    if [ $offline_ok = 1 ]; then
         echo "ok   offline: the app stays open and shows its Try again screen"
     else
         echo "FAIL offline: no Try again screen"
