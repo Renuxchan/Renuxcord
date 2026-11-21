@@ -181,7 +181,7 @@ Every one carries the **✦ RENUXCORD EXCLUSIVE** badge in Settings › Renuxcor
 | **Bookmarks** | Save messages and find them again in a searchable list with jump-to-message |
 | **MessageScheduler** | `/schedule 2h30m hey` or `/schedule 9pm ...` to send messages later |
 | **MessageReminders** | Right-click a message → Remind me in 15m / 1h / tomorrow / any time, with a notification that jumps back to it |
-| **ChatExporter** | Save a chat as a styled HTML page, text or JSON (`/export` or right-click a channel) |
+| **ChatExporter** | Save a whole chat, every message, as a styled HTML page, text or JSON (`/export` or right-click a channel). Big chats take a few minutes, and you can stop it part way |
 | **MediaDownloader** | Save every image, video and file from a message or a whole channel into Downloads › Renuxcord |
 | **Notepad** | Notes inside Discord: `Ctrl+Alt+N`, `/notes`, `/note`, and right-click → Save to Notepad |
 

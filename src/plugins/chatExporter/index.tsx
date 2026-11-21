@@ -26,8 +26,9 @@ interface Exported {
     replyTo: string | null;
 }
 
-const MAX = 10_000;
 let busy = false;
+let stopRequested = false;
+let progress = 0;
 
 const esc = (s: string) => s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
@@ -49,19 +50,21 @@ function simplify(m: any): Exported {
     };
 }
 
-async function fetchHistory(channelId: string, limit: number) {
-    const out: any[] = [];
+/** The whole history (Discord hands it over newest first, 100 at a time). Stops early at `limit` or when asked to */
+async function fetchHistory(channelId: string, limit = Infinity) {
+    const out: Exported[] = [];
     let before: string | undefined;
-    while (out.length < limit) {
+    while (out.length < limit && !stopRequested) {
         const batch: any[] = await rest("get", `/channels/${channelId}/messages`, undefined, { limit: Math.min(100, limit - out.length), ...(before ? { before } : {}) });
         if (!batch?.length) break;
-        out.push(...batch);
+        for (const m of batch) out.push(simplify(m));
+        progress = out.length;
         before = batch[batch.length - 1].id;
-        if (out.length % 500 === 0) showToast({ text: `Exporting… ${out.length} messages` });
+        if (out.length % 1000 === 0) showToast({ text: `Exporting… ${out.length.toLocaleString()} messages so far` });
         if (batch.length < 100) break;
-        await sleep(700);
+        await sleep(450);
     }
-    return out.reverse().map(simplify);
+    return out.reverse();
 }
 
 function mentions(text: string) {
@@ -85,6 +88,7 @@ function where(channel: Channel) {
     return { guild, name };
 }
 
+// The exporters return chunks, so a chat with hundreds of thousands of messages never becomes one giant string
 function toHtml(channel: Channel, messages: Exported[]) {
     const { guild, name } = where(channel);
     const byId = new Map(messages.map(m => [m.id, m]));
@@ -98,10 +102,10 @@ ${reply ? `<div class="reply">↪ <b>${esc(reply.author.name)}</b> ${esc(reply.c
 <div class="text">${markdown(m.content)}</div>
 ${m.attachments.map(a => a.image ? `<a href="${esc(a.url)}"><img class="att" src="${esc(a.url)}" alt="${esc(a.name)}"></a>` : `<div class="file">📎 <a href="${esc(a.url)}">${esc(a.name)}</a></div>`).join("")}
 ${m.embeds.map(e => `<div class="embed">${e.title ? `<b>${esc(e.title)}</b>` : ""}${e.description ? `<div>${markdown(e.description)}</div>` : ""}${e.url ? `<a href="${esc(e.url)}">${esc(e.url)}</a>` : ""}</div>`).join("")}
-</div></div>`;
-    }).join("\n");
+</div></div>\n`;
+    });
 
-    return `<!doctype html>
+    const head = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(guild ? `${guild} · #${name}` : name)}</title>
 <style>
@@ -118,8 +122,8 @@ a{color:#a78bfa}.mention{background:#a78bfa33;color:#c4b5fd;border-radius:3px;pa
 </style></head><body>
 <header><h1>${esc(guild ? `#${name}` : name)}</h1><p>${guild ? `${esc(guild)} · ` : ""}${messages.length} messages · exported ${new Date().toLocaleString()} with Renuxcord</p></header>
 <main>
-${rows}
-</main><footer>Exported with Renuxcord ChatExporter</footer></body></html>`;
+`;
+    return [head, ...rows, "</main><footer>Exported with Renuxcord ChatExporter</footer></body></html>"];
 }
 
 function toText(channel: Channel, messages: Exported[]) {
@@ -128,30 +132,42 @@ function toText(channel: Channel, messages: Exported[]) {
         const extra = [...m.attachments.map(a => `[file] ${a.url}`), ...m.embeds.map(e => `[embed] ${e.title ?? e.url ?? ""}`)];
         return `[${new Date(m.timestamp).toLocaleString()}] ${m.author.name}: ${m.content}${extra.length ? `\n    ${extra.join("\n    ")}` : ""}`;
     });
-    return `${guild ? `${guild} / #${name}` : name}\n${messages.length} messages, exported ${new Date().toLocaleString()}\n\n${lines.join("\n")}\n`;
+    return [`${guild ? `${guild} / #${name}` : name}\n${messages.length} messages, exported ${new Date().toLocaleString()}\n\n`, ...lines.map(l => `${l}\n`)];
 }
 
-export async function exportChat(channel: Channel, format: Format, limit: number) {
-    if (busy) return showToast({ text: "An export is already running", variant: "critical" });
+function toJson(channel: Channel, messages: Exported[]) {
+    const { guild, name } = where(channel);
+    const head = JSON.stringify({ server: guild, channel: name, channelId: channel.id, exportedAt: new Date().toISOString() }, null, 2).replace(/\n}$/, ',\n  "messages": [\n');
+    return [head, ...messages.map((m, i) => `    ${JSON.stringify(m)}${i < messages.length - 1 ? "," : ""}\n`), "  ]\n}\n"];
+}
+
+/** Exports the whole chat, or only the newest `limit` messages */
+export async function exportChat(channel: Channel, format: Format, limit?: number) {
+    if (busy) return showToast({ text: `An export is already running (${progress.toLocaleString()} messages so far). Right-click a channel › Export chat › Stop to end it`, variant: "critical" });
     busy = true;
+    stopRequested = false;
+    progress = 0;
     try {
-        showToast({ text: `Exporting up to ${limit} messages…` });
-        const messages = await fetchHistory(channel.id, Math.min(Math.max(limit, 1), MAX));
+        const max = limit && limit > 0 ? limit : Infinity;
+        showToast({ text: max === Infinity ? "Exporting the whole chat… big chats take a few minutes" : `Exporting the newest ${max.toLocaleString()} messages…` });
+        const messages = await fetchHistory(channel.id, max);
         const { guild, name } = where(channel);
         const base = `${guild ? `${guild}-` : ""}${name}-${new Date().toISOString().slice(0, 10)}`.replace(/[^\w.-]+/g, "_").slice(0, 120);
 
-        const content = format === "json"
-            ? JSON.stringify({ server: guild, channel: name, channelId: channel.id, exportedAt: new Date().toISOString(), messages }, null, 2)
-            : format === "txt" ? toText(channel, messages) : toHtml(channel, messages);
+        const parts = format === "json" ? toJson(channel, messages) : format === "txt" ? toText(channel, messages) : toHtml(channel, messages);
         const type = format === "json" ? "application/json" : format === "txt" ? "text/plain" : "text/html";
 
-        saveFile(new File([content], `${base}.${format}`, { type }));
-        showToast({ text: `✅ Exported ${messages.length} messages as ${format.toUpperCase()}`, variant: "success" });
+        saveFile(new File(parts, `${base}.${format}`, { type }));
+        showToast({
+            text: `✅ Exported ${messages.length.toLocaleString()} messages as ${format.toUpperCase()}${stopRequested ? " (stopped early: the newest ones)" : ""}`,
+            variant: "success"
+        });
         return messages.length;
     } catch (err) {
         showToast({ text: `Export failed: ${err instanceof Error ? err.message : String(err)}`, variant: "critical" });
     } finally {
         busy = false;
+        stopRequested = false;
     }
 }
 
@@ -159,16 +175,20 @@ const channelContext: NavContextMenuPatchCallback = (children, { channel }: { ch
     if (!channel) return;
     children.push(
         <Menu.MenuItem id="rx-export" label="Export chat">
-            <Menu.MenuItem id="rx-export-html" label="As a web page (HTML)" action={() => exportChat(channel, "html", 1000)} />
-            <Menu.MenuItem id="rx-export-txt" label="As text (TXT)" action={() => exportChat(channel, "txt", 1000)} />
-            <Menu.MenuItem id="rx-export-json" label="As data (JSON)" action={() => exportChat(channel, "json", 1000)} />
+            {busy
+                ? <Menu.MenuItem id="rx-export-stop" label={`Stop the export (${progress.toLocaleString()} so far)`} color="danger" action={() => { stopRequested = true; }} />
+                : [
+                    <Menu.MenuItem key="html" id="rx-export-html" label="As a web page (HTML)" action={() => exportChat(channel, "html")} />,
+                    <Menu.MenuItem key="txt" id="rx-export-txt" label="As text (TXT)" action={() => exportChat(channel, "txt")} />,
+                    <Menu.MenuItem key="json" id="rx-export-json" label="As data (JSON)" action={() => exportChat(channel, "json")} />
+                ]}
         </Menu.MenuItem>
     );
 };
 
 export default definePlugin({
     name: "ChatExporter",
-    description: "Save any chat as a styled HTML page, plain text or JSON (/export, or right-click a channel → Export chat)",
+    description: "Save a whole chat, every message, as a styled HTML page, plain text or JSON (/export, or right-click a channel → Export chat)",
     tags: ["Renuxcord", "Chat", "Utility"],
     authors: [RenuxDevs.Larpbase],
 
@@ -184,12 +204,12 @@ export default definePlugin({
         inputType: ApplicationCommandInputType.BUILT_IN,
         options: [
             { name: "format", description: "html (default), txt or json", type: ApplicationCommandOptionType.STRING, required: false },
-            { name: "messages", description: `How many recent messages (default 1000, max ${MAX})`, type: ApplicationCommandOptionType.INTEGER, required: false }
+            { name: "messages", description: "Only the newest this many (leave it out for the whole chat)", type: ApplicationCommandOptionType.INTEGER, required: false }
         ],
         async execute(args, ctx) {
             const format = String(findOption(args, "format", "html")).toLowerCase() as Format;
             if (!["html", "txt", "json"].includes(format)) return void sendBotMessage(ctx.channel.id, { content: "❌ Format has to be html, txt or json." });
-            await exportChat(ctx.channel, format, findOption(args, "messages", 1000));
+            await exportChat(ctx.channel, format, findOption<number>(args, "messages"));
         }
     }]
 });
