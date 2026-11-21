@@ -97,6 +97,7 @@ jobs:
 
             - name: Build Renuxcord Installer
               run: |
+                  if [ "$(uname -s)" = Linux ]; then go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest; fi
                   sh installer/desktop/build.sh
                   if [ "$(uname -s)" = Darwin ]; then
                       echo "INSTALLER=$PWD/installer/desktop/build/Renuxcord Installer.app/Contents/MacOS/RenuxcordInstaller" >> "$GITHUB_ENV"
@@ -121,6 +122,17 @@ jobs:
                   "$INSTALLER" --cli uninstall
                   "$INSTALLER" --cli status | tee status.txt
                   grep -q "Renuxcord isn't installed" status.txt
+
+            - name: The .deb installs like an app (Linux)
+              if: runner.os == 'Linux'
+              run: |
+                  sudo apt-get install -y -qq ./dist/RenuxcordInstaller-linux-x64.deb
+                  test -x /usr/bin/renuxcord-installer
+                  test -f /usr/share/applications/renuxcord-installer.desktop
+                  test -f /usr/share/icons/hicolor/512x512/apps/renuxcord-installer.png
+                  renuxcord-installer --cli status
+                  rpm -qpl dist/RenuxcordInstaller-linux-x64.rpm 2> /dev/null || echo "(rpm isn't installed here; the .rpm was built)"
+                  ls -la dist/RenuxcordInstaller-linux-x64.*
 
             # GitHub's macOS machines are virtual and have no GPU OpenGL, so the window can't open there (real Macs
             # are fine); the installer then explains itself instead. Linux gets a real screenshot through Xvfb.

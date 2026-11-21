@@ -1,0 +1,33 @@
+# Packages Renuxcord Installer as a .deb and an .rpm (build.sh runs nfpm with VERSION set)
+name: renuxcord-installer
+arch: amd64
+platform: linux
+version: ${VERSION}
+section: utils
+priority: optional
+maintainer: Renuxcord <358864257+Renuxchan@users.noreply.github.com>
+description: |
+    Puts Renuxcord, a Discord client mod, into the Discord on this computer.
+    Open "Renuxcord Installer" from your apps, pick your Discord and press Install.
+homepage: https://renuxchan.github.io/Renuxcord/
+license: GPL-3.0-or-later
+
+contents:
+    - src: build/RenuxcordInstaller
+      dst: /usr/bin/renuxcord-installer
+      file_info:
+          mode: 0755
+    - src: renuxcord-installer.desktop
+      dst: /usr/share/applications/renuxcord-installer.desktop
+    - src: icon.png
+      dst: /usr/share/icons/hicolor/512x512/apps/renuxcord-installer.png
+
+overrides:
+    deb:
+        depends:
+            - libgl1
+            - libx11-6
+    rpm:
+        depends:
+            - mesa-libGL
+            - libX11

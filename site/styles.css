@@ -1942,6 +1942,13 @@ h2 kbd {
     font: 13px/1.5 var(--mono);
 }
 
+.get-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 14px;
+}
+
 .platform-grid .small {
     color: var(--muted);
     font-size: 14px;

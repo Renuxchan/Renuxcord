@@ -22,4 +22,4 @@ cd mobile/android
 The APK lands in `app/build/outputs/apk/release/`. CI signs release builds with the key in the repository's
 secrets (`RENUXCORD_KEYSTORE*`), so new APKs install over old ones. Builds without it use the debug key.
 
-Some desktop-only plugins (the AI bridge, files on your computer, Drover) can't work in the app.
+Some desktop-only plugins (the AI bridge, files on your computer, the voice chat unblocker) can't work in the app.

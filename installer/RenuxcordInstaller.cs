@@ -420,7 +420,7 @@ namespace Renuxcord.Installer
             using (var f = new Font("Segoe UI Semibold", 24f))
                 g.DrawString("Renuxcord", f, new SolidBrush(Text1), 100, 22);
             using (var f = new Font("Segoe UI", 10f))
-                g.DrawString("217 plugins, Renuxcord exclusives, the AI bridge and auto-updates", f, new SolidBrush(Muted), 104, 66);
+                g.DrawString("218 plugins, Renuxcord exclusives, the AI bridge and auto-updates", f, new SolidBrush(Muted), 104, 66);
         }
 
         static GraphicsPath RoundedRect(Rectangle r, int radius)

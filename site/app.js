@@ -5,14 +5,53 @@
  */
 
 const { repo } = document.body.dataset;
+const file = name => `https://github.com/${repo}/releases/latest/download/${name}`;
 const links = {
     repo: `https://github.com/${repo}`,
     releases: `https://github.com/${repo}/releases`,
     license: `https://github.com/${repo}/blob/main/LICENSE`,
-    installer: `https://github.com/${repo}/releases/latest/download/RenuxcordInstaller.exe`,
+    installer: file("RenuxcordInstaller.exe"),
+    mac: file("RenuxcordInstaller-mac.zip"),
+    deb: file("RenuxcordInstaller-linux-x64.deb"),
+    rpm: file("RenuxcordInstaller-linux-x64.rpm"),
+    linux: file("RenuxcordInstaller-linux-x64.tar.gz"),
+    apk: file("Renuxcord.apk"),
+    ipa: file("Renuxcord.ipa"),
+    userscript: file("Renuxcord.user.js"),
+    // One tap on an iPhone: SideStore and AltStore add the source, TrollStore installs the IPA straight away
+    sidestore: `sidestore://source?url=${encodeURIComponent(file("altstore.json"))}`,
+    altstore: `altstore://source?url=${encodeURIComponent(file("altstore.json"))}`,
+    trollstore: `apple-magnifier://install?url=${encodeURIComponent(file("Renuxcord.ipa"))}`,
 };
 
 for (const a of document.querySelectorAll("[data-link]")) a.href = links[a.dataset.link];
+
+// The download buttons offer what fits the visitor's system
+function system() {
+    const ua = navigator.userAgent;
+    const platform = (navigator.userAgentData?.platform || navigator.platform || "").toLowerCase();
+    if (/iphone|ipad|ipod/i.test(ua) || (platform === "macintel" && navigator.maxTouchPoints > 1)) return "ios";
+    if (/android/i.test(ua)) return "android";
+    if (platform.startsWith("win") || /windows/i.test(ua)) return "windows";
+    if (platform.startsWith("mac") || /mac os x/i.test(ua)) return "mac";
+    if (/linux|x11|cros/i.test(platform + " " + ua)) return "linux";
+    return "windows";
+}
+
+const downloads = {
+    windows: { name: "Windows", link: "installer", icon: "#i-windows", note: "Windows 10 and 11" },
+    mac: { name: "macOS", link: "mac", icon: "#i-down", note: "Apple silicon and Intel" },
+    linux: { name: "Linux", link: "deb", icon: "#i-down", note: ".deb here, .rpm and .tar.gz below" },
+    android: { name: "Android", link: "apk", icon: "#i-down", note: "Android 8 or newer" },
+    ios: { name: "iPhone", href: "#platforms", icon: "#i-down", note: "SideStore, AltStore, TrollStore or Safari" },
+};
+const mine = downloads[system()];
+for (const a of document.querySelectorAll("[data-download]")) {
+    a.href = mine.href ?? links[mine.link];
+    if (a.dataset.download === "full") a.innerHTML = `<svg aria-hidden="true"><use href="${mine.icon}" /></svg>${mine.href ? "Get it on" : "Download for"} ${mine.name}`;
+}
+const sizeNote = document.getElementById("size");
+if (sizeNote) sizeNote.textContent = `Free · ${mine.note} · every other system further down`;
 
 const el = (tag, cls, text) => {
     const node = document.createElement(tag);
@@ -52,7 +91,7 @@ fetch(`https://api.github.com/repos/${repo}/releases/latest`)
             node.textContent = `Build ${hash} · updated ${timeAgo(builtAt)}`;
 
         const exe = release.assets?.find(a => a.name === "RenuxcordInstaller.exe");
-        if (exe)
+        if (exe && mine === downloads.windows)
             document.getElementById("size").textContent =
                 `Free · ${Math.max(1, Math.round(exe.size / 1024))} KB installer · also on macOS, Linux, Android and iOS`;
     })

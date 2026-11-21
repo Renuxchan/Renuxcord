@@ -18,15 +18,15 @@
 
 <a href="https://github.com/Renuxchan/Renuxcord/actions/workflows/renuxcord-release.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/Renuxchan/Renuxcord/renuxcord-release.yml?branch=main&style=for-the-badge&label=build&labelColor=17171a"></a>
 <a href="https://github.com/Renuxchan/Renuxcord/commits/main"><img alt="Last update" src="https://img.shields.io/github/last-commit/Renuxchan/Renuxcord/main?style=for-the-badge&label=updated&labelColor=17171a&color=2c2c31"></a>
-<img alt="217 plugins" src="https://img.shields.io/badge/plugins-217-ff5a2c?style=for-the-badge&labelColor=17171a">
-<img alt="44 exclusive plugins" src="https://img.shields.io/badge/exclusive-44-ff5a2c?style=for-the-badge&labelColor=17171a">
+<img alt="218 plugins" src="https://img.shields.io/badge/plugins-218-ff5a2c?style=for-the-badge&labelColor=17171a">
+<img alt="45 exclusive plugins" src="https://img.shields.io/badge/exclusive-45-ff5a2c?style=for-the-badge&labelColor=17171a">
 <img alt="Windows, macOS, Linux, Android and iOS" src="https://img.shields.io/badge/runs%20on-windows%20%7C%20macos%20%7C%20linux%20%7C%20android%20%7C%20ios-2c2c31?style=for-the-badge&labelColor=17171a">
 <a href="../LICENSE"><img alt="License GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-2c2c31?style=for-the-badge&labelColor=17171a"></a>
 
 <br>
 <br>
 
-**Renuxcord is a Discord client mod for Windows, macOS, Linux, Android and iOS.** Every plugin you'd expect from a client mod, plus 44 you won't find anywhere else: friend folders in your DM sidebar, Claude in your chat, a command palette, and a bridge that lets Claude Code build your servers. Free, open source, and it keeps itself updated.
+**Renuxcord is a Discord client mod for Windows, macOS, Linux, Android and iOS.** Every plugin you'd expect from a client mod, plus 45 you won't find anywhere else: friend folders in your DM sidebar, Claude in your chat, a command palette, and a bridge that lets Claude Code build your servers. Free, open source, and it keeps itself updated.
 
 </div>
 
@@ -90,8 +90,8 @@ Uninstall the same way. Your settings stay in `%APPDATA%\Renuxcord`. Renuxcord u
 
 ### macOS and Linux
 
-1. Download the installer: **[macOS](https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/RenuxcordInstaller-mac.zip)** (Apple silicon and Intel) or **[Linux](https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/RenuxcordInstaller-linux-x64.tar.gz)** (x64).
-2. **Mac:** open the zip and run **Renuxcord Installer**. The installer isn't notarized, so macOS blocks it the first time: open **System Settings › Privacy & Security** and press **Open Anyway**. **Linux:** extract it and double-click **RenuxcordInstaller**.
+1. Download the installer: **[macOS](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-mac.zip)** (Apple silicon and Intel), **[Linux .deb](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-linux-x64.deb)** (Ubuntu, Debian, Mint), **[Linux .rpm](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-linux-x64.rpm)** (Fedora, openSUSE) or the **[Linux .tar.gz](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-linux-x64.tar.gz)** (anything else).
+2. **Mac:** open the zip and run **Renuxcord Installer**. The installer isn't notarized, so macOS blocks it the first time: open **System Settings › Privacy & Security** and press **Open Anyway**. **Linux:** open the .deb or .rpm to install it like any app, then start **Renuxcord Installer** from your apps (with the .tar.gz: extract it and double-click RenuxcordInstaller).
 3. Pick your Discord (Stable, PTB or Canary) and press **Install / Repair**. Discord restarts with Renuxcord.
 
 If macOS says it blocked changes to Discord, turn the installer on in **System Settings › Privacy & Security › App Management** and press Install again. Settings live in `~/Library/Application Support/Renuxcord` on macOS and `~/.config/Renuxcord` on Linux.
@@ -106,15 +106,15 @@ curl -fsSL https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/ins
 
 ### Android
 
-Install **[Renuxcord.apk](https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/Renuxcord.apk)** (Android 8 or newer, allow installing from your browser when Android asks). It opens Discord with Renuxcord loaded, keeps Renuxcord updated and adds a **Renuxcord app** page to Discord's settings. More in [mobile/android](../mobile/android).
+Install **[Renuxcord.apk](https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.apk)** (Android 8 or newer, allow installing from your browser when Android asks). It opens Discord with Renuxcord loaded, keeps Renuxcord updated and adds a **Renuxcord app** page to Discord's settings. More in [mobile/android](../mobile/android).
 
 ### iPhone and iPad
 
-Sideload **[Renuxcord.ipa](https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/Renuxcord.ipa)** with SideStore, AltStore, Sideloadly or TrollStore. No sideloading? Install the free **Userscripts** app from the App Store, add **[Renuxcord.user.js](https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/Renuxcord.user.js)** and open discord.com in Safari. More in [mobile/ios](../mobile/ios).
+Open the **[website](https://renuxchan.github.io/Renuxcord/#platforms)** on your iPhone and tap **Add to SideStore**, **Add to AltStore** or **Install with TrollStore**. SideStore and AltStore add the Renuxcord source (`https://github.com/Renuxchan/Renuxcord/releases/latest/download/altstore.json`) and keep the app updated. Using Sideloadly or something else? Get **[Renuxcord.ipa](https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.ipa)**. No sideloading at all? Install the free **Userscripts** app from the App Store, add **[Renuxcord.user.js](https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.user.js)** and open discord.com in Safari. More in [mobile/ios](../mobile/ios).
 
-The phone apps run Discord's web app with Renuxcord in it, so plugins that need a computer (the AI bridge, files on your PC, Drover) stay on desktop.
+The phone apps run Discord's web app with Renuxcord in it, so plugins that need a computer (the AI bridge, files on your PC, Voice Chat Unblocker) stay on desktop.
 
-## The 44 Renuxcord exclusives
+## The 45 Renuxcord exclusives
 
 Every one carries the **✦ RENUXCORD EXCLUSIVE** badge in Settings › Renuxcord › Plugins, sorted to the top. The 170+ classic plugins are all there too, and anyone updating gets a one-time list of the newest exclusives to switch on.
 
@@ -183,12 +183,13 @@ Every one carries the **✦ RENUXCORD EXCLUSIVE** badge in Settings › Renuxcor
 </details>
 
 <details>
-<summary><b>Voice and status</b> · Drover, FakeDeafen, VoiceLog, FocusMode, StatusRotator, PanicBlur</summary>
+<summary><b>Voice and status</b> · VoiceChatUnblocker, Drover, FakeDeafen, VoiceLog, FocusMode, StatusRotator, PanicBlur</summary>
 <br>
 
 | Plugin | What it does |
 | --- | --- |
-| **Drover** | Gets Discord voice working where it's blocked (like the UAE) and can send Discord through an HTTP or SOCKS5 proxy. Sets up [hdrover's Discord Drover](https://github.com/hdrover/discord-drover) for you on Windows: it downloads the official release and checks it before installing |
+| **VoiceChatUnblocker** | Renuxcord's own voice chat unblocker for networks that block Discord voice (like the UAE). Voice goes through a tiny relay inside Renuxcord that starts every connection with decoy packets, so the network can't tell it's Discord voice, and switches tricks by itself until one gets through. Windows, macOS and Linux, no DLLs |
+| **Drover** | The other way to unblock voice: gets Discord voice working where it's blocked (like the UAE) and can send Discord through an HTTP or SOCKS5 proxy. Sets up [hdrover's Discord Drover](https://github.com/hdrover/discord-drover) for you on Windows: it downloads the official release and checks it before installing |
 | **FakeDeafen** | Look deafened to everyone in the call while you can still hear (`Ctrl+Alt+D`) |
 | **VoiceLog** | Timestamped log of who joined and left your voice channel |
 | **FocusMode** | `Ctrl+Alt+F`: Do Not Disturb, hides the server and member lists, Pomodoro timer, automatic quiet hours |

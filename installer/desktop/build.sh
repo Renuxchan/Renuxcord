@@ -46,6 +46,21 @@ case "$(uname -s)" in
         CGO_ENABLED=1 go build -trimpath -ldflags "-s -w" -o build/RenuxcordInstaller .
         tar -C build -czf "$out/RenuxcordInstaller-linux-x64.tar.gz" RenuxcordInstaller
         echo "Built $out/RenuxcordInstaller-linux-x64.tar.gz"
+
+        # .deb and .rpm, which install like any app and put Renuxcord Installer in the app menu
+        PATH="$PATH:$(go env GOPATH)/bin"
+        if command -v nfpm > /dev/null 2>&1; then
+            export VERSION="1.0.${GITHUB_RUN_NUMBER:-0}"
+            for kind in deb rpm; do
+                rm -rf build/pkg
+                mkdir -p build/pkg
+                nfpm pkg --config nfpm.yaml --packager "$kind" --target build/pkg/
+                mv build/pkg/*."$kind" "$out/RenuxcordInstaller-linux-x64.$kind"
+                echo "Built $out/RenuxcordInstaller-linux-x64.$kind"
+            done
+        else
+            echo "nfpm isn't installed, skipping the .deb and .rpm (go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest)"
+        fi
         ;;
     *)
         echo "Build this on macOS or Linux (Windows has installer/build.ps1)" >&2

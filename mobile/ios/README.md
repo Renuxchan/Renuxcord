@@ -31,4 +31,4 @@ mkdir -p Payload && cp -R build/Build/Products/Release-iphoneos/Renuxcord.app Pa
 CI does exactly this on every change and checks Renuxcord loads in the iOS simulator.
 
 iOS doesn't let apps strip Discord's content security policy, so plugins that fetch from sites Discord doesn't
-allow can't do that here. Desktop-only plugins (the AI bridge, files on your computer, Drover) don't work either.
+allow can't do that here. Desktop-only plugins (the AI bridge, files on your computer, the voice chat unblocker) don't work either.

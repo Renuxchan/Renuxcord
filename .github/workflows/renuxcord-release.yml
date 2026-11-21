@@ -145,13 +145,14 @@ jobs:
               run: |
                   sudo apt-get update -qq
                   sudo apt-get install -y -qq gcc libgl1-mesa-dev xorg-dev libxkbcommon-dev libwayland-dev wayland-protocols
+                  go install github.com/goreleaser/nfpm/v2/cmd/nfpm@latest
                   sh installer/desktop/build.sh
 
             - name: Upload it
               uses: actions/upload-artifact@v4
               with:
                   name: installer-linux
-                  path: dist/RenuxcordInstaller-linux-x64.tar.gz
+                  path: dist/RenuxcordInstaller-linux-x64.*
 
     release:
         needs: [build, installer, installer-mac, installer-linux]
@@ -193,10 +194,10 @@ jobs:
 
                   - **Windows:** download **RenuxcordInstaller.exe** and run it.
                   - **macOS:** download **RenuxcordInstaller-mac.zip**, open it and run Renuxcord Installer. The first time, macOS blocks it: System Settings › Privacy & Security › Open Anyway.
-                  - **Linux:** download **RenuxcordInstaller-linux-x64.tar.gz**, extract it and run RenuxcordInstaller.
+                  - **Linux:** install **RenuxcordInstaller-linux-x64.deb** (Ubuntu, Debian, Mint) or **.rpm** (Fedora, openSUSE), then open Renuxcord Installer from your apps. Anything else: the **.tar.gz**.
                   - **macOS and Linux from a terminal:** `curl -fsSL https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/install.sh | sh`
                   - **Android:** install **Renuxcord.apk**.
-                  - **iPhone and iPad:** sideload **Renuxcord.ipa** with SideStore, AltStore, Sideloadly or TrollStore. No sideloading? Install the free Userscripts app, add **Renuxcord.user.js** and open discord.com in Safari.
+                  - **iPhone and iPad:** open renuxchan.github.io/Renuxcord on your iPhone and tap Add to SideStore, Add to AltStore or Install with TrollStore (the source is **altstore.json**). Or sideload **Renuxcord.ipa** yourself. No sideloading? Install the free Userscripts app, add **Renuxcord.user.js** and open discord.com in Safari.
                   - **Any desktop browser:** open **Renuxcord.user.js** with Tampermonkey.
                   EOF
                   if ! gh release view devbuild > /dev/null 2>&1; then

@@ -3,15 +3,15 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Renuxcord · a Discord client mod with 217 plugins</title>
+        <title>Renuxcord · a Discord client mod with 218 plugins</title>
         <meta
             name="description"
-            content="Renuxcord is a free, open-source Discord client mod for Windows, macOS, Linux, Android and iOS. 217 plugins, 44 of them only here: friend folders in your DM sidebar, Claude in your chat, a command palette and a bridge that lets Claude Code build your servers."
+            content="Renuxcord is a free, open-source Discord client mod for Windows, macOS, Linux, Android and iOS. 218 plugins, 45 of them only here: friend folders in your DM sidebar, Claude in your chat, a command palette and a bridge that lets Claude Code build your servers."
         />
         <meta property="og:title" content="Renuxcord" />
         <meta
             property="og:description"
-            content="A Discord client mod with 217 plugins, on desktop and phone. 44 of them you won't find anywhere else."
+            content="A Discord client mod with 218 plugins, on desktop and phone. 45 of them you won't find anywhere else."
         />
         <meta name="theme-color" content="#0c0c0d" />
         <link rel="icon" href="logo.svg" type="image/svg+xml" />
@@ -207,6 +207,7 @@
                 <a
                     class="btn btn-accent"
                     data-link="installer"
+                    data-download="short"
                     href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller.exe"
                     >Download</a
                 >
@@ -218,12 +219,12 @@
                 <p class="label">Discord client mod · desktop and phone</p>
                 <div class="hero-grid">
                     <h1>
-                        <span><span data-count="total">217</span> plugins.</span
+                        <span><span data-count="total">218</span> plugins.</span
                         ><span class="dim">One installer.</span>
                     </h1>
                     <p class="lede">
                         Every plugin you'd expect from a client mod, plus
-                        <span data-count="exclusive">44</span> you won't find anywhere else: friend
+                        <span data-count="exclusive">45</span> you won't find anywhere else: friend
                         folders in your DM sidebar, Claude in your chat, a command palette, and a
                         bridge that lets Claude Code build your servers. Free, open source, and it
                         keeps itself updated.
@@ -233,6 +234,7 @@
                             <a
                                 class="btn btn-accent"
                                 data-link="installer"
+                                data-download="full"
                                 href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller.exe"
                                 ><svg aria-hidden="true"><use href="#i-windows" /></svg>Download for
                                 Windows</a
@@ -490,11 +492,11 @@
                 <dl>
                     <div>
                         <dt>Plugins</dt>
-                        <dd data-count="total">217</dd>
+                        <dd data-count="total">218</dd>
                     </div>
                     <div>
                         <dt>Only in Renuxcord</dt>
-                        <dd data-count="exclusive">44</dd>
+                        <dd data-count="exclusive">45</dd>
                     </div>
                     <div>
                         <dt>API keys needed for /ai</dt>
@@ -1168,25 +1170,42 @@ module.exports = definePlugin({
                 <div class="platform-grid">
                     <div class="box">
                         <h3>macOS and Linux</h3>
-                        <p>
-                            Get the installer for
+                        <div class="get-buttons">
                             <a
-                                href="https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/RenuxcordInstaller-mac.zip"
+                                class="btn btn-accent"
+                                data-link="mac"
+                                href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-mac.zip"
                                 >macOS</a
                             >
-                            or
                             <a
-                                href="https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/RenuxcordInstaller-linux-x64.tar.gz"
-                                >Linux</a
-                            >, open it, pick your Discord and press Install. Renuxcord keeps itself
+                                class="btn"
+                                data-link="deb"
+                                href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-linux-x64.deb"
+                                >Linux .deb</a
+                            >
+                            <a
+                                class="btn"
+                                data-link="rpm"
+                                href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-linux-x64.rpm"
+                                >Linux .rpm</a
+                            >
+                        </div>
+                        <p>
+                            Open it, pick your Discord and press Install. Renuxcord keeps itself
                             updated from then on.
                         </p>
                         <p class="small">
                             Mac: the first time, macOS blocks apps from outside the App Store. Open
                             System Settings › Privacy &amp; Security and press Open Anyway. If it
                             says macOS blocked changes to Discord, turn the installer on under App
-                            Management. Linux: extract the download and double-click
-                            RenuxcordInstaller.
+                            Management. Linux: the .deb (Ubuntu, Debian, Mint) or .rpm (Fedora,
+                            openSUSE) installs like any app, then start Renuxcord Installer from
+                            your apps. Anything else:
+                            <a
+                                data-link="linux"
+                                href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-linux-x64.tar.gz"
+                                >.tar.gz</a
+                            >.
                         </p>
                         <p class="small">Rather use a terminal? This does the same:</p>
                         <div class="code">
@@ -1195,6 +1214,14 @@ module.exports = definePlugin({
                     </div>
                     <div class="box">
                         <h3>Android</h3>
+                        <div class="get-buttons">
+                            <a
+                                class="btn btn-accent"
+                                data-link="apk"
+                                href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.apk"
+                                >Download Renuxcord.apk</a
+                            >
+                        </div>
                         <p>
                             Install
                             <a
@@ -1210,18 +1237,27 @@ module.exports = definePlugin({
                     </div>
                     <div class="box">
                         <h3>iPhone and iPad</h3>
-                        <p>
-                            Sideload
-                            <a
-                                href="https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/Renuxcord.ipa"
-                                >Renuxcord.ipa</a
+                        <p>Open this page on your iPhone and tap the app you sideload with:</p>
+                        <div class="get-buttons">
+                            <a class="btn btn-accent" data-link="sidestore" href="#"
+                                >Add to SideStore</a
                             >
-                            with SideStore, AltStore, Sideloadly or TrollStore.
-                        </p>
+                            <a class="btn" data-link="altstore" href="#">Add to AltStore</a>
+                            <a class="btn" data-link="trollstore" href="#"
+                                >Install with TrollStore</a
+                            >
+                        </div>
                         <p class="small">
-                            No sideloading? Get the free Userscripts app, add
+                            SideStore and AltStore add the Renuxcord source and update the app by
+                            themselves. Sideloadly or something else? Get
                             <a
-                                href="https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/Renuxcord.user.js"
+                                data-link="ipa"
+                                href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.ipa"
+                                >Renuxcord.ipa</a
+                            >. No sideloading at all? Get the free Userscripts app, add
+                            <a
+                                data-link="userscript"
+                                href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.user.js"
                                 >Renuxcord.user.js</a
                             >
                             and open discord.com in Safari.
@@ -1248,17 +1284,18 @@ module.exports = definePlugin({
                         <summary>Discord voice doesn't work where I live</summary>
                         <p>
                             In places like the UAE, Discord's text works but voice calls get
-                            blocked. Turn on the <b>Drover</b> plugin on Windows: it sets up
-                            hdrover's Discord Drover for you, which gets voice through without a
-                            VPN. It can also send Discord through an HTTP or SOCKS5 proxy.
+                            blocked. Turn on <b>VoiceChatUnblocker</b> (Windows, macOS and Linux):
+                            Renuxcord sends voice through a tiny relay that starts every connection
+                            with decoy packets, so the network can't tell it's Discord voice, and it
+                            switches tricks by itself until one gets through. No VPN needed.
                         </p>
                     </details>
                     <details>
                         <summary>Do the phone apps have every plugin?</summary>
                         <p>
                             Nearly. They run Discord's web app with Renuxcord in it, so the plugins
-                            that need a computer (the AI bridge, files on your PC, Drover) stay on
-                            desktop.
+                            that need a computer (the AI bridge, files on your PC, the voice chat
+                            unblocker) stay on desktop.
                         </p>
                     </details>
                     <details>

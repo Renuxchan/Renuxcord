@@ -87,7 +87,7 @@ func runGUI() {
 		container.NewVBox(
 			layout.NewSpacer(),
 			text("Renuxcord", 30, colText, true),
-			text("217 plugins, Renuxcord exclusives, the AI bridge and auto-updates", 13, colMuted, false),
+			text("218 plugins, Renuxcord exclusives, the AI bridge and auto-updates", 13, colMuted, false),
 			layout.NewSpacer(),
 		),
 	)

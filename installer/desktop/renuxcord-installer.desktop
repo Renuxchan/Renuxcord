@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Renuxcord Installer
+Comment=Put Renuxcord into Discord
+Exec=renuxcord-installer
+Icon=renuxcord-installer
+Terminal=false
+Categories=Utility;Network;
+Keywords=Discord;Renuxcord;Mod;
