@@ -47,7 +47,9 @@ jobs:
                   sudo apt-get update -qq
                   sudo apt-get install -y -qq ./discord.deb xvfb
                   # The package is only a launcher: Discord downloads the app into ~/.config/discord on first start
+                  # (what /usr/bin/discord does before starting it the first time)
                   bootstrap=$(dpkg -L discord | grep -m1 "/updater_bootstrap$")
+                  mkdir -p "$HOME/.config/discord"
                   "$bootstrap" --no-gui "$HOME/.config/discord" stable https://updates.discord.com/
                   ls "$HOME/.config/discord"
 
