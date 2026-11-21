@@ -5,20 +5,18 @@
  */
 
 import { addProfileBadge, BadgePosition, ProfileBadge, removeProfileBadge } from "@api/Badges";
-import * as DataStore from "@api/DataStore";
+import { showNotice } from "@api/Notices";
 import { definePluginSettings } from "@api/Settings";
-import { Paragraph } from "@components/Paragraph";
 import { Logger } from "@utils/Logger";
 import { RENUXCORD_LOGO, RenuxDevs } from "@utils/renuxcord";
 import definePlugin, { OptionType } from "@utils/types";
-import { Constants, FluxDispatcher, Modal, openModal, RestAPI, showToast, UserProfileStore, UserStore } from "@webpack/common";
+import { Constants, FluxDispatcher, RestAPI, showToast, UserProfileStore, UserStore } from "@webpack/common";
 
 import gitRemote from "~git-remote";
 
 const logger = new Logger("RenuxBadges", "#a78bfa");
 // badges.json at the root of the Renuxcord repository
 const BADGES_URL = `https://raw.githubusercontent.com/${gitRemote}/main/badges.json`;
-const WELCOME_SEEN = "Renuxcord_welcomeSeen";
 
 // Renuxcord users find each other by a tag at the end of their About Me, written in Unicode tag characters. Those draw
 // nothing, so people without Renuxcord see the About Me exactly as before
@@ -40,28 +38,18 @@ interface BadgeDef {
 }
 
 const settings = definePluginSettings({
-    selfBadge: {
-        type: OptionType.BOOLEAN,
-        description: "Show the Renuxcord badge on your own profile",
-        default: true
-    },
-    shareBadge: {
-        type: OptionType.BOOLEAN,
-        description: "Let other Renuxcord users see your badge. For this, Renuxcord adds a tiny invisible tag to the end of your About Me; people without Renuxcord see nothing different",
-        default: false,
-        onChange: () => void syncTag(true)
-    },
-    asked: {
+    // Accounts that have seen the one-time "your badge is on" notice
+    announced: {
         type: OptionType.CUSTOM,
-        default: false
+        default: [] as string[]
     }
 });
 
 let byUser: Record<string, BadgeDef[]> = {};
 let timer: ReturnType<typeof setInterval> | null = null;
-let asking: ReturnType<typeof setInterval> | null = null;
 let busy = false;
-let synced = false;
+let syncedFor: string | null = null;
+let warnedFull = false;
 
 async function load() {
     try {
@@ -84,7 +72,7 @@ async function load() {
 }
 
 export function usesRenuxcord(userId: string) {
-    if (userId === UserStore.getCurrentUser()?.id) return settings.store.selfBadge;
+    if (userId === UserStore.getCurrentUser()?.id) return true;
     return UserProfileStore.getUserProfile(userId)?.bio?.includes(TAG) ?? false;
 }
 
@@ -115,104 +103,54 @@ async function fetchProfile(userId: string) {
     return body;
 }
 
-/**
- * Makes your About Me match the setting. On its own (fromUser false) it only ever puts a missing tag back, never takes
- * one out, so a second install that hasn't been switched on can't fight the first
- */
-async function syncTag(fromUser: boolean) {
+/** Puts the tag in your About Me (on), or takes it out (off: only when RenuxBadges itself is switched off) */
+async function setTag(on: boolean) {
     const me = UserStore.getCurrentUser();
     if (!me || busy) return;
-    const share = settings.store.shareBadge;
-    if (!share && !fromUser) return;
 
     busy = true;
     try {
         const profile = await fetchProfile(me.id);
         const bio: string = profile?.user_profile?.bio ?? profile?.user?.bio ?? "";
-        if (bio.includes(TAG) === share) return;
+        if (bio.includes(TAG) === on) return;
 
-        const next = share
+        const next = on
             ? (bio ? `${bio} ${TAG}` : TAG)
             : bio.split(` ${TAG}`).join("").split(TAG).join("");
         await RestAPI.patch({ url: "/users/@me/profile", body: { bio: next } });
         // So Discord's own profile editor has the new About Me and doesn't save over it
         FluxDispatcher.dispatch({ type: "USER_PROFILE_FETCH_SUCCESS", userProfile: await fetchProfile(me.id) });
 
-        if (fromUser) showToast({
-            text: share ? "Other Renuxcord users can see your badge now" : "Took the Renuxcord tag out of your About Me",
-            variant: "success"
-        });
+        if (on && !settings.store.announced.includes(me.id)) {
+            settings.store.announced = [...settings.store.announced, me.id];
+            showNotice({
+                message: "Your Renuxcord badge is on: everyone using Renuxcord sees it on your profile now. It works through an invisible tag at the end of your About Me.",
+                buttonText: "Nice",
+                callback: () => { }
+            });
+        }
     } catch (err: any) {
         logger.warn("Couldn't update your About Me", err);
-        if (!fromUser) return;
-        showToast({
-            text: err?.body?.errors?.bio
-                ? "Your About Me is full. Free up a few characters, then switch this on again"
-                : "Couldn't change your About Me. Try again in a bit",
-            variant: "critical"
-        });
+        if (on && err?.body?.errors?.bio && !warnedFull) {
+            warnedFull = true;
+            showToast({ text: "Your About Me is full, so your Renuxcord badge can't show. Free up a few characters", variant: "critical" });
+        }
     } finally {
         busy = false;
     }
 }
 
-function askToShare() {
-    settings.store.asked = true;
-    openModal(props => (
-        <Modal
-            {...props}
-            size="sm"
-            title="Show your Renuxcord badge?"
-            subtitle="Everyone else using Renuxcord would see a Renuxcord badge on your profile."
-            actions={[
-                { text: "No thanks", variant: "secondary", onClick: props.onClose },
-                {
-                    text: "Show my badge",
-                    variant: "primary",
-                    onClick: () => {
-                        props.onClose();
-                        settings.store.shareBadge = true;
-                        void syncTag(true);
-                    }
-                }
-            ]}
-        >
-            <Paragraph>
-                For that, Renuxcord adds a tiny invisible tag to the end of your About Me. People without Renuxcord see
-                nothing different. You can change this any time in RenuxBadges' settings.
-            </Paragraph>
-        </Modal>
-    ));
-}
-
-function stopAsking() {
-    if (asking) clearInterval(asking);
-    asking = null;
-}
-
-// Once per install, after the welcome screen and never on top of another window
-function askWhenFree() {
-    stopAsking();
-    let waited = 0;
-    asking = setInterval(async () => {
-        if (settings.store.asked) return stopAsking();
-        if (!UserStore.getCurrentUser() || !await DataStore.get(WELCOME_SEEN) || settings.store.asked) return;
-        // Waits up to two minutes for other windows to close
-        if (document.querySelector("[role=dialog]") && ++waited < 24) return;
-        stopAsking();
-        askToShare();
-    }, 5000);
-}
-
+// Once per account and session: puts the tag back if it went missing (a fresh About Me, another device)
 function syncOnce() {
-    if (synced || !UserStore.getCurrentUser()) return;
-    synced = true;
-    void syncTag(false);
+    const me = UserStore.getCurrentUser();
+    if (!me || syncedFor === me.id) return;
+    syncedFor = me.id;
+    void setTag(true);
 }
 
 export default definePlugin({
     name: "RenuxBadges",
-    description: "Renuxcord badges on profiles: everyone who uses Renuxcord gets one, plus owner, dev and friend badges from the Renuxcord repo. Everyone using Renuxcord can see them",
+    description: "Renuxcord badges on profiles: everyone using Renuxcord gets a Renuxcord User badge (through an invisible tag at the end of their About Me, taken out again if you switch this plugin off), plus owner, dev and friend badges from the Renuxcord repo",
     tags: ["Renuxcord", "Customisation", "Fun"],
     authors: [RenuxDevs.Larpbase],
     enabledByDefault: true,
@@ -227,13 +165,14 @@ export default definePlugin({
         void load();
         timer = setInterval(load, 30 * 60_000);
         syncOnce();
-        if (!settings.store.asked) askWhenFree();
     },
 
     stop() {
         removeProfileBadge(badge);
         if (timer) clearInterval(timer);
         timer = null;
-        stopAsking();
+        syncedFor = null;
+        // Switching the plugin off is how someone leaves: the tag is invisible, so they couldn't remove it themselves
+        void setTag(false);
     }
 });
