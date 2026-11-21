@@ -54,7 +54,7 @@ jobs:
               run: |
                   curl -fsSL -o discord.deb "https://discord.com/api/download?platform=linux&format=deb"
                   sudo apt-get update -qq
-                  sudo apt-get install -y -qq ./discord.deb xvfb imagemagick gcc libgl1-mesa-dev libgl1-mesa-dri xorg-dev libxkbcommon-dev
+                  sudo apt-get install -y -qq ./discord.deb xvfb imagemagick gcc libgl1-mesa-dev libgl1-mesa-dri xorg-dev libxkbcommon-dev libwayland-dev wayland-protocols
                   # The package is only a launcher: Discord downloads the app into ~/.config/discord on first start
                   # (what /usr/bin/discord does before starting it the first time)
                   bootstrap=$(dpkg -L discord | grep -m1 "/updater_bootstrap$")
@@ -125,8 +125,13 @@ jobs:
             - name: Screenshot the installer window
               run: |
                   if [ "$(uname -s)" = Darwin ]; then
+                      # Discord's runs leave Safari open on discord.com, which would cover the window
+                      pkill -x Safari || true
+                      pkill -f "Discord.app" || true
+                      sleep 2
                       open "installer/desktop/build/Renuxcord Installer.app"
                       sleep 10
+                      pgrep -x RenuxcordInstaller > /dev/null && echo "The installer is running"
                       screencapture -x installer-window.png
                       pkill -x RenuxcordInstaller || true
                   else

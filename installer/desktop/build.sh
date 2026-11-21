@@ -6,7 +6,8 @@
 # Builds Renuxcord Installer for the OS it runs on, into dist/ at the repository root:
 #   macOS  dist/RenuxcordInstaller-mac.zip         "Renuxcord Installer.app" for Apple silicon and Intel
 #   Linux  dist/RenuxcordInstaller-linux-x64.tar.gz
-# Needs Go, and on Linux a C compiler with the OpenGL and X11 headers (Fyne's requirements).
+# Needs Go, and on Linux a C compiler with the OpenGL, X11 and Wayland headers (Fyne's requirements:
+# gcc libgl1-mesa-dev xorg-dev libxkbcommon-dev libwayland-dev wayland-protocols on Debian and Ubuntu).
 
 set -eu
 cd "$(dirname "$0")"

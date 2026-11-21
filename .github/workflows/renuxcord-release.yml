@@ -104,8 +104,57 @@ jobs:
                   name: installer
                   path: dist/RenuxcordInstaller.exe
 
+    installer-mac:
+        if: github.repository != 'Vendicated/Vencord'
+        runs-on: macos-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Use Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: stable
+                  cache-dependency-path: installer/desktop/go.mod
+
+            - name: Build Renuxcord Installer for macOS
+              run: sh installer/desktop/build.sh
+
+            - name: Upload it
+              uses: actions/upload-artifact@v4
+              with:
+                  name: installer-mac
+                  path: dist/RenuxcordInstaller-mac.zip
+
+    installer-linux:
+        if: github.repository != 'Vendicated/Vencord'
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Use Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: stable
+                  cache-dependency-path: installer/desktop/go.mod
+
+            - name: Build Renuxcord Installer for Linux
+              run: |
+                  sudo apt-get update -qq
+                  sudo apt-get install -y -qq gcc libgl1-mesa-dev xorg-dev libxkbcommon-dev libwayland-dev wayland-protocols
+                  sh installer/desktop/build.sh
+
+            - name: Upload it
+              uses: actions/upload-artifact@v4
+              with:
+                  name: installer-linux
+                  path: dist/RenuxcordInstaller-linux-x64.tar.gz
+
     release:
-        needs: [build, installer]
+        needs: [build, installer, installer-mac, installer-linux]
         runs-on: ubuntu-latest
 
         steps:
@@ -121,6 +170,18 @@ jobs:
                   name: installer
                   path: dist
 
+            - name: Download the macOS installer
+              uses: actions/download-artifact@v4
+              with:
+                  name: installer-mac
+                  path: dist
+
+            - name: Download the Linux installer
+              uses: actions/download-artifact@v4
+              with:
+                  name: installer-linux
+                  path: dist
+
             - name: Publish DevBuild
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -131,7 +192,9 @@ jobs:
                   Rolling Renuxcord build. Installed clients update from here by themselves.
 
                   - **Windows:** download **RenuxcordInstaller.exe** and run it.
-                  - **macOS and Linux:** open a terminal and run `curl -fsSL https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/install.sh | sh`
+                  - **macOS:** download **RenuxcordInstaller-mac.zip**, open it and run Renuxcord Installer. The first time, macOS blocks it: System Settings › Privacy & Security › Open Anyway.
+                  - **Linux:** download **RenuxcordInstaller-linux-x64.tar.gz**, extract it and run RenuxcordInstaller.
+                  - **macOS and Linux from a terminal:** `curl -fsSL https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/install.sh | sh`
                   - **Android:** install **Renuxcord.apk**.
                   - **iPhone and iPad:** sideload **Renuxcord.ipa** with SideStore, AltStore, Sideloadly or TrollStore. No sideloading? Install the free Userscripts app, add **Renuxcord.user.js** and open discord.com in Safari.
                   - **Any desktop browser:** open **Renuxcord.user.js** with Tampermonkey.

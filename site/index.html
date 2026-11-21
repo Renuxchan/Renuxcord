@@ -1169,18 +1169,29 @@ module.exports = definePlugin({
                     <div class="box">
                         <h3>macOS and Linux</h3>
                         <p>
-                            Open a terminal and paste this. It finds Discord, puts Renuxcord in, and
-                            Renuxcord keeps itself updated from then on.
+                            Get the installer for
+                            <a
+                                href="https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/RenuxcordInstaller-mac.zip"
+                                >macOS</a
+                            >
+                            or
+                            <a
+                                href="https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/RenuxcordInstaller-linux-x64.tar.gz"
+                                >Linux</a
+                            >, open it, pick your Discord and press Install. Renuxcord keeps itself
+                            updated from then on.
                         </p>
+                        <p class="small">
+                            Mac: the first time, macOS blocks apps from outside the App Store. Open
+                            System Settings › Privacy &amp; Security and press Open Anyway. If it
+                            says macOS blocked changes to Discord, turn the installer on under App
+                            Management. Linux: extract the download and double-click
+                            RenuxcordInstaller.
+                        </p>
+                        <p class="small">Rather use a terminal? This does the same:</p>
                         <div class="code">
                             <pre><code>curl -fsSL https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/install.sh | sh</code></pre>
                         </div>
-                        <p class="small">
-                            Works with the normal download, .deb, .rpm, tar.gz and Flatpak (not
-                            Snap). Run it again after Discord itself updates. On a Mac, if it says
-                            macOS blocked it, allow your terminal in System Settings › Privacy &amp;
-                            Security › App Management.
-                        </p>
                     </div>
                     <div class="box">
                         <h3>Android</h3>

@@ -90,15 +90,19 @@ Uninstall the same way. Your settings stay in `%APPDATA%\Renuxcord`. Renuxcord u
 
 ### macOS and Linux
 
-Open a terminal and run:
+1. Download the installer: **[macOS](https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/RenuxcordInstaller-mac.zip)** (Apple silicon and Intel) or **[Linux](https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/RenuxcordInstaller-linux-x64.tar.gz)** (x64).
+2. **Mac:** open the zip and run **Renuxcord Installer**. The installer isn't notarized, so macOS blocks it the first time: open **System Settings › Privacy & Security** and press **Open Anyway**. **Linux:** extract it and double-click **RenuxcordInstaller**.
+3. Pick your Discord (Stable, PTB or Canary) and press **Install / Repair**. Discord restarts with Renuxcord.
+
+If macOS says it blocked changes to Discord, turn the installer on in **System Settings › Privacy & Security › App Management** and press Install again. Settings live in `~/Library/Application Support/Renuxcord` on macOS and `~/.config/Renuxcord` on Linux.
+
+Rather use a terminal? This does the same (works with the normal download, .deb, .rpm, tar.gz and Flatpak, not Snap):
 
 ```sh
 curl -fsSL https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/install.sh | sh
 ```
 
-It finds Discord (Stable, PTB or Canary: the normal download, .deb, .rpm, tar.gz or Flatpak, but not Snap), puts Renuxcord in and Renuxcord keeps itself updated. Run it again after Discord itself updates. `... | sh -s -- uninstall` takes it out again, and `status` shows what it found.
-
-On a Mac, if it says macOS blocked it, open **System Settings › Privacy & Security › App Management**, allow your terminal app and run it again. Settings live in `~/Library/Application Support/Renuxcord` on macOS and `~/.config/Renuxcord` on Linux.
+`... | sh -s -- uninstall` takes it out again and `status` shows what it found. On a Mac, run it again after Discord itself updates.
 
 ### Android
 
@@ -257,7 +261,7 @@ node scripts/renuxcord/install.mjs status
 node scripts/renuxcord/install.mjs uninstall
 ```
 
-The Windows installer builds with the C# compiler that ships with Windows: `powershell -ExecutionPolicy Bypass -File installer/build.ps1`.
+The Windows installer builds with the C# compiler that ships with Windows: `powershell -ExecutionPolicy Bypass -File installer/build.ps1`. The macOS and Linux installer is a Go app in [`installer/desktop`](../installer/desktop): `sh installer/desktop/build.sh` on a Mac or a Linux box.
 
 The phone apps live in [`mobile/android`](../mobile/android) (Gradle) and [`mobile/ios`](../mobile/ios) (XcodeGen). The **Renuxcord Mobile** workflow builds both, checks Renuxcord loads in an Android emulator and an iOS simulator, and adds Renuxcord.apk and Renuxcord.ipa to the release.
 
