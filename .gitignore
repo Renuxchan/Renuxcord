@@ -27,3 +27,4 @@ ExtensionCache/
 # Renuxcord site: generated at deploy time
 site/plugins.json
 site/plugin-readmes.json
+site/changelog.json

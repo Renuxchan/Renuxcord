@@ -1,66 +1,79 @@
 <div align="center">
 
-<a href="https://renuxchan.github.io/Renuxcord/"><img src="assets/banner.png" alt="Renuxcord: 216 plugins for Discord, one installer" width="100%"></a>
+<a href="https://renuxchan.github.io/Renuxcord/"><img src="assets/banner.png" alt="Renuxcord: everything Discord should've shipped with. 218 plugins, 45 exclusives, on desktop and phone" width="100%"></a>
 
 <br>
 <br>
 
-<a href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller.exe"><img src="assets/button-download.png" alt="Download for Windows" height="52"></a>
+<a href="https://renuxchan.github.io/Renuxcord/#download"><img src="assets/button-download.png" alt="Download Renuxcord" height="58"></a>
 &nbsp;
-<a href="https://renuxchan.github.io/Renuxcord/"><img src="assets/button-website.png" alt="Website" height="52"></a>
+<a href="https://renuxchan.github.io/Renuxcord/"><img src="assets/button-website.png" alt="Website" height="58"></a>
 &nbsp;
-<a href="https://renuxchan.github.io/Renuxcord/#plugins"><img src="assets/button-plugins.png" alt="Browse the plugins" height="52"></a>
-
-**Also on [macOS and Linux](#macos-and-linux), [Android](#android) and [iPhone and iPad](#iphone-and-ipad).**
+<a href="https://renuxchan.github.io/Renuxcord/#plugins"><img src="assets/button-plugins.png" alt="Browse the plugins" height="58"></a>
 
 <br>
 <br>
 
-<a href="https://github.com/Renuxchan/Renuxcord/actions/workflows/renuxcord-release.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/Renuxchan/Renuxcord/renuxcord-release.yml?branch=main&style=for-the-badge&label=build&labelColor=17171a"></a>
-<a href="https://github.com/Renuxchan/Renuxcord/commits/main"><img alt="Last update" src="https://img.shields.io/github/last-commit/Renuxchan/Renuxcord/main?style=for-the-badge&label=updated&labelColor=17171a&color=2c2c31"></a>
-<img alt="218 plugins" src="https://img.shields.io/badge/plugins-218-ff5a2c?style=for-the-badge&labelColor=17171a">
-<img alt="45 exclusive plugins" src="https://img.shields.io/badge/exclusive-45-ff5a2c?style=for-the-badge&labelColor=17171a">
-<img alt="Windows, macOS, Linux, Android and iOS" src="https://img.shields.io/badge/runs%20on-windows%20%7C%20macos%20%7C%20linux%20%7C%20android%20%7C%20ios-2c2c31?style=for-the-badge&labelColor=17171a">
-<a href="../LICENSE"><img alt="License GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-2c2c31?style=for-the-badge&labelColor=17171a"></a>
+<a href="https://github.com/Renuxchan/Renuxcord/actions/workflows/renuxcord-release.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/Renuxchan/Renuxcord/renuxcord-release.yml?branch=main&style=for-the-badge&label=build&labelColor=141416"></a>
+<a href="https://github.com/Renuxchan/Renuxcord/commits/main"><img alt="Last update" src="https://img.shields.io/github/last-commit/Renuxchan/Renuxcord/main?style=for-the-badge&label=updated&labelColor=141416&color=2c2c31"></a>
+<a href="https://renuxchan.github.io/Renuxcord/#plugins"><img alt="218 plugins" src="https://img.shields.io/badge/plugins-218-ff5a2c?style=for-the-badge&labelColor=141416"></a>
+<a href="#the-45-exclusives"><img alt="45 exclusive plugins" src="https://img.shields.io/badge/exclusive-45-ff5a2c?style=for-the-badge&labelColor=141416"></a>
+<a href="#install"><img alt="Windows, macOS, Linux, Android and iOS" src="https://img.shields.io/badge/runs%20on-windows%20%C2%B7%20macos%20%C2%B7%20linux%20%C2%B7%20android%20%C2%B7%20ios-2c2c31?style=for-the-badge&labelColor=141416"></a>
+<a href="../LICENSE"><img alt="License GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-2c2c31?style=for-the-badge&labelColor=141416"></a>
 
 <br>
 <br>
 
-**Renuxcord is a Discord client mod for Windows, macOS, Linux, Android and iOS.** Every plugin you'd expect from a client mod, plus 45 you won't find anywhere else: friend folders in your DM sidebar, Claude in your chat, a command palette, and a bridge that lets Claude Code build your servers. Free, open source, and it keeps itself updated.
+**Renuxcord is a free client mod for Discord on Windows, macOS, Linux, Android and iPhone.**<br>
+218 plugins, 45 you won't find anywhere else, and it keeps itself up to date.
 
 </div>
 
-## What you get
+<br>
+
+## The tour
+
+Six things Renuxcord adds to Discord, playing for real. There's a live version you can click through, and a playground that runs a few plugins in your browser, on the **[website](https://renuxchan.github.io/Renuxcord/)**.
 
 ### Friend Groups
 
-Friend folders right in your DM sidebar, each with an emoji, a colour and an online count. Fold them, drag people between them, and click anyone to open your DM.
+Your friends in folders, right in the DM list. Every folder gets an emoji, a colour and an online count, folds away when you don't need it, and takes people by drag and drop. Click anyone to open your DM.
 
-<p align="center"><img src="assets/friend-groups.png" alt="Friend Groups in the DM sidebar, and the editor for a new group" width="720"></p>
-
-### Command palette
-
-<kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>K</kbd> turns any plugin on or off, switches plugin profiles, and jumps to any server, channel or DM. No digging through settings.
-
-<p align="center"><img src="assets/palette.png" alt="The command palette, searching for fri" width="720"></p>
+<img src="assets/tour-friend-groups.webp" alt="Friend Groups: a friend comes online, sam gets dragged into Besties, folders fold and unfold, and a click opens a DM" width="100%">
 
 ### RenuxAI
 
-Claude in your chat. `/ai catchup` sums up what you missed, and the right-click menu explains, translates, suggests replies and reads images. It runs on your Claude Code login, so no API key needed.
+Claude in your chat. `/ai catchup` reads everything you missed and sums it up, only for you. Right-click any message to get it explained, translated or answered, or point it at an image to describe it or pull the text out. It runs on your Claude Code login, so there's no API key to buy.
 
-<p align="center"><img src="assets/renuxai.png" alt="The RenuxAI right-click menu on an image" width="720"></p>
+<img src="assets/tour-renuxai.webp" alt="RenuxAI: /ai catchup sums up 48 missed messages, then the RenuxAI right-click menu" width="100%">
+
+### Command palette
+
+<kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>K</kbd>, a few letters, <kbd>Enter</kbd>. Switch any plugin on or off, change plugin profiles, or jump to a server, channel or DM without touching settings.
+
+<img src="assets/tour-palette.webp" alt="The command palette turning FriendGroups on, then switching to the Gaming profile" width="100%">
 
 ### LinkSafety and SecretGuard
 
-Warnings under fake Discord, Steam and Roblox links, and a "you sure?" before you send your token, a Roblox cookie, an API key or a card number.
+LinkSafety puts a warning under look-alike Discord, Steam and Roblox links before anyone clicks them. SecretGuard stops you before your token, a Roblox cookie, an API key or a card number goes out. Nothing gets blocked, it just asks first.
 
-<p align="center"><img src="assets/safety.png" alt="A LinkSafety warning under a fake Steam link, and SecretGuard stopping a Roblox cookie" width="720"></p>
+<img src="assets/tour-safety.webp" alt="A LinkSafety warning under a fake Steam link, then SecretGuard catching a Roblox cookie" width="100%">
 
-## Let Claude Code build your servers
+### Voice Chat Unblocker
 
-<img src="assets/bridge.png" alt="A Claude Code session building the Night Shift server through RenuxBridge, next to the server it made" width="100%">
+Where Discord voice is blocked, like in the UAE, text works but calls never connect. VoiceChatUnblocker sends voice through a tiny relay inside Renuxcord that starts every connection with decoy packets, and switches tricks by itself until one gets through. No VPN.
 
-**RenuxBridge** hooks your Discord up to Claude Code over MCP. Describe the server you want and it gets built: roles in the right order, private categories, voice lobbies, permissions and all.
+<img src="assets/tour-voice.webp" alt="Joining a voice channel: the first trick gets no answer, the second connects, and the call starts" width="100%">
+
+### Server builder
+
+RenuxBridge hooks Discord up to Claude Code over MCP. Describe the server you want and it gets built: roles in the right order, private categories, voice lobbies, permissions and all.
+
+<img src="assets/tour-bridge.webp" alt="Claude Code building the Night Shift server from one message, channel by channel" width="100%">
+
+<details>
+<summary><b>Set up RenuxBridge</b></summary>
+<br>
 
 1. Turn on **RenuxBridge** in Settings › Renuxcord › Plugins.
 2. Press **Copy command** in its settings and run it once in a terminal. It looks like this:
@@ -77,22 +90,40 @@ Warnings under fake Discord, Steam and Roblox links, and a "you sure?" before yo
 
 The bridge only listens on `127.0.0.1` behind a random token, rejects web pages, works at a human pace and never touches DMs. Deleting stays off until you switch on **Allow deleting** in its settings.
 
+</details>
+
 ## Install
 
-### Windows
+| | Get it | Then |
+| --- | --- | --- |
+| **Windows** | **[RenuxcordInstaller.exe](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller.exe)** | Run it, pick your Discord, press **Install / Repair** |
+| **macOS** | **[RenuxcordInstaller-mac.zip](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-mac.zip)** | Open the app, pick your Discord, press **Install / Repair** |
+| **Linux** | **[.deb](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-linux-x64.deb)** · **[.rpm](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-linux-x64.rpm)** · **[.tar.gz](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-linux-x64.tar.gz)** | Start **Renuxcord Installer** from your apps |
+| **Android** | **[Renuxcord.apk](https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.apk)** | Install it and log in to Discord |
+| **iPhone and iPad** | **[Add to SideStore, AltStore or TrollStore](https://renuxchan.github.io/Renuxcord/#download)** | Open that link on your iPhone and tap your sideloading app |
 
-1. Download **[RenuxcordInstaller.exe](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller.exe)** from the latest release.
+After that Renuxcord updates itself, and puts itself back after Discord updates.
+
+<details>
+<summary><b>Windows, step by step</b></summary>
+<br>
+
+1. Download **[RenuxcordInstaller.exe](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller.exe)**. It's tiny because it downloads the newest build when it runs.
 2. The installer isn't code-signed yet, so Windows may say it protected your PC. Click **More info › Run anyway**.
 3. Pick your Discord (Stable, PTB or Canary) and press **Install / Repair**. Discord restarts with Renuxcord.
-4. Switch plugins on in **Settings › Renuxcord › Plugins**.
+4. Switch plugins on in **Settings › Renuxcord › Plugins**, or turn on CommandPalette and press <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>K</kbd>.
 
-Uninstall the same way. Your settings stay in `%APPDATA%\Renuxcord`. Renuxcord updates itself from this repository's `devbuild` release, and puts itself back after Discord updates.
+Uninstall the same way. Your settings stay in `%APPDATA%\Renuxcord`.
 
-### macOS and Linux
+</details>
+
+<details>
+<summary><b>macOS and Linux, step by step</b></summary>
+<br>
 
 1. Download the installer: **[macOS](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-mac.zip)** (Apple silicon and Intel), **[Linux .deb](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-linux-x64.deb)** (Ubuntu, Debian, Mint), **[Linux .rpm](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-linux-x64.rpm)** (Fedora, openSUSE) or the **[Linux .tar.gz](https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller-linux-x64.tar.gz)** (anything else).
-2. **Mac:** open the zip and run **Renuxcord Installer**. The installer isn't notarized, so macOS blocks it the first time: open **System Settings › Privacy & Security** and press **Open Anyway**. **Linux:** open the .deb or .rpm to install it like any app, then start **Renuxcord Installer** from your apps (with the .tar.gz: extract it and double-click RenuxcordInstaller).
-3. Pick your Discord (Stable, PTB or Canary) and press **Install / Repair**. Discord restarts with Renuxcord.
+2. **Mac:** open the zip and run **Renuxcord Installer**. It isn't notarized, so macOS blocks it the first time: open **System Settings › Privacy & Security** and press **Open Anyway**. **Linux:** open the .deb or .rpm to install it like any app, then start **Renuxcord Installer** from your apps (with the .tar.gz: extract it and double-click RenuxcordInstaller).
+3. Pick your Discord and press **Install / Repair**. Discord restarts with Renuxcord.
 
 If macOS says it blocked changes to Discord, turn the installer on in **System Settings › Privacy & Security › App Management** and press Install again. Settings live in `~/Library/Application Support/Renuxcord` on macOS and `~/.config/Renuxcord` on Linux.
 
@@ -104,19 +135,23 @@ curl -fsSL https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/ins
 
 `... | sh -s -- uninstall` takes it out again and `status` shows what it found. On a Mac, run it again after Discord itself updates.
 
-### Android
+</details>
 
-Install **[Renuxcord.apk](https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.apk)** (Android 8 or newer, allow installing from your browser when Android asks). It opens Discord with Renuxcord loaded, keeps Renuxcord updated and adds a **Renuxcord app** page to Discord's settings. More in [mobile/android](../mobile/android).
+<details>
+<summary><b>Android and iPhone, step by step</b></summary>
+<br>
 
-### iPhone and iPad
+**Android:** install **[Renuxcord.apk](https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.apk)** (Android 8 or newer) and allow installing from your browser when Android asks. It opens Discord with Renuxcord loaded, keeps Renuxcord updated, and adds a **Renuxcord app** page to Discord's settings. Notifications, voice, camera and downloads all work. More in [mobile/android](../mobile/android).
 
-Open the **[website](https://renuxchan.github.io/Renuxcord/#platforms)** on your iPhone and tap **Add to SideStore**, **Add to AltStore** or **Install with TrollStore**. SideStore and AltStore add the Renuxcord source (`https://github.com/Renuxchan/Renuxcord/releases/latest/download/altstore.json`) and keep the app updated. Using Sideloadly or something else? Get **[Renuxcord.ipa](https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.ipa)**. No sideloading at all? Install the free **Userscripts** app from the App Store, add **[Renuxcord.user.js](https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.user.js)** and open discord.com in Safari. More in [mobile/ios](../mobile/ios).
+**iPhone and iPad:** open the **[website](https://renuxchan.github.io/Renuxcord/#download)** on your iPhone and tap **Add to SideStore**, **Add to AltStore** or **Install with TrollStore**. SideStore and AltStore add the Renuxcord source (`https://github.com/Renuxchan/Renuxcord/releases/latest/download/altstore.json`) and keep the app updated. Using Sideloadly or something else? Get **[Renuxcord.ipa](https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.ipa)**. No sideloading at all? Install the free **Userscripts** app from the App Store, add **[Renuxcord.user.js](https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.user.js)** and open discord.com in Safari. More in [mobile/ios](../mobile/ios).
 
-The phone apps run Discord's web app with Renuxcord in it, so plugins that need a computer (the AI bridge, files on your PC, Voice Chat Unblocker) stay on desktop.
+The phone apps run Discord's web app with Renuxcord in it, so the plugins that need a computer (the AI bridge, files on your PC, Voice Chat Unblocker) stay on desktop.
 
-## The 45 Renuxcord exclusives
+</details>
 
-Every one carries the **✦ RENUXCORD EXCLUSIVE** badge in Settings › Renuxcord › Plugins, sorted to the top. The 170+ classic plugins are all there too, and anyone updating gets a one-time list of the newest exclusives to switch on.
+## The 45 exclusives
+
+Every one carries the **✦ RENUXCORD EXCLUSIVE** badge in Settings › Renuxcord › Plugins, sorted to the top. The 170+ classic plugins are all there too, and after an update you get a one-time list of the newest exclusives to switch on. The **[website](https://renuxchan.github.io/Renuxcord/#exclusives)** has the details for each one.
 
 <details>
 <summary><b>AI and server building</b> · RenuxAI, RenuxBridge, ServerBlueprints, CustomPlugins</summary>
@@ -248,6 +283,56 @@ module.exports = definePlugin({
 
 `Renuxcord` gives you `definePlugin`, `definePluginSettings`, `OptionType`, `CommandOptionType`, `StartAt`, `Common` (Discord stores, React, Menu, RestAPI…), `Webpack`, `Api`, `Util`, `Components`, `showToast` and `notify`. Only add plugins you trust: they run with full access to your account.
 
+## FAQ
+
+<details>
+<summary><b>Is it free? What's the catch?</b></summary>
+<br>
+
+Free, no account, no ads, no catch. The whole thing is open source under GPL-3.0, so anyone can read exactly what it does.
+
+</details>
+
+<details>
+<summary><b>Windows says "Windows protected your PC"</b></summary>
+<br>
+
+The installer isn't code-signed yet, so SmartScreen doesn't recognise it. Click **More info › Run anyway**. It's built from this repository by GitHub's own build machines.
+
+</details>
+
+<details>
+<summary><b>Discord voice doesn't work where I live</b></summary>
+<br>
+
+In places like the UAE, Discord's text works but voice calls get blocked. Turn on **VoiceChatUnblocker** on Windows, macOS or Linux. Renuxcord sends voice through a tiny relay that starts every connection with decoy packets, so the network can't tell it's Discord voice, and it switches tricks by itself until one gets through. No VPN.
+
+</details>
+
+<details>
+<summary><b>What's the Renuxcord badge, and why is there a tag in my About Me?</b></summary>
+<br>
+
+Everyone using Renuxcord gets a Renuxcord User badge on their profile, and Renuxcord users see each other's. It works through an invisible tag Renuxcord adds to the end of your About Me. People without Renuxcord can't see the tag, and the badge is always on.
+
+</details>
+
+<details>
+<summary><b>Will Discord updates break it?</b></summary>
+<br>
+
+Renuxcord puts itself back after Discord updates. Fixes for Discord's changes get merged in every 6 hours, built, and delivered by the updater, which checks every 10 minutes.
+
+</details>
+
+<details>
+<summary><b>Is it allowed?</b></summary>
+<br>
+
+Client mods are against Discord's Terms of Service. Lots of people use them anyway, but it's at your own risk.
+
+</details>
+
 <details>
 <summary><b>Build from source</b></summary>
 <br>
@@ -266,6 +351,8 @@ The Windows installer builds with the C# compiler that ships with Windows: `powe
 
 The phone apps live in [`mobile/android`](../mobile/android) (Gradle) and [`mobile/ios`](../mobile/ios) (XcodeGen). The **Renuxcord Mobile** workflow builds both, checks Renuxcord loads in an Android emulator and an iOS simulator, and adds Renuxcord.apk and Renuxcord.ipa to the release.
 
+The website is plain HTML, CSS and JavaScript in [`site`](../site). Preview it with any static server, for example `python -m http.server --directory site`, after `pnpm generatePluginJson site/plugins.json site/plugin-readmes.json`. The **Renuxcord Site** workflow publishes it on every push.
+
 **Updates:** Renuxcord updates itself from this repository's `devbuild` release (Settings › Renuxcord › Updater, auto-update is on by default). A workflow merges the upstream project every 6 hours, checks that it builds and publishes a new release.
 
 **Maintainer notes**
@@ -273,7 +360,7 @@ The phone apps live in [`mobile/android`](../mobile/android) (Gradle) and [`mobi
 - Renuxcord's code lives in new files wherever possible (`src/plugins/<renuxcord plugins>`, `src/utils/renuxcord*.ts`, `mcp/`, `installer/`, `scripts/renuxcord/`) and branding changes are small edits, so upstream merges rarely conflict.
 - If upstream changes `.github/workflows`, the sync job can only push them with a token that has the `workflow` scope. Add a fine-grained token as the `SYNC_TOKEN` repository secret.
 - Add badge holders to [`badges.json`](../badges.json) by Discord user ID.
-- The README art in `.github/assets` is rendered from the website, so it always matches it.
+- The README art in `.github/assets` is rendered from the website: the banner and buttons from its styles, the tour clips by recording the site's live demo.
 
 </details>
 
@@ -283,7 +370,7 @@ GPL-3.0-or-later, see [LICENSE](../LICENSE). Renuxcord is a modified version of 
 
 <div align="center">
 <br>
-<a href="https://github.com/Renuxchan/Renuxcord/releases/latest/download/RenuxcordInstaller.exe"><img src="assets/button-download.png" alt="Download for Windows" height="44"></a>
+<a href="https://renuxchan.github.io/Renuxcord/#download"><img src="assets/button-download.png" alt="Download Renuxcord" height="50"></a>
 &nbsp;
-<a href="https://renuxchan.github.io/Renuxcord/"><img src="assets/button-website.png" alt="Website" height="44"></a>
+<a href="https://renuxchan.github.io/Renuxcord/"><img src="assets/button-website.png" alt="Website" height="50"></a>
 </div>
