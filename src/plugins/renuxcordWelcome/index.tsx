@@ -61,7 +61,7 @@ function openWelcome(onlyNew?: string[]) {
                         { text: "Let's go", variant: "primary", onClick: props.onClose }
                     ]}
                 >
-                    {shown.filter(n => plugins[n]).map(name => (
+                    {shown.filter(n => plugins[n] && !plugins[n].required).map(name => (
                         <FormSwitch
                             key={name}
                             title={name}

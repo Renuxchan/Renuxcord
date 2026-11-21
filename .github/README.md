@@ -208,7 +208,7 @@ Every one carries the **✦ RENUXCORD EXCLUSIVE** badge in Settings › Renuxcor
 | **CSSSnippets** | One-click tweaks: hide Nitro and Shop upsells, gift, sticker and app buttons, Active Now, decorations, nameplates, server tags, call buttons |
 | **TypingSounds** | Keyboard sounds while you type: thocky mechanical, clicky, typewriter with the ding, bubble pops, retro 8-bit |
 | **Confetti** | 🎉 Confetti cannons when someone says congrats or happy birthday, or with `/confetti` |
-| **RenuxBadges** | Renuxcord profile badges for the owner, devs and friends of the project |
+| **RenuxBadges** | Always on: everyone using Renuxcord gets a Renuxcord User badge that other Renuxcord users see. It works through an invisible tag Renuxcord adds to the end of your About Me. Plus badges for the owner, devs and friends of the project |
 
 </details>
 

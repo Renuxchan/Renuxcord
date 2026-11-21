@@ -150,10 +150,11 @@ function syncOnce() {
 
 export default definePlugin({
     name: "RenuxBadges",
-    description: "Renuxcord badges on profiles: everyone using Renuxcord gets a Renuxcord User badge (through an invisible tag at the end of their About Me, taken out again if you switch this plugin off), plus owner, dev and friend badges from the Renuxcord repo",
+    description: "Renuxcord badges on profiles, always on: everyone using Renuxcord gets a Renuxcord User badge (through an invisible tag at the end of their About Me), plus owner, dev and friend badges from the Renuxcord repo",
     tags: ["Renuxcord", "Customisation", "Fun"],
     authors: [RenuxDevs.Larpbase],
-    enabledByDefault: true,
+    // Every Renuxcord user shows up as one, so it can't be switched off
+    required: true,
     settings,
 
     flux: {
@@ -172,7 +173,8 @@ export default definePlugin({
         if (timer) clearInterval(timer);
         timer = null;
         syncedFor = null;
-        // Switching the plugin off is how someone leaves: the tag is invisible, so they couldn't remove it themselves
+        // Required, so this only happens if a later version makes it optional again: the tag is invisible, so whoever
+        // switches it off couldn't take it out themselves
         void setTag(false);
     }
 });
