@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The "R" from site/logo.svg (a 64x64 box), scaled into the adaptive icon's 66dp safe zone -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="1.03125"
+        android:scaleY="1.03125"
+        android:translateX="21"
+        android:translateY="21">
+        <path
+            android:fillColor="#0C0C0D"
+            android:fillType="evenOdd"
+            android:pathData="M20,48V16h14a9,9 0,0 1,2 17.8L46,48h-8.5l-9,-13.5h-1V48zM27.5,28H33a3.5,3.5 0,0 0,0 -7h-5.5z" />
+    </group>
+</vector>

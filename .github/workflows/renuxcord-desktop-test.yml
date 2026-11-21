@@ -46,8 +46,10 @@ jobs:
                   curl -fsSL -o discord.deb "https://discord.com/api/download?platform=linux&format=deb"
                   sudo apt-get update -qq
                   sudo apt-get install -y -qq ./discord.deb xvfb
-                  echo "Where the package put Discord:"
-                  dpkg -L discord | grep -E "app\.asar|/resources$|/bin/" || true
+                  # The package is only a launcher: Discord downloads the app into ~/.config/discord on first start
+                  bootstrap=$(dpkg -L discord | grep -m1 "/updater_bootstrap$")
+                  "$bootstrap" --no-gui "$HOME/.config/discord" stable https://updates.discord.com/
+                  ls "$HOME/.config/discord"
 
             - name: Install Discord (macOS)
               if: runner.os == 'macOS'

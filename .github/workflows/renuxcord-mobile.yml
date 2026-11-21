@@ -1,0 +1,193 @@
+# Builds the Android and iOS apps, checks Renuxcord loads in each (Android emulator, iOS simulator), and on main
+# publishes Renuxcord.apk and Renuxcord.ipa to the devbuild release next to the desktop files.
+name: Renuxcord Mobile
+on:
+    push:
+        paths:
+            - .github/workflows/renuxcord-mobile.yml
+            - .github/scripts/android-smoke.sh
+            - .github/scripts/ios-smoke.sh
+            - mobile/**
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+concurrency:
+    group: renuxcord-mobile-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    web:
+        if: github.repository != 'Vendicated/Vencord'
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+            - name: Use Node.js
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              with:
+                  node-version: 24
+                  cache: "pnpm"
+
+            - name: Build Renuxcord's web version
+              run: |
+                  pnpm install --frozen-lockfile
+                  pnpm buildWeb --standalone
+
+            - name: Upload it
+              uses: actions/upload-artifact@v4
+              with:
+                  name: web
+                  path: |
+                      dist/browser.js
+                      dist/browser.css
+
+    android:
+        needs: web
+        runs-on: ubuntu-latest
+        timeout-minutes: 45
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Use Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: 21
+
+            - name: Setup Gradle
+              uses: gradle/actions/setup-gradle@v4
+
+            - name: Download the web version
+              uses: actions/download-artifact@v4
+              with:
+                  name: web
+                  path: web
+
+            - name: Signing key
+              env:
+                  KEYSTORE: ${{ secrets.RENUXCORD_KEYSTORE_BASE64 }}
+              run: |
+                  if [ -n "$KEYSTORE" ]; then
+                      printf '%s' "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/renuxcord.jks"
+                      echo "RENUXCORD_KEYSTORE=$RUNNER_TEMP/renuxcord.jks" >> "$GITHUB_ENV"
+                  else
+                      echo "No signing key in the secrets, the release APK gets the debug key"
+                  fi
+
+            - name: Build the APKs
+              working-directory: mobile/android
+              env:
+                  RENUXCORD_KEYSTORE_PASSWORD: ${{ secrets.RENUXCORD_KEYSTORE_PASSWORD }}
+                  RENUXCORD_KEY_ALIAS: ${{ secrets.RENUXCORD_KEY_ALIAS }}
+                  RENUXCORD_KEY_PASSWORD: ${{ secrets.RENUXCORD_KEY_PASSWORD }}
+              run: |
+                  chmod +x gradlew
+                  ./gradlew --no-daemon assembleRelease assembleDebug
+                  cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/Renuxcord.apk"
+                  cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/Renuxcord-debug.apk"
+
+            - name: Enable KVM for the emulator
+              run: |
+                  echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+                  sudo udevadm control --reload-rules
+                  sudo udevadm trigger --name-match=kvm
+
+            - name: Check Renuxcord loads in the emulator
+              uses: reactivecircus/android-emulator-runner@v2
+              with:
+                  api-level: 34
+                  arch: x86_64
+                  target: google_apis
+                  disable-animations: true
+                  emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+                  script: sh .github/scripts/android-smoke.sh Renuxcord-debug.apk web
+
+            - name: Upload the APK and test results
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: android
+                  path: |
+                      Renuxcord.apk
+                      android-shot.png
+                      android-logcat.txt
+
+    ios:
+        needs: web
+        runs-on: macos-latest
+        timeout-minutes: 45
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+            - name: Download the web version
+              uses: actions/download-artifact@v4
+              with:
+                  name: web
+                  path: web
+
+            - name: Generate the Xcode project
+              working-directory: mobile/ios
+              run: |
+                  brew install xcodegen
+                  xcodegen generate
+
+            - name: Build the IPA
+              working-directory: mobile/ios
+              run: |
+                  xcodebuild -project Renuxcord.xcodeproj -scheme Renuxcord -configuration Release -sdk iphoneos \
+                      -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build -quiet
+                  mkdir -p Payload
+                  cp -R build/Build/Products/Release-iphoneos/Renuxcord.app Payload/
+                  zip -qry "$GITHUB_WORKSPACE/Renuxcord.ipa" Payload
+
+            - name: Build for the simulator
+              working-directory: mobile/ios
+              run: |
+                  xcodebuild -project Renuxcord.xcodeproj -scheme Renuxcord -configuration Debug -sdk iphonesimulator \
+                      -derivedDataPath build-sim CODE_SIGNING_ALLOWED=NO build -quiet
+
+            - name: Check Renuxcord loads in the simulator
+              run: sh .github/scripts/ios-smoke.sh mobile/ios/build-sim/Build/Products/Debug-iphonesimulator/Renuxcord.app web
+
+            - name: Upload the IPA and test results
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: ios
+                  path: |
+                      Renuxcord.ipa
+                      ios-shot.png
+                      ios-app.log
+
+    publish:
+        needs: [android, ios]
+        if: github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Download the apps
+              uses: actions/download-artifact@v4
+              with:
+                  path: apps
+
+            - name: Add them to the devbuild release
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GH_REPO: ${{ github.repository }}
+              run: |
+                  if gh release view devbuild > /dev/null 2>&1; then
+                      gh release upload devbuild --clobber apps/android/Renuxcord.apk apps/ios/Renuxcord.ipa
+                  else
+                      echo "No devbuild release yet, the desktop release workflow makes it"
+                  fi

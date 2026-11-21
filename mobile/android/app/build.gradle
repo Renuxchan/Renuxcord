@@ -1,0 +1,54 @@
+plugins {
+    id 'com.android.application'
+}
+
+// CI signs releases with the key kept in the repository's secrets, so every new APK can update the last one.
+// Without it (forks, local builds) release builds fall back to the debug key
+def keystore = System.getenv("RENUXCORD_KEYSTORE")
+
+android {
+    namespace = 'dev.renuxcord.app'
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "dev.renuxcord.app"
+        minSdk = 26
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0.0"
+    }
+
+    signingConfigs {
+        release {
+            if (keystore) {
+                storeFile = file(keystore)
+                storePassword = System.getenv("RENUXCORD_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("RENUXCORD_KEY_ALIAS")
+                keyPassword = System.getenv("RENUXCORD_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix = ".dbg"
+        }
+
+        release {
+            minifyEnabled = false
+            signingConfig = keystore ? signingConfigs.release : signingConfigs.debug
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+}
+
+dependencies {
+    implementation 'androidx.annotation:annotation:1.9.1'
+}

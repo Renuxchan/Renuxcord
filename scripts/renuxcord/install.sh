@@ -76,6 +76,17 @@ candidates() {
         return
     fi
 
+    # Discord 1.0 for Linux installs itself into ~/.config/<dir>/app-<version> on first start, like Windows does
+    case "$f" in
+        stable) home_dir=discord ;;
+        ptb) home_dir=discordptb ;;
+        canary) home_dir=discordcanary ;;
+    esac
+    for app in "${XDG_CONFIG_HOME:-$HOME/.config}/$home_dir"/app-*/resources; do
+        say "$app"
+    done
+
+    # Older packages (and some distros' own) put the whole app under /usr/share, /opt and so on
     case "$f" in
         stable) names="discord Discord" ;;
         ptb) names="discord-ptb DiscordPTB" ;;
@@ -323,6 +334,9 @@ case "$command_name" in
     install)
         if [ -z "$installs" ]; then
             snap_hint
+            if [ "$os" = Linux ] && command -v discord > /dev/null 2>&1; then
+                die "Discord hasn't finished installing itself yet. Open Discord once, wait until it shows the login or your chats, quit it and run this again"
+            fi
             die "No Discord install found. Install Discord first, or pass --location <its resources folder>"
         fi
         failed=0
