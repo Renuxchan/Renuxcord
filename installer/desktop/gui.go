@@ -287,7 +287,8 @@ func runGUI() {
 	)
 
 	w.SetContent(container.NewStack(canvas.NewRectangle(colBg), container.NewPadded(container.NewPadded(body))))
-	w.Resize(fyne.NewSize(680, 560))
+	// A window can't be smaller than what's in it, so this ends up exactly as tall as the content
+	w.Resize(fyne.NewSize(680, 1))
 	w.SetFixedSize(true)
 	w.CenterOnScreen()
 	w.ShowAndRun()

@@ -129,11 +129,19 @@ jobs:
                       pkill -x Safari || true
                       pkill -f "Discord.app" || true
                       sleep 2
-                      open "installer/desktop/build/Renuxcord Installer.app"
-                      sleep 10
-                      pgrep -x RenuxcordInstaller > /dev/null && echo "The installer is running"
+                      "$INSTALLER" > installer-window.log 2>&1 &
+                      sleep 12
+                      if pgrep -x RenuxcordInstaller > /dev/null; then
+                          echo "The installer is running"
+                      else
+                          echo "The installer quit:"
+                          cat installer-window.log
+                          ls ~/Library/Logs/DiagnosticReports/ 2>/dev/null | grep -i renux | head -3
+                          for f in ~/Library/Logs/DiagnosticReports/RenuxcordInstaller*; do [ -f "$f" ] && head -80 "$f"; done
+                      fi
                       screencapture -x installer-window.png
                       pkill -x RenuxcordInstaller || true
+                      cat installer-window.log
                   else
                       xvfb-run -a -s "-screen 0 1280x800x24" sh -c '"$INSTALLER" & sleep 10; import -window root installer-window.png; kill $! || true'
                   fi
@@ -148,4 +156,5 @@ jobs:
                       discord-*.log
                       discord-*.png
                       installer-window.png
+                      installer-window.log
                       dist/RenuxcordInstaller-*
