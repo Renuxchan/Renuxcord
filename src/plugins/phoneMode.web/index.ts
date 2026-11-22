@@ -337,9 +337,10 @@ export default definePlugin({
     authors: [RenuxDevs.Larpbase],
     required: true,
     hidden: true,
-    // From page load, not after Discord connects: the layout is in place from the first frame, and the login page
-    // gets hold-to-open menus too
-    startAt: StartAt.DOMContentLoaded,
+    // As soon as Renuxcord runs, not after Discord connects: the layout is in place from the first frame, and the login
+    // page gets hold-to-open menus too. The Android app can inject Renuxcord after the page's DOMContentLoaded has
+    // already fired, so start() waits for the page itself instead of that stage
+    startAt: StartAt.Init,
 
     patches: [
         {
@@ -370,11 +371,6 @@ export default definePlugin({
     start() {
         if (!FULL_APP) return;
         root.classList.add("rx-app");
-        enableStyle(style);
-        layoutStyle = document.createElement("style");
-        layoutStyle.id = "renuxcord-phone-layout";
-        document.head.append(layoutStyle);
-
         setMode("nav");
         onWidth();
         PHONE.addEventListener("change", onWidth);
@@ -389,7 +385,18 @@ export default definePlugin({
         document.addEventListener("touchcancel", clearPress, { capture: true, passive: true });
 
         (window as any).RenuxcordPhone = { get active() { return active(); }, back, setMode };
-        watchLayout();
+
+        // The styles and the layout watcher need the page's head and body
+        const setUp = () => {
+            enableStyle(style);
+            layoutStyle = document.createElement("style");
+            layoutStyle.id = "renuxcord-phone-layout";
+            if (suffix) layoutStyle.textContent = layoutCss(CSS.escape(suffix));
+            document.head.append(layoutStyle);
+            watchLayout();
+        };
+        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", setUp, { once: true });
+        else setUp();
     },
 
     stop() {
