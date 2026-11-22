@@ -7,7 +7,7 @@
 import { disableStyle, enableStyle } from "@api/Styles";
 import { Logger } from "@utils/Logger";
 import { RenuxDevs } from "@utils/renuxcord";
-import definePlugin from "@utils/types";
+import definePlugin, { StartAt } from "@utils/types";
 import { findStoreLazy } from "@webpack";
 import { FluxDispatcher } from "@webpack/common";
 
@@ -337,6 +337,9 @@ export default definePlugin({
     authors: [RenuxDevs.Larpbase],
     required: true,
     hidden: true,
+    // From page load, not after Discord connects: the layout is in place from the first frame, and the login page
+    // gets hold-to-open menus too
+    startAt: StartAt.DOMContentLoaded,
 
     patches: [
         {
