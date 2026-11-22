@@ -28,6 +28,11 @@ ws.onmessage = e => {
     const msg = JSON.parse(e.data);
     waiting.get(msg.id)?.(msg);
 };
+const send = (method, params) => new Promise(resolve => {
+    const id = ++nextId;
+    waiting.set(id, resolve);
+    ws.send(JSON.stringify({ id, method, params }));
+});
 const evaluate = expression => new Promise(resolve => {
     const id = ++nextId;
     waiting.set(id, msg => resolve(msg.result?.result?.value ?? msg.result?.exceptionDetails?.text ?? msg.error?.message));
@@ -81,9 +86,32 @@ await check(
     "(() => { const n = new Notification('Renuxcord CI', { body: 'Notification check', tag: 'ci' }); return n.id > 0 ? 'shown' : 'no id'; })()",
     v => v === "shown"
 );
+// Discord's full app (calls, Server Discovery, every menu) runs only for a computer's user agent
+await check(
+    "Discord runs its full app, not its phone site",
+    "[navigator.userAgent.includes('RenuxcordApp/1'), /Android|Mobile/.test(navigator.userAgent.split(' RenuxcordApp/')[0]), document.documentElement.classList.contains('is-mobile')]",
+    v => Array.isArray(v) && v[0] === true && v[1] === false && v[2] === false
+);
+await check(
+    "the phone layout is running",
+    "document.documentElement.classList.contains('rx-app') && typeof window.RenuxcordPhone?.back === 'function'",
+    v => v === true
+);
+
+// Hold a finger down: PhoneMode turns that into Discord's right-click menu
+await evaluate("window.__rxMenu = null; document.addEventListener('contextmenu', e => { if (!e.isTrusted) window.__rxMenu = Math.round(e.clientX) + ',' + Math.round(e.clientY); }, true); 'ready'");
+await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: 24, y: 24 }] });
+await new Promise(resolve => setTimeout(resolve, 800));
+await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+await check(
+    "holding something opens its menu",
+    "window.__rxMenu",
+    v => v === "24,24"
+);
+
 await check(
     "the app's hooks are in the page",
-    "typeof RenuxcordMobile?.notificationClicked === 'function' && typeof RenuxcordMobile?.onBackPress === 'function'",
+    "typeof RenuxcordMobile?.notificationClicked === 'function' && typeof RenuxcordMobile?.onBackPress === 'function' && typeof RenuxcordNative?.setInCall === 'function'",
     v => v === true
 );
 

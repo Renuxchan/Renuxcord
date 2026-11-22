@@ -61,12 +61,22 @@ grep -i "renuxcord" ios-app.log | head -20
 if loaded; then
     echo "Renuxcord loaded in the iOS app"
     # Text boxes smaller than 16px make iOS zoom the whole page when tapped, unless the viewport says not to
+    status=0
     if grep -q "Viewport: .*maximum-scale=1" ios-app.log; then
         echo "ok   the page can't zoom when you tap a text box"
-        exit 0
+    else
+        echo "FAIL the viewport fix didn't apply"
+        status=1
     fi
-    echo "FAIL the viewport fix didn't apply"
-    exit 1
+    # Discord's full app (calls, Server Discovery, every menu) runs only for a computer's user agent
+    if grep -q "UA: .*Macintosh.*RenuxcordApp/1" ios-app.log; then
+        echo "ok   Discord gets its full app"
+    else
+        echo "FAIL the app didn't send the full-app user agent"
+        grep "UA: " ios-app.log | head -2
+        status=1
+    fi
+    exit $status
 fi
 
 echo "Renuxcord never reported loading"

@@ -3,21 +3,26 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 import UIKit
+import UserNotifications
 import WebKit
 
 /// Discord's web app with Renuxcord injected before any of Discord's own code runs
-final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, WKDownloadDelegate, UIScrollViewDelegate {
+final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler, WKDownloadDelegate, UIScrollViewDelegate, UNUserNotificationCenterDelegate {
     private static let home = URL(string: "https://discord.com/channels/@me")!
-    // Looks like Safari, so Discord treats it as a normal phone browser
-    private static let safariName = "Version/18.0 Mobile/15E148 Safari/604.1"
+    // Renuxcord's page plugin (PhoneMode) looks for this to know it runs in the app
+    private static let appMarker = " RenuxcordApp/1"
+    // Discord's own phone site: looks like Safari on an iPhone
+    private static let safariName = "Version/18.0 Mobile/15E148 Safari/604.1" + appMarker
+    // Discord's full app (calls, Server Discovery, every menu) only runs for computers, so this looks like a Mac
     private static let desktopAgent =
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15"
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15" + appMarker
     // Discord's dark background, so the strip under the status bar matches it
     private static let background = UIColor(red: 0.1, green: 0.1, blue: 0.118, alpha: 1)
     private static let accent = UIColor(red: 1, green: 90 / 255, blue: 44 / 255, alpha: 1)
 
     private let store = BundleStore.shared
     private var webView: WKWebView?
+    private var notificationPermission = "default"
     private let spinner = UIActivityIndicatorView(style: .large)
     private let message = UILabel()
     private let retryButton = UIButton(type: .system)
@@ -39,6 +44,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         retryButton.tintColor = Self.accent
         retryButton.addTarget(self, action: #selector(retry), for: .touchUpInside)
         retryButton.isHidden = true
+        UNUserNotificationCenter.current().delegate = self
 
         view.addSubview(spinner)
         view.addSubview(message)
@@ -78,6 +84,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         }
 
         message.text = nil
+        notificationPermission = Self.permissionName(await UNUserNotificationCenter.current().notificationSettings().authorizationStatus)
         showDiscord()
 
         // Discord opens right away; a newer Renuxcord downloads meanwhile and loads the next time the app opens
@@ -101,7 +108,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         let content = WKUserContentController()
         content.add(WeakHandler(self), name: "renuxcord")
         content.addUserScript(WKUserScript(source: store.js ?? "", injectionTime: .atDocumentStart, forMainFrameOnly: true))
-        content.addUserScript(WKUserScript(source: Self.mobileScript(css: store.css), injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        content.addUserScript(WKUserScript(source: Self.mobileScript(css: store.css, permission: notificationPermission), injectionTime: .atDocumentStart, forMainFrameOnly: true))
 
         let config = WKWebViewConfiguration()
         config.userContentController = content
@@ -136,12 +143,72 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
 
     /// Adds Renuxcord's CSS and the phone tweaks, a "Renuxcord app" page in Discord's settings, and tells the app
     /// Renuxcord loaded
-    private static func mobileScript(css: String) -> String {
+    private static func mobileScript(css: String, permission: String) -> String {
         let cssLiteral = String(data: (try? JSONSerialization.data(withJSONObject: [css])) ?? Data("[\"\"]".utf8), encoding: .utf8) ?? "[\"\"]"
         return """
         (() => {
             const post = msg => window.webkit?.messageHandlers?.renuxcord?.postMessage(msg);
             const css = \(cssLiteral)[0];
+
+            // Discord's message notifications as iPhone notifications. WKWebView has no Notification API of its own
+            const notifications = new Map();
+            const tags = new Map();
+            const waiters = [];
+            let permission = "\(permission)";
+            let nextId = 1;
+            class RenuxcordNotification extends EventTarget {
+                static get permission() { return permission; }
+                static requestPermission(callback) {
+                    return new Promise(resolve => {
+                        waiters.push(p => { try { callback?.(p); } finally { resolve(p); } });
+                        post({ type: "notifyPermission" });
+                    });
+                }
+                constructor(title, options = {}) {
+                    super();
+                    this.title = String(title ?? "");
+                    this.body = String(options.body ?? "");
+                    this.tag = String(options.tag ?? "");
+                    this.icon = String(options.icon ?? "");
+                    this.data = options.data ?? null;
+                    this.onclick = this.onshow = this.onclose = this.onerror = null;
+                    this.id = (this.tag && tags.get(this.tag)) || nextId++;
+                    if (this.tag) tags.set(this.tag, this.id);
+                    notifications.set(this.id, this);
+                    if (permission !== "granted") { setTimeout(() => this._fire("error")); return; }
+                    post({ type: "notify", id: this.id, title: this.title, body: this.body });
+                    setTimeout(() => this._fire("show"));
+                }
+                close() {
+                    if (notifications.get(this.id) !== this) return;
+                    post({ type: "notifyClose", id: this.id });
+                    this._forget();
+                    this._fire("close");
+                }
+                _forget() {
+                    notifications.delete(this.id);
+                    if (this.tag && tags.get(this.tag) === this.id) tags.delete(this.tag);
+                }
+                _fire(type) {
+                    const event = new Event(type, { cancelable: true });
+                    try { this["on" + type]?.call(this, event); } catch (err) { console.error("[RenuxcordMobile] Notification handler failed", err); }
+                    this.dispatchEvent(event);
+                }
+            }
+            Object.defineProperty(window, "Notification", { value: RenuxcordNotification, configurable: true, writable: true });
+            window.RenuxcordMobile = {
+                notificationPermissionChanged(p) {
+                    permission = p;
+                    for (const resolve of waiters.splice(0)) resolve(p);
+                },
+                notificationClicked(id) {
+                    const n = notifications.get(id);
+                    if (!n) return;
+                    n._forget();
+                    window.focus();
+                    n._fire("click");
+                }
+            };
             // No grey tap flashes, no rubber-banding, no double-tap zoom
             const polish = `
                 html, body { overscroll-behavior: none; }
@@ -179,7 +246,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
                 const { React } = Common;
                 return React.createElement(Flex, { flexDirection: "column" },
                     React.createElement(Button, { onClick: () => post({ type: "update" }) }, "Check for Renuxcord updates"),
-                    React.createElement(Button, { onClick: () => post({ type: "layout" }) }, "Switch between phone and desktop layout"));
+                    React.createElement(Button, { onClick: () => post({ type: "layout" }) }, "Switch between full Discord and Discord's phone site"));
             }
             Settings.customEntries.push({ key: "renuxcord_app", title: "Renuxcord app", Icon: WebsiteIcon, Component: AppSettings });
 
@@ -195,10 +262,11 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
                 }
                 return false;
             };
+            // In Discord's full app the PhoneMode plugin handles swipes; these are for Discord's own phone site
             let swipe = null;
             document.addEventListener("touchstart", e => {
                 swipe = null;
-                if (e.touches.length !== 1 || scrollsSideways(e.target) || document.querySelector("[role=dialog]")) return;
+                if (window.RenuxcordPhone?.active || e.touches.length !== 1 || scrollsSideways(e.target) || document.querySelector("[role=dialog]")) return;
                 swipe = { x: e.touches[0].clientX, y: e.touches[0].clientY, time: Date.now() };
             }, { passive: true, capture: true });
             document.addEventListener("touchend", e => {
@@ -218,7 +286,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
                 }, 60);
             }, { passive: true, capture: true });
 
-            post({ type: "loaded" });
+            post({ type: "loaded", agent: navigator.userAgent });
         })();
         """
     }
@@ -230,6 +298,7 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
         switch type {
         case "loaded":
             log("Renuxcord loaded in the page")
+            log("UA: \(body["agent"] as? String ?? "")")
         case "missing":
             log("Renuxcord didn't load in the page")
         case "viewport":
@@ -240,6 +309,29 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
             store.desktopLayout.toggle()
             webView?.customUserAgent = store.desktopLayout ? Self.desktopAgent : nil
             webView?.reload()
+        case "haptic":
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        case "call":
+            // The screen stays on while you're in a voice call
+            UIApplication.shared.isIdleTimerDisabled = body["on"] as? Bool ?? false
+        case "notify":
+            guard let id = body["id"] as? Int else { break }
+            let note = UNMutableNotificationContent()
+            note.title = body["title"] as? String ?? ""
+            note.body = body["body"] as? String ?? ""
+            note.sound = .default
+            note.userInfo = ["id": id]
+            UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "renuxcord-\(id)", content: note, trigger: nil))
+        case "notifyClose":
+            if let id = body["id"] as? Int {
+                UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: ["renuxcord-\(id)"])
+            }
+        case "notifyPermission":
+            Task {
+                let granted = (try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])) ?? false
+                notificationPermission = granted ? "granted" : "denied"
+                _ = try? await webView?.evaluateJavaScript("window.RenuxcordMobile?.notificationPermissionChanged('\(notificationPermission)')")
+            }
         default:
             break
         }
@@ -399,6 +491,29 @@ final class WebViewController: UIViewController, WKNavigationDelegate, WKUIDeleg
             && scrollView.contentSize.width <= scrollView.bounds.width + 1 {
             scrollView.contentOffset = .zero
         }
+    }
+
+    // MARK: - Notifications
+
+    private static func permissionName(_ status: UNAuthorizationStatus) -> String {
+        switch status {
+        case .authorized, .provisional, .ephemeral: return "granted"
+        case .denied: return "denied"
+        default: return "default"
+        }
+    }
+
+    // Discord only sends one when you're not looking at the chat, so it always shows
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound])
+    }
+
+    // Tapping one opens the chat it came from
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        if let id = response.notification.request.content.userInfo["id"] as? Int {
+            webView?.evaluateJavaScript("window.RenuxcordMobile?.notificationClicked(\(id))")
+        }
+        completionHandler()
     }
 
     // MARK: - Calls and dialogs

@@ -3,7 +3,16 @@
     <string name="app_settings">App settings</string>
     <string name="renuxcord_updater">Renuxcord updater</string>
     <string name="open_updater">Open Updater</string>
-    <string name="use_desktop_ui">Use desktop UI</string>
+    <string name="use_desktop_ui">Full Discord</string>
+    <string name="use_desktop_ui_notice">Calls, Server Discovery and every menu, in Renuxcord’s phone layout. Off shows Discord’s own phone site instead, which leaves those out.</string>
+    <string name="stay_connected">Stay connected in the background</string>
+    <string name="stay_connected_notice">Keeps message notifications coming when the app is closed, with a quiet notification that it’s connected. Calls always stay connected.</string>
+    <string name="keepalive_channel">Background connection</string>
+    <string name="keepalive_channel_description">Shows while Renuxcord stays connected in the background</string>
+    <string name="keepalive_connected">Renuxcord is connected</string>
+    <string name="keepalive_connected_text">Message notifications keep coming. Tap to open.</string>
+    <string name="keepalive_call">In a voice call</string>
+    <string name="keepalive_call_text">Tap to go back to the call.</string>
     <string name="discord_branch">Discord branch</string>
     <string name="branch_stable">Stable</string>
     <string name="branch_ptb">PTB</string>

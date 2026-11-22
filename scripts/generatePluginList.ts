@@ -160,6 +160,10 @@ async function parseFile(fileName: string) {
                 case "enabledByDefault":
                     data[key] = value.kind === SyntaxKind.TrueKeyword;
                     break;
+                // Renuxcord: plumbing plugins nobody sees in the plugin list stay out of the published list too
+                case "hidden":
+                    if (value.kind === SyntaxKind.TrueKeyword) return null;
+                    break;
             }
         }
 
@@ -217,7 +221,9 @@ function isPluginFile({ name }: { name: string; }) {
         readdirSync(dir, { withFileTypes: true })
             .filter(isPluginFile)
             .map(async dirent => {
-                const [data, readme] = await parseFile(await getEntryPoint(dir, dirent));
+                const parsed = await parseFile(await getEntryPoint(dir, dirent));
+                if (!parsed) return;
+                const [data, readme] = parsed;
                 plugins.push(data);
                 if (readme) readmes[data.name] = readme;
             })

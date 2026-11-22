@@ -1,6 +1,7 @@
 package dev.renuxcord.app;
 
 import android.util.Base64;
+import android.view.HapticFeedbackConstants;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
@@ -19,6 +20,18 @@ public class RenuxcordNative {
         activity.runOnUiThread(() -> {
             if (wv.canGoBack()) wv.goBack();
         });
+    }
+
+    /** A long press opened a menu */
+    @JavascriptInterface
+    public void haptic() {
+        activity.runOnUiThread(() -> wv.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS));
+    }
+
+    /** Joined or left a voice channel: keeps the mic and the call going while the app is in the background */
+    @JavascriptInterface
+    public void setInCall(boolean on) {
+        activity.runOnUiThread(() -> KeepAlive.setInCall(activity, on));
     }
 
     @JavascriptInterface

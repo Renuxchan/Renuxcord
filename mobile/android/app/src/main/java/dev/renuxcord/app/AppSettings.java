@@ -16,14 +16,18 @@ public class AppSettings {
     private static final String KEY_INSTALLED_HASH = "installed_hash";
     private static final String KEY_BRANCH = "branch";
     private static final String KEY_ASKED_NOTIFICATIONS = "asked_notifications";
+    private static final String KEY_STAY_CONNECTED = "stay_connected";
+    /** Renuxcord's page plugin (PhoneMode) looks for this to know it runs in the app */
+    private static final String APP_MARKER = " RenuxcordApp/1";
     private static final Pattern CHROME_VERSION = Pattern.compile("Chrome/[\\d.]+");
 
     private static SharedPreferences prefs(Context ctx) {
         return ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
+    /** Discord's full app (calls, discovery, menus) in Renuxcord's phone layout. Off means Discord's own phone site */
     public static boolean isDesktopUiEnabled(Context ctx) {
-        return prefs(ctx).getBoolean(KEY_DESKTOP_UI, false);
+        return prefs(ctx).getBoolean(KEY_DESKTOP_UI, true);
     }
 
     public static void setDesktopUiEnabled(Context ctx, boolean enabled) {
@@ -62,10 +66,24 @@ public class AppSettings {
         prefs(ctx).edit().putBoolean(KEY_ASKED_NOTIFICATIONS, true).apply();
     }
 
+    public static boolean isStayConnectedEnabled(Context ctx) {
+        return prefs(ctx).getBoolean(KEY_STAY_CONNECTED, true);
+    }
+
+    public static void setStayConnectedEnabled(Context ctx, boolean enabled) {
+        prefs(ctx).edit().putBoolean(KEY_STAY_CONNECTED, enabled).apply();
+    }
+
+    // Without "Android" or "Mobile" in it, Discord runs its full app: voice and video, Server Discovery, every menu.
+    // Android is Linux, so that's what it says
     public static String desktopUserAgent(String currentUserAgent) {
         var matcher = CHROME_VERSION.matcher(currentUserAgent);
-        var chromeVersion = matcher.find() ? matcher.group() : "Chrome/120.0.0.0";
-        return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                + chromeVersion + " Safari/537.36";
+        var chromeVersion = matcher.find() ? matcher.group() : "Chrome/141.0.0.0";
+        return "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                + chromeVersion + " Safari/537.36" + APP_MARKER;
+    }
+
+    public static String phoneUserAgent(String currentUserAgent) {
+        return currentUserAgent + APP_MARKER;
     }
 }

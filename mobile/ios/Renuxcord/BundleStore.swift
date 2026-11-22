@@ -40,9 +40,10 @@ final class BundleStore {
         set { defaults.set(newValue, forKey: "autoUpdate") }
     }
 
+    /// Discord's full app (calls, discovery, menus) in Renuxcord's phone layout. Off shows Discord's own phone site
     var desktopLayout: Bool {
-        get { defaults.bool(forKey: "desktopLayout") }
-        set { defaults.set(newValue, forKey: "desktopLayout") }
+        get { !defaults.bool(forKey: "phoneSite") }
+        set { defaults.set(!newValue, forKey: "phoneSite") }
     }
 
     var js: String? { try? String(contentsOf: dir.appendingPathComponent("browser.js"), encoding: .utf8) }

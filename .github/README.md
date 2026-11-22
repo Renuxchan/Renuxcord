@@ -145,7 +145,7 @@ curl -fsSL https://github.com/Renuxchan/Renuxcord/releases/download/devbuild/ins
 
 **iPhone and iPad:** open the **[website](https://renuxchan.github.io/Renuxcord/#download)** on your iPhone and tap **Add to SideStore**, **Add to AltStore** or **Install with TrollStore**. SideStore and AltStore add the Renuxcord source (`https://github.com/Renuxchan/Renuxcord/releases/latest/download/altstore.json`) and keep the app updated. Using Sideloadly or something else? Get **[Renuxcord.ipa](https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.ipa)**. No sideloading at all? Install the free **Userscripts** app from the App Store, add **[Renuxcord.user.js](https://github.com/Renuxchan/Renuxcord/releases/latest/download/Renuxcord.user.js)** and open discord.com in Safari. More in [mobile/ios](../mobile/ios).
 
-The phone apps run Discord's web app with Renuxcord in it, so the plugins that need a computer (the AI bridge, files on your PC, Voice Chat Unblocker) stay on desktop.
+The phone apps run Discord's full web app with Renuxcord in it, in a phone layout: voice and video calls, Server Discovery, and every menu (hold anything to open its menu). Swipe or press back to get from a chat to your servers. On Android, message notifications keep coming in the background (turn that off in the app's settings). Only the plugins that need a computer (the AI bridge, files on your PC, Voice Chat Unblocker) stay on desktop.
 
 </details>
 

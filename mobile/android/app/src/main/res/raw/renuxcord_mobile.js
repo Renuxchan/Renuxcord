@@ -230,10 +230,13 @@
         return false;
     }
 
+    // In Discord's full app the PhoneMode plugin handles swipes and back; these are for Discord's own phone site
+    const phoneLayout = () => Boolean(window.RenuxcordPhone?.active);
+
     let swipe = null;
     document.addEventListener("touchstart", e => {
         swipe = null;
-        if (e.touches.length !== 1 || scrollsSideways(e.target) || document.querySelector("[role=dialog]")) return;
+        if (phoneLayout() || e.touches.length !== 1 || scrollsSideways(e.target) || document.querySelector("[role=dialog]")) return;
         const t = e.touches[0];
         swipe = { x: t.clientX, y: t.clientY, time: Date.now() };
     }, { passive: true, capture: true });
@@ -269,6 +272,8 @@
             delete window.__VENCORD_MONACO_WIN__;
             return true;
         }
+
+        if (phoneLayout()) return window.RenuxcordPhone.back();
 
         if (!isSidebarOpen) {
             Common.FluxDispatcher.dispatch({ type: "MOBILE_WEB_SIDEBAR_OPEN" });

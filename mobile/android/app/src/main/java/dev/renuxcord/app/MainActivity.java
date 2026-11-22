@@ -93,6 +93,10 @@ public class MainActivity extends Activity {
         s.setSupportZoom(false);
         s.setBuiltInZoomControls(false);
         s.setDisplayZoomControls(false);
+        // Smoother scrolling: the page is drawn a little ahead of where you scroll
+        s.setOffscreenPreRaster(true);
+        // The page keeps running in the background (calls, notifications) instead of Android pausing it first
+        wv.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, false);
         // Login captchas run in a frame from another site
         CookieManager.getInstance().setAcceptThirdPartyCookies(wv, true);
 
@@ -100,6 +104,7 @@ public class MainActivity extends Activity {
         applyUserAgent();
 
         wv.addJavascriptInterface(new RenuxcordNative(this, wv), "RenuxcordNative");
+        KeepAlive.update(this);
 
         Intent intent = getIntent();
         if (Objects.equals(intent.getAction(), Intent.ACTION_VIEW)) pendingUrl = intent.getData();
@@ -204,6 +209,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         ui.removeCallbacks(showPageAnyway);
+        KeepAlive.stop(this);
         if (wv != null) {
             if (wv.getParent() instanceof ViewGroup) ((ViewGroup) wv.getParent()).removeView(wv);
             wv.destroy();
@@ -216,8 +222,8 @@ public class MainActivity extends Activity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && wv != null && errorView.getVisibility() != View.VISIBLE && wvInitialized) {
             runOnUiThread(() -> wv.evaluateJavascript("window.RenuxcordMobile ? RenuxcordMobile.onBackPress() : false", r -> {
-                if ("false".equals(r))
-                    this.onBackPressed();
+                // Like Discord's own app: back on the home screen sends it to the background, still connected
+                if ("false".equals(r)) moveTaskToBack(true);
             }));
             return true;
         }
@@ -421,7 +427,7 @@ public class MainActivity extends Activity {
         s.setUserAgentString(
                 AppSettings.isDesktopUiEnabled(this)
                         ? AppSettings.desktopUserAgent(defaultUserAgent)
-                        : defaultUserAgent
+                        : AppSettings.phoneUserAgent(defaultUserAgent)
         );
     }
 
@@ -434,6 +440,13 @@ public class MainActivity extends Activity {
             AppSettings.setDesktopUiEnabled(this, isChecked);
             applyUserAgent();
             wv.reload();
+        });
+
+        Switch stayConnectedSwitch = view.findViewById(R.id.stay_connected_switch);
+        stayConnectedSwitch.setChecked(AppSettings.isStayConnectedEnabled(this));
+        stayConnectedSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            AppSettings.setStayConnectedEnabled(this, isChecked);
+            KeepAlive.update(this);
         });
 
         RadioGroup branchRadio = view.findViewById(R.id.branch_group);
