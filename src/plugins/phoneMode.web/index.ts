@@ -31,7 +31,25 @@ const ChannelSectionStore = findStoreLazy("ChannelSectionStore");
 
 type Mode = "nav" | "chat";
 
-const root = document.documentElement;
+// The layout's state lives in data-rx-* attributes on <html>, not classes: Discord rewrites <html>'s class attribute
+// whenever its own classes change. <html> is looked up every time because the Android app starts Renuxcord before
+// the page has one
+const FLAGS = ["app", "phone", "nav", "chat", "settings", "set-page"] as const;
+type Flag = typeof FLAGS[number];
+const flag = (name: Flag, on: boolean) => document.documentElement?.toggleAttribute(`data-rx-${name}`, on);
+const hasFlag = (name: Flag) => document.documentElement?.hasAttribute(`data-rx-${name}`) ?? false;
+
+/** Runs now if the page has its <html> element, otherwise as soon as it does */
+function whenRoot(run: () => void) {
+    if (document.documentElement) return void run();
+    const watcher = new MutationObserver(() => {
+        if (!document.documentElement) return;
+        watcher.disconnect();
+        run();
+    });
+    watcher.observe(document, { childList: true });
+}
+
 let mode: Mode = "nav";
 let layoutStyle: HTMLStyleElement | null = null;
 let suffix = "";
@@ -67,8 +85,8 @@ const active = () => FULL_APP && PHONE.matches;
 
 function setMode(next: Mode) {
     mode = next;
-    root.classList.toggle("rx-nav", next === "nav");
-    root.classList.toggle("rx-chat", next === "chat");
+    flag("nav", next === "nav");
+    flag("chat", next === "chat");
 }
 
 /* The layout: Discord's grid of server list, channel list and page, one pane at a time */
@@ -80,15 +98,15 @@ const PARKED = "position: fixed !important; inset: 0 !important; visibility: hid
 function layoutCss(s: string) {
     const c = (name: string) => `.${name}_${s}`;
     return `
-html.rx-phone ${c("sidebarResizeHandle")} { display: none !important; }
-html.rx-phone.rx-nav ${c("page")} { ${PARKED} transform: translateX(100%); }
-html.rx-phone.rx-nav ${c("base")} { grid-template-columns: [start] min-content [guildsEnd] minmax(0, 1fr) [channelsEnd] 0px [end] !important; }
-html.rx-phone.rx-nav ${c("sidebar")} { width: auto !important; max-width: none !important; flex: 1 1 auto !important; animation: rx-from-left .22s cubic-bezier(.2,.7,.2,1); }
-html.rx-phone.rx-nav ${c("sidebarList")} { width: auto !important; flex: 1 1 auto !important; }
-html.rx-phone.rx-nav ${c("panels")} { width: auto !important; inset-inline-end: var(--custom-panels-spacing, 8px) !important; }
-html.rx-phone.rx-chat ${c("sidebar")} { ${PARKED} transform: translateX(-100%); }
-html.rx-phone.rx-chat ${c("base")} { grid-template-columns: [start] 0px [guildsEnd] 0px [channelsEnd] minmax(0, 1fr) [end] !important; }
-html.rx-phone.rx-chat ${c("page")} { grid-column: start / end !important; animation: rx-from-right .22s cubic-bezier(.2,.7,.2,1); }
+html[data-rx-phone] ${c("sidebarResizeHandle")} { display: none !important; }
+html[data-rx-phone][data-rx-nav] ${c("page")} { ${PARKED} transform: translateX(100%); }
+html[data-rx-phone][data-rx-nav] ${c("base")} { grid-template-columns: [start] min-content [guildsEnd] minmax(0, 1fr) [channelsEnd] 0px [end] !important; }
+html[data-rx-phone][data-rx-nav] ${c("sidebar")} { width: auto !important; max-width: none !important; flex: 1 1 auto !important; animation: rx-from-left .22s cubic-bezier(.2,.7,.2,1); }
+html[data-rx-phone][data-rx-nav] ${c("sidebarList")} { width: auto !important; flex: 1 1 auto !important; }
+html[data-rx-phone][data-rx-nav] ${c("panels")} { width: auto !important; inset-inline-end: var(--custom-panels-spacing, 8px) !important; }
+html[data-rx-phone][data-rx-chat] ${c("sidebar")} { ${PARKED} transform: translateX(-100%); }
+html[data-rx-phone][data-rx-chat] ${c("base")} { grid-template-columns: [start] 0px [guildsEnd] 0px [channelsEnd] minmax(0, 1fr) [end] !important; }
+html[data-rx-phone][data-rx-chat] ${c("page")} { grid-column: start / end !important; animation: rx-from-right .22s cubic-bezier(.2,.7,.2,1); }
 `;
 }
 
@@ -195,8 +213,8 @@ function settingsOpen() {
 
 function syncSettings() {
     const open = settingsOpen();
-    root.classList.toggle("rx-settings", open);
-    if (!open) root.classList.remove("rx-set-page");
+    flag("settings", open);
+    if (!open) flag("set-page", false);
 }
 
 /* Taps, holds and swipes */
@@ -228,8 +246,8 @@ function onClick(e: MouseEvent) {
         }
     }
 
-    if (root.classList.contains("rx-settings") && target.closest('[class*="sidebarRegion_"] [role="tab"], [class*="sidebarRegion_"] [role="button"]')) {
-        root.classList.add("rx-set-page");
+    if (hasFlag("settings") && target.closest('[class*="sidebarRegion_"] [role="tab"], [class*="sidebarRegion_"] [role="button"]')) {
+        flag("set-page", true);
     }
     requestAnimationFrame(syncSettings);
 }
@@ -311,13 +329,13 @@ function onContextMenu(e: MouseEvent) {
     }
 }
 
-const onWidth = () => root.classList.toggle("rx-phone", active());
+const onWidth = () => flag("phone", active());
 
 /** What the app calls when the phone's back button is pressed. True when it handled it */
 function back() {
     if (!active()) return false;
-    if (root.classList.contains("rx-set-page")) {
-        root.classList.remove("rx-set-page");
+    if (hasFlag("set-page")) {
+        flag("set-page", false);
         return true;
     }
     if (mode === "chat" && document.querySelector(SIDE_PANELS)) {
@@ -370,9 +388,11 @@ export default definePlugin({
 
     start() {
         if (!FULL_APP) return;
-        root.classList.add("rx-app");
-        setMode("nav");
-        onWidth();
+        whenRoot(() => {
+            flag("app", true);
+            setMode(mode);
+            onWidth();
+        });
         PHONE.addEventListener("change", onWidth);
         lastPath = location.pathname;
         hookHistory();
@@ -413,7 +433,7 @@ export default definePlugin({
         document.removeEventListener("touchmove", onTouchMove, true);
         document.removeEventListener("touchend", onTouchEnd, true);
         document.removeEventListener("touchcancel", clearPress, true);
-        root.classList.remove("rx-app", "rx-phone", "rx-nav", "rx-chat", "rx-settings", "rx-set-page");
+        for (const name of FLAGS) flag(name, false);
         delete (window as any).RenuxcordPhone;
     }
 });

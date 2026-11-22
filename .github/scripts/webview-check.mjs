@@ -94,7 +94,7 @@ await check(
 );
 await check(
     "the phone layout is running",
-    "document.documentElement.classList.contains('rx-app') && typeof window.RenuxcordPhone?.back === 'function'",
+    "document.documentElement.hasAttribute('data-rx-app') && typeof window.RenuxcordPhone?.back === 'function'",
     v => v === true
 );
 
