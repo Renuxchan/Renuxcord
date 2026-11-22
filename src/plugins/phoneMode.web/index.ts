@@ -72,16 +72,20 @@ function setMode(next: Mode) {
 
 /* The layout: Discord's grid of server list, channel list and page, one pane at a time */
 
+// The pane you're not looking at is parked off screen, not removed: that keeps the chat's scroll position (removing it
+// would jump the chat to its oldest loaded message) and its layout, so switching back is instant
+const PARKED = "position: fixed !important; inset: 0 !important; visibility: hidden !important; pointer-events: none !important;";
+
 function layoutCss(s: string) {
     const c = (name: string) => `.${name}_${s}`;
     return `
 html.rx-phone ${c("sidebarResizeHandle")} { display: none !important; }
-html.rx-phone.rx-nav ${c("page")} { display: none !important; }
+html.rx-phone.rx-nav ${c("page")} { ${PARKED} transform: translateX(100%); }
 html.rx-phone.rx-nav ${c("base")} { grid-template-columns: [start] min-content [guildsEnd] minmax(0, 1fr) [channelsEnd] 0px [end] !important; }
 html.rx-phone.rx-nav ${c("sidebar")} { width: auto !important; max-width: none !important; flex: 1 1 auto !important; animation: rx-from-left .22s cubic-bezier(.2,.7,.2,1); }
 html.rx-phone.rx-nav ${c("sidebarList")} { width: auto !important; flex: 1 1 auto !important; }
 html.rx-phone.rx-nav ${c("panels")} { width: auto !important; inset-inline-end: var(--custom-panels-spacing, 8px) !important; }
-html.rx-phone.rx-chat ${c("sidebar")} { display: none !important; }
+html.rx-phone.rx-chat ${c("sidebar")} { ${PARKED} transform: translateX(-100%); }
 html.rx-phone.rx-chat ${c("base")} { grid-template-columns: [start] 0px [guildsEnd] 0px [channelsEnd] minmax(0, 1fr) [end] !important; }
 html.rx-phone.rx-chat ${c("page")} { grid-column: start / end !important; animation: rx-from-right .22s cubic-bezier(.2,.7,.2,1); }
 `;
@@ -119,7 +123,7 @@ function watchLayout() {
             }
         });
     });
-    layoutWatcher.observe(document.body, { childList: true, subtree: true });
+    layoutWatcher.observe(document.body ?? document.documentElement, { childList: true, subtree: true });
 }
 
 const inList = (el: Element) => Boolean(suffix && el.closest(`.sidebarList_${CSS.escape(suffix)}`));
