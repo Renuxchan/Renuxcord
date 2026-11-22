@@ -38,7 +38,8 @@ let suffix = "";
 let layoutWatcher: MutationObserver | null = null;
 let lastPath = "";
 let lastTap = { at: 0, area: "" };
-let suppressClickUntil = 0;
+// Where the finger lifted after a long press: the click it makes there isn't a tap
+let ghost = { x: 0, y: 0, until: 0 };
 let press: { x: number; y: number; target: Element; timer: number; fired: boolean; } | null = null;
 let swipe: { x: number; y: number; at: number; } | null = null;
 let pushState: History["pushState"] | null = null;
@@ -201,11 +202,10 @@ function syncSettings() {
 /* Taps, holds and swipes */
 
 function onClick(e: MouseEvent) {
-    if (Date.now() < suppressClickUntil) {
-        // The finger lifting after a long press isn't a tap
+    if (Date.now() < ghost.until && Math.hypot(e.clientX - ghost.x, e.clientY - ghost.y) < 30) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        suppressClickUntil = 0;
+        ghost.until = 0;
         return;
     }
     if (!active() || !(e.target instanceof Element)) return;
@@ -284,15 +284,16 @@ function onTouchMove(e: TouchEvent) {
 }
 
 function onTouchEnd(e: TouchEvent) {
-    if (press?.fired) {
+    const fired = press?.fired;
+    if (fired && press) {
         e.preventDefault();
-        suppressClickUntil = Date.now() + 450;
+        ghost = { x: press.x, y: press.y, until: Date.now() + 450 };
     }
     clearPress();
 
     const start = swipe;
     swipe = null;
-    if (!start || e.changedTouches.length !== 1) return;
+    if (fired || !start || e.changedTouches.length !== 1) return;
     const t = e.changedTouches[0];
     const dx = t.clientX - start.x;
     const dy = t.clientY - start.y;
@@ -304,7 +305,7 @@ function onTouchEnd(e: TouchEvent) {
 
 function onContextMenu(e: MouseEvent) {
     // Some phones fire their own after a long hold; ours already opened the menu
-    if (e.isTrusted && (press || Date.now() < suppressClickUntil + 600)) {
+    if (e.isTrusted && (press || Date.now() < ghost.until + 600)) {
         e.preventDefault();
         e.stopImmediatePropagation();
     }

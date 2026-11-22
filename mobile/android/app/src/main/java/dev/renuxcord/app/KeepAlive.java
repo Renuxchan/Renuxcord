@@ -39,7 +39,7 @@ public class KeepAlive extends Service {
             ctx.startForegroundService(new Intent(ctx, KeepAlive.class));
         } catch (Exception e) {
             // Android 12+ won't start one from the background; it starts the next time the app is open
-            Logger.w("Couldn't start the background connection", e);
+            Logger.w("Couldn't start the background connection: " + e);
         }
     }
 
@@ -105,7 +105,7 @@ public class KeepAlive extends Service {
             begin(notification, types(inCall));
         } catch (Exception e) {
             // Android 14+ refuses the call types in some states (the mic not granted yet, say): try without them
-            Logger.w("Background connection refused the call types, trying without", e);
+            Logger.w("Background connection refused the call types, trying without: " + e);
             try {
                 begin(notification, types(false));
             } catch (Exception e2) {
