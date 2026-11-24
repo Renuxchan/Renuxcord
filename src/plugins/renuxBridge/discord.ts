@@ -18,13 +18,22 @@ const WRITE_GAP = 400;
 let lastWrite = 0;
 let writeChain: Promise<unknown> = Promise.resolve();
 
-function flattenFieldErrors(errors: any, path = ""): string[] {
+export interface FieldError {
+    // Where in the request body, like prompts.0.options.2.title
+    path: string;
+    message: string;
+}
+
+// What rest() throws: the readable message, plus Discord's error code and field errors for callers that explain them
+export type RestError = Error & { status?: number; code?: number; fields: FieldError[]; };
+
+function fieldErrors(errors: any, path = ""): FieldError[] {
     if (!errors || typeof errors !== "object") return [];
     if (Array.isArray(errors._errors))
-        return errors._errors.map((e: any) => `${path || "body"}: ${e.message ?? e.code}`);
+        return errors._errors.map((e: any) => ({ path: path || "body", message: e.message ?? e.code }));
 
     return Object.entries(errors).flatMap(([key, val]) =>
-        flattenFieldErrors(val, path ? `${path}.${key}` : key));
+        fieldErrors(val, path ? `${path}.${key}` : key));
 }
 
 export function describeError(err: any): string {
@@ -37,8 +46,8 @@ export function describeError(err: any): string {
         return "Discord asked for a captcha for this action. Do this one step by hand in Discord, then carry on.";
 
     const parts = [body?.message ?? (status ? `HTTP ${status}` : "Request failed")];
-    const fields = flattenFieldErrors(body?.errors);
-    if (fields.length) parts.push(fields.join("; "));
+    const fields = fieldErrors(body?.errors);
+    if (fields.length) parts.push(fields.map(f => `${f.path}: ${f.message}`).join("; "));
     if (body?.code) parts.push(`(code ${body.code})`);
 
     return parts.join(" ");
@@ -58,7 +67,9 @@ export function rest<T = any>(method: Method, url: string, body?: any, query?: R
                     await sleep(Math.min(retryAfter, 60) * 1000 + 250);
                     continue;
                 }
-                throw new Error(describeError(err));
+                const errBody = err?.body ?? err?.res?.body;
+                const error: RestError = Object.assign(new Error(describeError(err)), { status, code: errBody?.code, fields: fieldErrors(errBody?.errors) });
+                throw error;
             }
         }
     };
@@ -215,7 +226,7 @@ export function forgetChannel(guildId: string, channelId: string) {
     recent.get(guildId)?.channels.delete(channelId);
 }
 
-function pickByName<T>(items: T[], name: string, getName: (t: T) => string, what: string): T {
+export function pickByName<T>(items: T[], name: string, getName: (t: T) => string, what: string): T {
     const wanted = name.toLowerCase();
     const exact = items.filter(i => getName(i).toLowerCase() === wanted);
     if (exact.length === 1) return exact[0];

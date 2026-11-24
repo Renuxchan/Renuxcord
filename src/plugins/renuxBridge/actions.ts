@@ -17,6 +17,7 @@ import {
     resolveRole, rest, sleep, toBits, toHex
 } from "./discord";
 import { applyLayout, buildOverwrites, exportLayout, guildSettingsBody, layoutForNewServer, overwriteTarget, postMessage, reorderRoles, stripUndefined } from "./layout";
+import { getOnboarding, setOnboarding } from "./onboarding";
 
 export interface ActionContext {
     allowWrite: boolean;
@@ -595,6 +596,19 @@ export const actions: Record<string, Action> = {
 
     exportLayout({ server }) {
         return exportLayout(resolveGuild(server).id);
+    },
+
+    getOnboarding(p, ctx) {
+        needWrite(ctx);
+        return getOnboarding(resolveGuild(p.server).id);
+    },
+
+    async setOnboarding(p, ctx) {
+        needWrite(ctx);
+        const g = resolveGuild(p.server);
+        const result = await setOnboarding(g.id, p);
+        ctx.log(`Updated onboarding in ${g.name}`);
+        return result;
     },
 
     listPermissions() {

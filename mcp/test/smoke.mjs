@@ -55,6 +55,7 @@ const handled = [];
         if (req.method === "listServers") native.reply(null, req.id, true, [{ id: "1", name: "Test Server", query: req.params.query ?? null }]);
         else if (req.method === "status") native.reply(null, req.id, true, { user: { username: "tester" } });
         else if (req.method === "createEmoji") native.reply(null, req.id, true, { gotDataUri: String(req.params.image).startsWith("data:image/png;base64,") });
+        else if (req.method === "setOnboarding") native.reply(null, req.id, true, { params: req.params });
         else native.reply(null, req.id, false, `Unknown method "${req.method}"`);
     }
 })();
@@ -103,7 +104,7 @@ await client.connect(new StdioClientTransport({
 await check("MCP lists all tools", async () => {
     const { tools } = await client.listTools();
     const names = tools.map(t => t.name);
-    for (const n of ["status", "create_server", "apply_layout", "export_layout", "set_permissions", "add_emoji", "delete_server"])
+    for (const n of ["status", "create_server", "apply_layout", "export_layout", "set_permissions", "add_emoji", "delete_server", "get_onboarding", "set_onboarding"])
         assert.ok(names.includes(n), `missing tool ${n}`);
     assert.ok(tools.find(t => t.name === "delete_server").annotations?.destructiveHint);
     console.log(`      ${tools.length} tools`);
@@ -136,6 +137,34 @@ await check("local image files are turned into data URIs", async () => {
     const res = await client.callTool({ name: "add_emoji", arguments: { server: "Test", name: "dot", image: png } });
     assert.ok(!res.isError, res.content?.[0]?.text);
     assert.equal(JSON.parse(res.content[0].text).gotDataUri, true);
+});
+
+await check("set_onboarding passes a full setup through unchanged", async () => {
+    const args = {
+        server: "Test",
+        enabled: true,
+        mode: "default",
+        default_channel_ids: ["general", "123456789012345678"],
+        prompts: [{
+            title: "Who's your Azumanga girl?",
+            type: "multiple_choice",
+            single_select: true,
+            required: false,
+            in_onboarding: true,
+            options: [
+                { title: "Osaka", description: "Spaced out", emoji: "🌀", role_ids: ["Osaka"], channel_ids: ["osaka"] },
+                { id: "223456789012345678", title: "Chiyo", emoji: null, role_ids: ["Chiyo"] }
+            ]
+        }]
+    };
+    const res = await client.callTool({ name: "set_onboarding", arguments: args });
+    assert.ok(!res.isError, res.content?.[0]?.text);
+    assert.deepEqual(JSON.parse(res.content[0].text).params, args);
+});
+
+await check("set_onboarding rejects a question without answers", async () => {
+    const res = await client.callTool({ name: "set_onboarding", arguments: { server: "Test", prompts: [{ title: "Empty", options: [] }] } }).catch(e => ({ isError: true, content: [{ text: e.message }] }));
+    assert.equal(res.isError, true);
 });
 
 await check("renderer errors come back as tool errors", async () => {

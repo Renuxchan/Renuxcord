@@ -79,7 +79,7 @@ const VERIFICATION: Record<string, number> = { none: 0, low: 1, medium: 2, high:
 const NOTIFICATIONS: Record<string, number> = { all: 0, all_messages: 0, mentions: 1, only_mentions: 1 };
 const CONTENT_FILTER: Record<string, number> = { disabled: 0, off: 0, members_without_roles: 1, no_roles: 1, all: 2, all_members: 2 };
 
-function enumValue(table: Record<string, number>, value: unknown, what: string) {
+export function enumValue(table: Record<string, number>, value: unknown, what: string) {
     if (value == null || value === "") return undefined;
     if (typeof value === "number") return value;
     const v = table[String(value).trim().toLowerCase().replace(/[\s-]+/g, "_")];
@@ -87,7 +87,7 @@ function enumValue(table: Record<string, number>, value: unknown, what: string) 
     return v;
 }
 
-const enumName = (table: Record<string, number>, value: number) => Object.entries(table).find(([, v]) => v === value)?.[0];
+export const enumName = (table: Record<string, number>, value: number) => Object.entries(table).find(([, v]) => v === value)?.[0];
 
 export function stripUndefined<T extends Record<string, any>>(obj: T): Partial<T> {
     return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as Partial<T>;
@@ -430,13 +430,15 @@ export async function applyLayout(guildId: string, layout: ServerLayout, opts: A
 
     // Channels
     const channelIds = new Map<string, string>();
-    const positions: { id: string; position: number; parent_id?: string | null; }[] = [];
+    const positions: { id: string; position: number; }[] = [];
+    // Each existing channel is matched once, so two layout channels with the same name don't both grab it
+    const placed = new Set<string>();
 
     const findExisting = (name: string, type: number, parentId: string | null) => {
         if (opts.wipe) return undefined;
         const wanted = normaliseChannelName(name, type);
         const candidates = guildChannels(guildId)
-            .filter(c => !deletedChannels.has(c.id) && c.type === type && normaliseChannelName(c.name, type) === wanted);
+            .filter(c => !deletedChannels.has(c.id) && !placed.has(c.id) && c.type === type && normaliseChannelName(c.name, type) === wanted);
         return candidates.find(c => (c.parent_id ?? null) === parentId) ?? candidates[0];
     };
 
@@ -481,6 +483,7 @@ export async function applyLayout(guildId: string, layout: ServerLayout, opts: A
             summary.created.channels.push(channel.name);
         }
 
+        placed.add(channel.id);
         channelIds.set(normaliseChannelName(ch.name, type), channel.id);
         channelIds.set(channel.name.toLowerCase(), channel.id);
 
@@ -499,7 +502,7 @@ export async function applyLayout(guildId: string, layout: ServerLayout, opts: A
     let topPos = 0;
     for (const ch of layout.channels ?? []) {
         try {
-            positions.push({ id: await upsertChannel(ch, null), position: topPos++, parent_id: null });
+            positions.push({ id: await upsertChannel(ch, null), position: topPos++ });
         } catch (err: any) {
             warn(`Channel ${ch.name}: ${err.message}`);
         }
@@ -522,6 +525,7 @@ export async function applyLayout(guildId: string, layout: ServerLayout, opts: A
                 catId = created.id;
                 summary.created.categories.push(cat.name);
             }
+            placed.add(catId);
             channelIds.set(normaliseChannelName(cat.name, CHANNEL_TYPES.category), catId);
             positions.push({ id: catId, position: catPos++ });
         } catch (err: any) {
@@ -532,13 +536,15 @@ export async function applyLayout(guildId: string, layout: ServerLayout, opts: A
         let pos = 0;
         for (const ch of cat.channels ?? []) {
             try {
-                positions.push({ id: await upsertChannel(ch, catId, cat.permissions), position: pos++, parent_id: catId });
+                positions.push({ id: await upsertChannel(ch, catId, cat.permissions), position: pos++ });
             } catch (err: any) {
                 warn(`Channel ${ch.name}: ${err.message}`);
             }
         }
     }
 
+    // upsertChannel already put every channel in its category (it throws if Discord refused), and Discord rejects a
+    // reorder that sets parent_id on more than one channel (code 40009), so this only sends positions
     if (positions.length > 1) {
         progress("Ordering channels");
         try {

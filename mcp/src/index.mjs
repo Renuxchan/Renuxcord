@@ -351,6 +351,49 @@ bridgeTool("remove_role_from_member", {
     inputSchema: { server: serverRef, user: z.string().describe("User ID, username or nickname"), role: z.string() }
 }, "removeRole");
 
+// ---- onboarding ----
+
+const onboardingOption = z.object({
+    id: z.string().optional().describe("Keep an existing answer (IDs come from get_onboarding). An answer with the same title as an existing one is kept too"),
+    title: z.string().min(1),
+    description: z.string().nullable().optional(),
+    emoji: z.string().nullable().optional().describe('A Unicode emoji like "🌀", a server emoji\'s name, or <:name:id>. Empty or null removes it'),
+    role_ids: z.array(z.string()).optional().describe("Role names or IDs members get when they pick this"),
+    channel_ids: z.array(z.string()).optional().describe("Channel names or IDs members are added to when they pick this")
+});
+
+const onboardingPrompt = z.object({
+    id: z.string().optional().describe("Keep an existing question. A question with the same title as an existing one is kept too"),
+    type: z.enum(["multiple_choice", "dropdown"]).optional().describe("Default multiple_choice"),
+    title: z.string().min(1),
+    single_select: z.boolean().optional().describe("Members can pick only one answer. Default false"),
+    required: z.boolean().optional().describe("Members must answer. Default false"),
+    in_onboarding: z.boolean().optional().describe("Asked while joining; false only shows it in Channels & Roles. Default true"),
+    options: z.array(onboardingOption).min(1).describe("The answers")
+});
+
+bridgeTool("get_onboarding", {
+    title: "Get onboarding",
+    description: "Shows a server's onboarding: whether it is on, its mode, default channels and the questions with their answers, "
+        + "with role and channel names next to the IDs, plus how it stands against Discord's requirements",
+    inputSchema: { server: serverRef },
+    annotations: { readOnlyHint: true }
+}, "getOnboarding");
+
+bridgeTool("set_onboarding", {
+    title: "Set onboarding",
+    description: "Sets up a Community server's onboarding: the questions new members answer (each answer can give roles and channels), "
+        + "the default channels and whether it is on. Anything left out stays as it is; prompts, when given, replace every question. "
+        + "Turning it on needs a Community server and at least 7 default channels, with @everyone able to send messages in at least 5 of them",
+    inputSchema: {
+        server: serverRef,
+        enabled: z.boolean().optional(),
+        mode: z.enum(["default", "advanced"]).optional().describe("advanced also counts channels from questions toward the requirements"),
+        default_channel_ids: z.array(z.string()).optional().describe("Channel names or IDs every new member is added to"),
+        prompts: z.array(onboardingPrompt).optional().describe("Every question, in order")
+    }
+}, "setOnboarding");
+
 // ---- extras ----
 
 bridgeTool("create_invite", {
