@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { GuildRoleStore, GuildStore, SnowflakeUtils } from "@webpack/common";
+import { GuildMemberStore, GuildRoleStore, GuildStore, SnowflakeUtils, UserStore } from "@webpack/common";
 
 import {
     CHANNEL_TYPES, channelKind, channelType, ChannelTypeName, channelTypeName, describeOverwriteTarget, forgetChannel,
@@ -189,16 +189,38 @@ export async function postMessage(channelId: string, content: string) {
     return sent;
 }
 
-/** Reorders roles so the given IDs come out in that order (highest first). Bot roles stay above them */
+/**
+ * Reorders roles so the given IDs come out in that order (highest first), with bot roles above them.
+ * Your highest role and everything above it keep their places: Discord refuses any reorder that moves them
+ */
 export async function reorderRoles(guildId: string, topToBottom: string[], ignore = new Set<string>()) {
-    const current = guildRoles(guildId)
+    // Discord's own positions: the client's role store can lag behind and is full of ties
+    const roles: { id: string; name: string; position: number; managed?: boolean; }[] = await rest("get", `/guilds/${guildId}/roles`);
+    const ranked = roles
         .filter(r => r.id !== guildId && !ignore.has(r.id))
-        .sort((a, b) => b.position - a.position);
+        .sort((a, b) => (b.position - a.position) || (BigInt(a.id) < BigInt(b.id) ? -1 : 1));
+
+    const me = UserStore.getCurrentUser()?.id;
+    const owner = GuildStore.getGuild(guildId)?.ownerId === me;
+    const myRoles = new Set(GuildMemberStore.getMember(guildId, me)?.roles ?? []);
+    // The owner can move every role; anyone else only the ones ranked below their highest role
+    const fixedCount = owner ? 0 : (ranked.findIndex(r => myRoles.has(r.id)) + 1 || ranked.length);
+    const fixed = ranked.slice(0, fixedCount);
+    const movable = ranked.slice(fixedCount);
+
+    const blocked = topToBottom.filter(id => !movable.some(r => r.id === id));
+    if (blocked.length) {
+        const names = blocked.map(id => `@${roles.find(r => r.id === id)?.name ?? id}`).join(", ");
+        throw new Error(`${names} ${blocked.length === 1 ? "is" : "are"} at or above your highest role, and Discord only lets you move roles below it`);
+    }
 
     const listed = new Set(topToBottom);
-    const managed = current.filter(r => r.managed && !listed.has(r.id)).map(r => r.id);
-    const others = current.filter(r => !r.managed && !listed.has(r.id)).map(r => r.id);
-    const order = [...managed, ...topToBottom, ...others];
+    const order = [
+        ...fixed.map(r => r.id),
+        ...movable.filter(r => r.managed && !listed.has(r.id)).map(r => r.id),
+        ...topToBottom,
+        ...movable.filter(r => !r.managed && !listed.has(r.id)).map(r => r.id)
+    ];
 
     await rest("patch", `/guilds/${guildId}/roles`, order.map((id, i) => ({ id, position: order.length - i })));
 }

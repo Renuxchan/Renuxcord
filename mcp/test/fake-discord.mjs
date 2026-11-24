@@ -64,14 +64,19 @@ const snowflake = () => String(nextId++);
 const ME = "1000000000000000001";
 
 // Server state: guild and channel records shaped like the client's stores, roles and members per guild,
-// custom emojis per guild, and onboarding as GET returns it
+// my own roles per guild, custom emojis per guild, and onboarding as GET returns it
 const guilds = new Map();
 const channels = new Map();
 const roles = new Map();
 const members = new Map();
+const myRoles = new Map();
 const emojis = new Map();
 const onboarding = new Map();
 const calls = [];
+
+// How Discord ranks roles: highest position first, ties by ID
+const byRank = (a, b) => (b.position - a.position) || (BigInt(a.id) < BigInt(b.id) ? -1 : 1);
+const ranked = guildId => [...roles.get(guildId).values()].filter(r => r.id !== guildId).sort(byRank);
 
 // The client's stores catch up with REST a moment later, like the gateway
 const GATEWAY_DELAY = 25;
@@ -170,13 +175,24 @@ const routes = [
         }
         return { id: g.id, name: g.name };
     }],
+    ["get", /^\/guilds\/(\d+)\/roles$/, ([, gid]) => [...roles.get(gid).values()].map(r => ({ ...r, permissions: String(r.permissions) }))],
     ["patch", /^\/guilds\/(\d+)\/roles$/, ([, gid], body) => {
+        const before = ranked(gid);
+        const moved = new Map(before.map(r => [r.id, { ...r }]));
         for (const { id, position } of body) {
-            const r = roles.get(gid).get(id);
-            if (!r) throw formError("id", `Unknown role ${id}`);
-            r.position = position;
+            if (!moved.has(id)) throw formError("id", `Unknown role ${id}`);
+            moved.get(id).position = position;
         }
-        return [...roles.get(gid).values()];
+        // Unless you own the server, your highest role and everything above it must keep their places
+        if (guilds.get(gid).ownerId !== ME) {
+            const mine = new Set(myRoles.get(gid) ?? []);
+            const top = before.findIndex(r => mine.has(r.id)) + 1;
+            const after = [...moved.values()].sort(byRank);
+            if (!top || before.slice(0, top).map(r => r.id).join() !== after.slice(0, top).map(r => r.id).join())
+                throw apiError(403, { message: "Missing Permissions", code: 50013 });
+        }
+        for (const { id, position } of body) roles.get(gid).get(id).position = position;
+        return [...roles.get(gid).values()].map(r => ({ ...r, permissions: String(r.permissions) }));
     }],
     ["patch", /^\/guilds\/(\d+)\/roles\/(\d+)$/, ([, gid, rid], body) => {
         const r = roles.get(gid).get(rid);
@@ -327,7 +343,7 @@ globalThis.__fakeDiscord = {
         getRolesSnapshot: gid => Object.fromEntries(client.roles.get(gid) ?? []),
         getRole: (gid, rid) => client.roles.get(gid)?.get(rid)
     },
-    GuildMemberStore: { getMemberIds: gid => [...members.get(gid) ?? []], getNick: () => null, getMember: () => null },
+    GuildMemberStore: { getMemberIds: gid => [...members.get(gid) ?? []], getNick: () => null, getMember: (gid, uid) => (uid === ME ? { roles: myRoles.get(gid) ?? [] } : null) },
     GuildMemberCountStore: { getMemberCount: gid => members.get(gid)?.size },
     EmojiStore: {
         getGuildEmoji: gid => emojis.get(gid) ?? [],
@@ -503,6 +519,56 @@ await section("ServerBlueprints paste over an existing server (wipe)", async () 
     checkReorders("paste", start, result);
     checkLayoutOrder("paste", PASTE, LAYOUT);
     check("paste: only the layout's channels, the old ones are gone", guildChannelNames(PASTE).length === layoutSize(LAYOUT), JSON.stringify(guildChannelNames(PASTE)));
+});
+
+// ---------------- role order ----------------
+
+await section("reorder_roles as an admin who doesn't own the server (like Azumanga)", async () => {
+    const G = "1400000000000000400";
+    addGuild({ id: G, name: "Not Mine", ownerId: "1000000000000000002" });
+    // Positions as Discord had them there: bots and new roles piled up on 1
+    const role = (name, position, extra) => addRole(G, { name, position, ...extra });
+    role(".fmbot", 9, { managed: true });
+    const owner = role("Owner", 7);
+    const admin = role("admin", 6, { permissions: bits("ADMINISTRATOR") });
+    role("Mimu", 4, { managed: true });
+    role("Sapphire", 3, { managed: true });
+    role("DISBOARD.org", 1, { managed: true });
+    role("Dyno", 1, { managed: true });
+    const [, osaka] = ["chiyo", "osaka", "tomo"].map(n => role(n, 1));
+    const member = role("member", 1);
+    const mod = role("mod", 1);
+    const helper = role("helper", 1);
+    myRoles.set(G, [admin.id, member.id, osaka.id]);
+    syncNow();
+
+    const names = () => ranked(G).map(r => r.name);
+    const before = names();
+    const start = calls.length;
+    const result = await lib.actions.reorderRoles({ server: G, roles: [mod.id, helper.id] }, ctx);
+    const after = names();
+
+    check("reorder goes through (Discord's 50013 before the fix)", result.order.join() === "mod,helper", JSON.stringify(result));
+    check("admin and everything above it keep their places", after.slice(0, 3).join() === before.slice(0, 3).join(), after.join());
+    check("mod and helper land right under the bots, above every colour role and member", after.join() === ".fmbot,Owner,admin,Mimu,Sapphire,DISBOARD.org,Dyno,mod,helper,chiyo,osaka,tomo,member", after.join());
+    check("it reads Discord's positions instead of the client's cache", calls.slice(start).some(c => c.method === "get" && c.url === `/guilds/${G}/roles`));
+
+    const before2 = calls.length;
+    const blocked = await attempt(() => lib.actions.reorderRoles({ server: G, roles: [owner.id, mod.id] }, ctx));
+    check("asking to move a role above yours fails in plain words, nothing sent", /@Owner is at or above your highest role/.test(blocked.error?.message) && !calls.slice(before2).some(c => c.method === "patch"), blocked.error?.message ?? "no error");
+});
+
+await section("reorder_roles as the owner", async () => {
+    const G = "1400000000000000500";
+    addGuild({ id: G, name: "Mine" });
+    addRole(G, { name: "bot", position: 4, managed: true });
+    const a = addRole(G, { name: "a", position: 3 });
+    addRole(G, { name: "b", position: 2 });
+    const c = addRole(G, { name: "c", position: 1 });
+    syncNow();
+
+    await lib.actions.reorderRoles({ server: G, roles: [c.id, a.id] }, ctx);
+    check("the owner can reorder everything; the bot stays on top, unlisted roles go below", ranked(G).map(r => r.name).join() === "bot,c,a,b", ranked(G).map(r => r.name).join());
 });
 
 // ---------------- onboarding ----------------

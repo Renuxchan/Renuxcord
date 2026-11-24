@@ -335,7 +335,8 @@ bridgeTool("delete_role", {
 
 bridgeTool("reorder_roles", {
     title: "Reorder roles",
-    description: "Puts the given roles in this order, highest first. Unlisted roles keep their order below them; bot roles stay on top",
+    description: "Puts the given roles in this order, highest first. Unlisted roles keep their order below them; bot roles stay on top. "
+        + "Unless the account owns the server, only roles below its highest role can move, and everything from that role up stays put",
     inputSchema: { server: serverRef, roles: z.array(z.string()).min(1) }
 }, "reorderRoles");
 
